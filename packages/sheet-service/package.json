@@ -1,0 +1,9 @@
+{
+  "name": "@sheet-service",
+    "description": "Sheet service for managing spreadsheet-like data structures",
+  "version": "1.0.0",
+  "main": "src/index.ts",
+  "scripts": {
+    "dev": "ts-node-dev --respawn src/index.ts"
+  }
+}

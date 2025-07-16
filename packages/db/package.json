@@ -1,0 +1,10 @@
+{
+  "name": "@db",
+  "description": "Database service for managing data storage and retrieval",
+  "version": "1.0.0",
+  "main": "src/index.ts",
+  "scripts": {
+    "dev": "ts-node-dev --respawn src/index.ts"
+  }
+}
+
