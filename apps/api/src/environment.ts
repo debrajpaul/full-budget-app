@@ -1,6 +1,7 @@
 import * as dotenv from "dotenv";
 import path from "path";
-import { IConfig } from "packages/common/src/abstractions";
+import { IConfig } from "@common/abstractions";
+import { LogLevel } from "@logger/index";
 
 console.log(`### path:${path.join(__dirname, "../../../.env")}`);
 dotenv.config({ path: path.join(__dirname, "../../../.env") });
@@ -29,7 +30,7 @@ const {
 export const config: IConfig = {
   port: PORT as string,
   nodeEnv: NODE_ENV as string,
-  logLevel: LOG_LEVEL as string,
+  logLevel: LOG_LEVEL as LogLevel,
   mongoHost: MONGO_HOST as string,
   mongoPort: MONGO_PORT as string,
   mongoDB: MONGO_DB as string,
