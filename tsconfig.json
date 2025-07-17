@@ -1,6 +1,7 @@
 {
   "compilerOptions": {
-    "target": "ES2020",
+    "target": "ES2022",
+    "lib": ["ES2022", "DOM"],
     "module": "CommonJS",
     "moduleResolution": "node",
     "strict": true,
@@ -10,10 +11,14 @@
     "forceConsistentCasingInFileNames": true,
     "baseUrl": ".",
     "paths": {
-      "@core/*": ["packages/core/src/*"],
+      "@common/*": ["packages/common/src/*"],
+      "@services/*": ["packages/services/src/*"],
       "@auth/*": ["packages/auth/src/*"],
       "@db/*": ["packages/db/src/*"],
-      "@sheet-service/*": ["packages/sheet-service/src/*"]
+      "@logger/*": ["packages/logger/src/*"],
+      "@parserHdfc/*": ["packages/parser-hdfc/src/*"],
+      "@parserSbi/*": ["packages/parser-sbi/src/*"],
+      "@client/*": ["packages/client/src/*"],
     }
   },
   "include": ["apps","packages"],

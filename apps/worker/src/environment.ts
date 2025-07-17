@@ -1,7 +1,7 @@
 import * as dotenv from "dotenv";
 import path from "path";
+import { LogLevel } from "@logger/logger";
 import { IConfig } from "@common/abstractions";
-import { LogLevel } from "@logger/index";
 
 console.log(`### path:${path.join(__dirname, "../../../.env")}`);
 dotenv.config({ path: path.join(__dirname, "../../../.env") });

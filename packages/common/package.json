@@ -1,6 +1,6 @@
 {
-  "name": "@core",
-  "description": "Core service providing foundational functionality for the application",
+  "name": "@common",
+  "description": "Common service providing foundational functionality for the application",
   "version": "1.0.0",
   "main": "src/index.ts",
   "scripts": {

@@ -1,4 +1,4 @@
-import { IGraphQLContext } from "@core/abstractions/IContext";
+import { IGraphQLContext } from "packages/common/src/abstractions/IContext";
 
 export const uploadStatementResolvers = {
   Mutation: {
@@ -9,7 +9,7 @@ export const uploadStatementResolvers = {
             throw new Error('Missing required parameters');
         }
 
-      const result = await ctx.dataSources.uploadStatementService.uploadStatement(bank, fileName, contentBase64);
+      const result = await ctx.dataSources.uploadStatementService.uploadStatement(bank, fileName, contentBase64, ctx.userId);
 
       if (!result) {
           throw new Error('Failed to upload statement');

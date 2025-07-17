@@ -1,6 +1,6 @@
 {
-  "name": "@sheet-service",
-    "description": "Sheet service for managing spreadsheet-like data structures",
+  "name": "@client",
+  "description": "Client for managing file uploads and downloads",
   "version": "1.0.0",
   "main": "src/index.ts",
   "scripts": {
