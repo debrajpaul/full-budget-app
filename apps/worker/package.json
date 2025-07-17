@@ -4,13 +4,15 @@
   "version": "1.0.0",
   "main": "src/index.ts",
   "scripts": {
-    "dev": "ts-node-dev --project ../../tsconfig.json --require tsconfig-paths/register --respawn src/index.ts"
+    "dev": "ts-node-dev --project ../../tsconfig.json --require tsconfig-paths/register --respawn src/index.ts",
+    "lint": "eslint . --ext .ts --fix",
+    "format": "prettier --write ."
   },
   "dependencies": {
     "@auth": "workspace:*",
     "@common": "workspace:*",
     "@db": "workspace:*",
-	"@types/pdf-parse": "^1.1.5",
+    "@types/pdf-parse": "^1.1.5",
     "@aws-sdk/client-s3": "^3.300.0",
     "@aws-sdk/client-sqs": "^3.300.0",
     "@aws-sdk/lib-dynamodb": "^3.300.0",

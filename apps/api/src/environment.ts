@@ -24,7 +24,6 @@ const {
   DYNAMO_USER_TABLE,
   DYNAMO_TRANSACTION_TABLE,
   JWT_SECRET,
-  JWT_EXPIRATION,
 } = process.env;
 
 export const config: IConfig = {

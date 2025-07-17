@@ -4,7 +4,9 @@
   "version": "1.0.0",
   "main": "src/index.ts",
   "scripts": {
-    "dev": "ts-node-dev --project ../../tsconfig.json --require tsconfig-paths/register --respawn src/index.ts"
+    "dev": "ts-node-dev --project ../../tsconfig.json --require tsconfig-paths/register --respawn src/index.ts",
+    "lint": "eslint . --ext .ts --fix",
+    "format": "prettier --write ."
   },
   "dependencies": {
     "@auth": "workspace:*",

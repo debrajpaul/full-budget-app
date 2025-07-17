@@ -3,9 +3,6 @@
   "version": "1.0.0",
   "description": "",
   "main": "index.js",
-  "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
-  },
   "keywords": [],
   "author": "",
   "license": "ISC",
@@ -15,10 +12,18 @@
     "packages/*"
   ],
   "devDependencies": {
+    "@eslint/js": "^9.27.0",
+    "@types/jest": "^29.5.14",
     "@prisma/client": "^6.10.1",
     "@types/bcryptjs": "^3.0.0",
     "@types/jsonwebtoken": "^9.0.10",
     "@types/node": "^24.0.3",
+    "@typescript-eslint/eslint-plugin": "^8.37.0",
+    "@typescript-eslint/parser": "^8.37.0",
+    "eslint": "^9.31.0",
+    "eslint-plugin-jest": "^28.11.0",
+    "globals": "^16.1.0",
+    "prettier": "^3.6.2",
     "prisma": "^6.10.1",
     "ts-node-dev": "^2.0.0",
     "tsconfig-paths": "^4.2.0",
