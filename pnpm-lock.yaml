@@ -72,9 +72,9 @@ importers:
       '@auth':
         specifier: workspace:*
         version: link:../../packages/auth
-      '@core':
+      '@common':
         specifier: workspace:*
-        version: link:../../packages/core
+        version: link:../../packages/common
       '@db':
         specifier: workspace:*
         version: link:../../packages/db
@@ -99,9 +99,9 @@ importers:
       '@aws-sdk/lib-dynamodb':
         specifier: ^3.300.0
         version: 3.844.0(@aws-sdk/client-dynamodb@3.844.0)
-      '@core':
+      '@common':
         specifier: workspace:*
-        version: link:../../packages/core
+        version: link:../../packages/common
       '@db':
         specifier: workspace:*
         version: link:../../packages/db
@@ -134,9 +134,13 @@ importers:
         specifier: ^9.0.10
         version: 9.0.10
 
-  packages/core: {}
+  packages/client: {}
+
+  packages/common: {}
 
   packages/db: {}
+
+  packages/logger: {}
 
   packages/nlp-tagger: {}
 
@@ -144,11 +148,7 @@ importers:
 
   packages/parser-sbi: {}
 
-  packages/s3-client: {}
-
-  packages/sheet-service: {}
-
-  packages/sqs-client: {}
+  packages/services: {}
 
 packages:
 
