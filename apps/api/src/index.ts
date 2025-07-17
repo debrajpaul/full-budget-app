@@ -4,7 +4,7 @@ import { createServer } from 'node:http';
 import { createYoga } from 'graphql-yoga';
 import { schema } from './schemas/schema';
 import { createContext } from './context';
-import { IGraphQLContext } from '@core/abstractions';
+import { IGraphQLContext } from 'packages/common/src/abstractions';
 
 dotenv.config();
 

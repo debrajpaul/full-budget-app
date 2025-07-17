@@ -1,12 +1,23 @@
 import { verifyToken } from '@auth';
-import { IGraphQLContext } from '@core/abstractions';
-import { S3Client } from '@aws-sdk/client-s3';
-import { SQSClient } from '@aws-sdk/client-sqs';
+import { IGraphQLContext } from 'packages/common/src/abstractions';
+import { S3 } from '@aws-sdk/client-s3';
+import { SQS } from '@aws-sdk/client-sqs';
 import { config } from './environment';
-import { UploadStatementService, AuthorizationService } from '@core/services';
+import { S3Service , SQSService} from '@client/index';
+import { WinstonLogger } from "@logger/winston-logger";
+import { UploadStatementService, AuthorizationService } from 'packages/services/src';
 
-const s3 = new S3Client({ region: config.awsRegion });
-const sqs = new SQSClient({ region: config.awsRegion });
+const s3Client = new S3({ region: config.awsRegion });
+const sqsClient = new SQS({ region: config.awsRegion });
+const logger = WinstonLogger.getInstance(config.logLevel);
+const s3Service = new S3Service(
+  logger.child('S3Service'),
+   s3Client
+);
+const sqsService = new SQSService(
+  logger.child('SQSService'),
+  sqsClient
+);
 
 const BUCKET = config.awsS3Bucket;
 const QUEUE_URL = config.sqsQueueUrl;
@@ -29,8 +40,8 @@ export const createContext = async ( ctx : IGraphQLContext) => {
     ...ctx, 
     userId,
     dataSources: {
-      authorizationService: new AuthorizationService(config.jwtSecret, config.jwtExpiration),
-      uploadStatementService: new UploadStatementService(s3, sqs, BUCKET, QUEUE_URL),
+      authorizationService: new AuthorizationService(logger.child('AuthorizationService'), config.jwtSecret, config.jwtExpiration, config.dynamoUserTable),
+      uploadStatementService: new UploadStatementService(logger.child('UploadStatementService'), BUCKET, QUEUE_URL, s3Service, sqsService),
     }
   };
 }

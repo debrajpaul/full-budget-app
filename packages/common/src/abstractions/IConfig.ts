@@ -1,7 +1,9 @@
+import { LogLevel } from "@logger/logger";
+
 export interface IConfig {
   port: string;
   nodeEnv: string;
-  logLevel: string;
+  logLevel: LogLevel;
   mongoHost: string;
   mongoPort: string;
   mongoDB: string;
@@ -13,6 +15,8 @@ export interface IConfig {
   awsRegion: string;
   awsS3Bucket: string;
   sqsQueueUrl: string;
+  dynamoUserTable: string;
+  dynamoTransactionTable: string;
   jwtSecret: string;
   jwtExpiration: number;
 }

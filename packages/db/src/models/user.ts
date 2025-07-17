@@ -1,12 +1,10 @@
 import { db } from '../dynamoClient';
 import { PutCommand, GetCommand } from '@aws-sdk/lib-dynamodb';
 
-const USERS_TABLE = process.env.USERS_TABLE || 'users';
-
-export async function createUser(userId: string, email: string, passwordHash: string) {
+export async function createUser(userId: string, email: string, passwordHash: string, tableName: string) {
   await db.send(
     new PutCommand({
-      TableName: USERS_TABLE,
+      TableName: tableName,
       Item: {
         userId,
         email,
@@ -18,10 +16,10 @@ export async function createUser(userId: string, email: string, passwordHash: st
   );
 }
 
-export async function getUserByEmail(email: string) {
+export async function getUserByEmail(email: string, tableName: string) {
   const result = await db.send(
     new GetCommand({
-      TableName: USERS_TABLE,
+      TableName: tableName,
       Key: { userId: email },
     })
   );
