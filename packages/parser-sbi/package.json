@@ -1,0 +1,10 @@
+{
+  "name": "@parser-sbi",
+    "description": "Parser service for SBI data processing",
+  "version": "1.0.0",
+  "main": "src/index.ts",
+  "scripts": {
+    "dev": "ts-node-dev --respawn src/index.ts"
+  }
+}
+

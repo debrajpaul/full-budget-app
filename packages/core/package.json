@@ -1,0 +1,9 @@
+{
+  "name": "@core",
+  "description": "Core service providing foundational functionality for the application",
+  "version": "1.0.0",
+  "main": "src/index.ts",
+  "scripts": {
+    "dev": "ts-node-dev --respawn src/index.ts"
+  }
+}

@@ -1,0 +1,14 @@
+{
+  "name": "@app/worker",
+  "description": "Worker service for processing tasks",
+  "version": "1.0.0",
+  "main": "src/index.ts",
+  "scripts": {
+    "dev": "ts-node-dev --respawn src/index.ts"
+  },
+  "dependencies": {
+    "@auth": "workspace:*",
+    "@core": "workspace:*",
+    "@db": "workspace:*"
+  }
+}
