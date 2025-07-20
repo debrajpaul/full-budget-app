@@ -1,7 +1,7 @@
 import * as dotenv from "dotenv";
 import path from "path";
-import { LogLevel } from "@logger/logger";
-import { IConfig } from "@common/abstractions";
+import { LogLevel } from "@logger";
+import { IConfig } from "@common";
 
 console.log(`### path:${path.join(__dirname, "../../../.env")}`);
 dotenv.config({ path: path.join(__dirname, "../../../.env") });
@@ -24,7 +24,6 @@ const {
   DYNAMO_USER_TABLE,
   DYNAMO_TRANSACTION_TABLE,
   JWT_SECRET,
-  JWT_EXPIRATION,
 } = process.env;
 
 export const config: IConfig = {

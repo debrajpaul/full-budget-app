@@ -1,30 +1,33 @@
-import { ILogger } from '@logger/logger';
-import { ISQSService } from '@common/abstractions';
-import { SQS, SQSClientConfig, SendMessageCommandInput } from '@aws-sdk/client-sqs';
+import { ILogger } from "@logger";
+import { ISQSService } from "@common";
+import {
+  SQS,
+  SQSClientConfig,
+  SendMessageCommandInput,
+} from "@aws-sdk/client-sqs";
 
 export type { SQSClientConfig };
 
 export class SQSService implements ISQSService {
-
   constructor(
-      private readonly logger: ILogger,
-      private readonly sqs: SQS
+    private readonly logger: ILogger,
+    private readonly sqs: SQS,
   ) {}
 
   /**
    * Sends a message to the SQS queue (producer).
    */
   async sendFileMessage(queueUrl: string, messageBody: object): Promise<void> {
-    this.logger.info('#SendingSQS');
-    this.logger.debug('SendingSQS', { queueUrl, messageBody });
+    this.logger.info("#SendingSQS");
+    this.logger.debug("SendingSQS", { queueUrl, messageBody });
 
     const params: SendMessageCommandInput = {
       QueueUrl: queueUrl,
       MessageBody: JSON.stringify(messageBody),
     };
     const res = await this.sqs.sendMessage(params);
-    this.logger.debug('SQS message sent', { queueUrl, messageBody, res });
-    this.logger.info('SQS message sent successfully');
+    this.logger.debug("SQS message sent", { queueUrl, messageBody, res });
+    this.logger.info("SQS message sent successfully");
   }
 
   /**
@@ -32,8 +35,8 @@ export class SQSService implements ISQSService {
    * Returns the parsed message body, or undefined if no messages.
    */
   async receiveFileMessage(queueUrl: string): Promise<any | undefined> {
-    this.logger.info('#ReceivingSQS');
-    this.logger.debug('ReceivingSQS', { queueUrl });
+    this.logger.info("#ReceivingSQS");
+    this.logger.debug("ReceivingSQS", { queueUrl });
 
     const res = await this.sqs.receiveMessage({
       QueueUrl: queueUrl,

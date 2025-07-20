@@ -1,0 +1,19 @@
+{
+  "name": "@parser",
+  "description": "Parser service for HDFC and SBI data processing",
+  "version": "1.0.0",
+  "main": "src/index.ts",
+  "scripts": {
+    "dev": "ts-node-dev --respawn src/index.ts",
+    "lint": "eslint . --ext .ts --fix",
+    "format": "prettier --write ."
+  },
+  "dependencies": {
+    "@common": "workspace:*",
+    "pdf-parse": "^1.1.1",
+    "csv-parse": "^5.5.0"
+  },
+  "devDependencies": {
+    "@types/pdf-parse": "^1.1.5"
+  }
+}

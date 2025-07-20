@@ -1,6 +1,10 @@
-import jwt from 'jsonwebtoken';
+import jwt from "jsonwebtoken";
 
-export function signToken(payload: object , jwtSecret: string, expiry: number): string {
+export function signToken(
+  payload: object,
+  jwtSecret: string,
+  expiry: number,
+): string {
   return jwt.sign(payload, jwtSecret, { expiresIn: expiry });
 }
 

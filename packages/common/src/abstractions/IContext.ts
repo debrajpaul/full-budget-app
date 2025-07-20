@@ -1,5 +1,6 @@
-import { IUploadStatementService, IAuthorizationService } from 'packages/common/src/abstractions';
-import { YogaInitialContext } from 'graphql-yoga';
+import { IAuthorizationService } from "./IAuthorizationService";
+import { IUploadStatementService } from "./IUploadStatementService";
+import { YogaInitialContext } from "graphql-yoga";
 
 export interface IGraphQLContext extends YogaInitialContext {
   userId: string | null;

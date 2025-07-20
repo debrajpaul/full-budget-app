@@ -11,7 +11,5 @@ export interface ILogger {
   info(message: string, data?: object, tags?: string[]): void;
   warn(message: string, data?: object, tags?: string[]): void;
   debug(message: string, data?: object, tags?: string[]): void;
-  error(message: string,  error?: Error, data?: object, tags?: string[]): void;
+  error(message: string, error?: Error, data?: object, tags?: string[]): void;
 }
-
-

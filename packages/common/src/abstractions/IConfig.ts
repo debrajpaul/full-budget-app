@@ -1,4 +1,4 @@
-import { LogLevel } from "@logger/logger";
+import { LogLevel } from "@logger";
 
 export interface IConfig {
   port: string;

@@ -16,11 +16,10 @@
       "@auth/*": ["packages/auth/src/*"],
       "@db/*": ["packages/db/src/*"],
       "@logger/*": ["packages/logger/src/*"],
-      "@parserHdfc/*": ["packages/parser-hdfc/src/*"],
-      "@parserSbi/*": ["packages/parser-sbi/src/*"],
+      "@parser/*": ["packages/parser/src/*"],
       "@client/*": ["packages/client/src/*"],
     }
   },
   "include": ["apps","packages"],
-  "exclude": ["node_modules"]
+  "exclude": ["node_modules", "data", ".github"]
 }
