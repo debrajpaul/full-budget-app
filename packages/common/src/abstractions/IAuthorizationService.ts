@@ -1,8 +1,8 @@
 export interface IAuthPayload {
-    email: string;
-    token: string;
-  }
-  
+  email: string;
+  token: string;
+}
+
 export interface IAuthorizationService {
   register(email: string, password: string): Promise<IAuthPayload>;
   login(email: string, password: string): Promise<IAuthPayload>;

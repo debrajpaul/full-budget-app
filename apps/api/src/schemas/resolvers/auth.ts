@@ -1,4 +1,4 @@
-import { IGraphQLContext } from "packages/common/src/abstractions/IContext";
+import { IGraphQLContext } from "@common";
 
 export const authResolvers = {
   Query: {

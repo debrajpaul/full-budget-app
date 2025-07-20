@@ -1,6 +1,6 @@
 {
-  "name": "@logger",
-  "description": "Logger for application events",
+  "name": "@parser",
+  "description": "Parser service for HDFC and SBI data processing",
   "version": "1.0.0",
   "main": "src/index.ts",
   "scripts": {
@@ -10,6 +10,10 @@
   },
   "dependencies": {
     "@common": "workspace:*",
-    "winston": "^3.17.0"
+    "pdf-parse": "^1.1.1",
+    "csv-parse": "^5.5.0"
+  },
+  "devDependencies": {
+    "@types/pdf-parse": "^1.1.5"
   }
 }

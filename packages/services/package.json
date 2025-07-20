@@ -4,6 +4,19 @@
   "version": "1.0.0",
   "main": "src/index.ts",
   "scripts": {
-    "dev": "ts-node-dev --respawn src/index.ts"
+    "lint": "eslint . --ext .ts --fix",
+    "format": "prettier --write ."
+  },
+  "dependencies": {
+    "@auth": "workspace:*",
+    "@common": "workspace:*",
+    "@db": "workspace:*",
+    "@parser": "workspace:*",
+    "@logger": "workspace:*",
+    "@client": "workspace:*",
+    "bcryptjs": "^3.0.2"
+  },
+  "devDependencies": {
+    "@types/bcryptjs": "^3.0.0"
   }
 }

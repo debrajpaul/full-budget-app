@@ -1,14 +1,11 @@
 import { verifyToken } from "@auth";
-import { IGraphQLContext } from "packages/common/src/abstractions";
+import { IGraphQLContext } from "@common";
 import { S3 } from "@aws-sdk/client-s3";
 import { SQS } from "@aws-sdk/client-sqs";
 import { config } from "./environment";
-import { S3Service, SQSService } from "@client/index";
-import { WinstonLogger } from "@logger/winston-logger";
-import {
-  UploadStatementService,
-  AuthorizationService,
-} from "packages/services/src";
+import { S3Service, SQSService } from "@client";
+import { WinstonLogger } from "@logger";
+import { UploadStatementService, AuthorizationService } from "@services";
 
 const s3Client = new S3({ region: config.awsRegion });
 const sqsClient = new SQS({ region: config.awsRegion });

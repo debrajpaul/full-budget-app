@@ -5,12 +5,45 @@ on: [push, pull_request]
 jobs:
   build:
     runs-on: ubuntu-latest
+
+    strategy:
+      matrix:
+        workspace:
+          - apps/api
+          - apps/worker
+          - packages/auth
+          - packages/db
+          - packages/common
+          - packages/logger
+          - packages/nlp-tagger
+          - packages/parser
+          - packages/services
+          - packages/client
+
+    defaults:
+      run:
+        working-directory: ${{ matrix.workspace }}
+
     steps:
       - uses: actions/checkout@v3
+
       - uses: pnpm/action-setup@v2
         with:
           version: 8
-      - name: Install deps
+
+      - uses: actions/setup-node@v3
+        with:
+          node-version: 20
+          cache: pnpm
+
+      - name: Install dependencies
         run: pnpm install
+
       - name: Type check
         run: pnpm tsc --noEmit
+
+      - name: Run ESLint
+        run: pnpm exec eslint . --ext .ts
+
+      - name: Check Prettier formatting
+        run: pnpm exec prettier --check .
