@@ -1,5 +1,4 @@
 export interface IUser {
-  userId: string;
   email: string;
   name: string;
   passwordHash: string;
@@ -8,4 +7,13 @@ export interface IUser {
   deletedAt?: Date;
   isActive: boolean;
   lastLogin?: Date;
+}
+
+export interface IUserUpdate {
+  name?: string;
+  email?: string;
+  passwordHash?: string;
+  lastLogin?: Date;
+  isActive?: boolean;
+  deletedAt?: Date | null;
 }
