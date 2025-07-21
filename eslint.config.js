@@ -2,6 +2,8 @@ import js from "@eslint/js";
 import pluginTs from "@typescript-eslint/eslint-plugin";
 import parserTs from "@typescript-eslint/parser";
 import pluginJest from "eslint-plugin-jest";
+import pluginPrettier from "eslint-plugin-prettier";
+import prettier from "eslint-config-prettier";
 import globals from "globals";
 
 /** @type {import("eslint").FlatConfig[]} */
@@ -20,10 +22,12 @@ export default [
     },
     plugins: {
       "@typescript-eslint": pluginTs,
+      prettier: pluginPrettier,
     },
     rules: {
       ...pluginTs.configs.recommended.rules,
       "@typescript-eslint/no-explicit-any": "warn",
+      "prettier/prettier": "error",
     },
   },
   {
@@ -40,4 +44,5 @@ export default [
       "jest/no-focused-tests": "error",
     },
   },
+  prettier,
 ];

@@ -22,7 +22,9 @@
     "@typescript-eslint/parser": "^8.37.0",
     "commitlint": "^19.8.1",
     "eslint": "^9.31.0",
+    "eslint-config-prettier": "^10.1.8",
     "eslint-plugin-jest": "^28.11.0",
+    "eslint-plugin-prettier": "^5.5.3",
     "globals": "^16.1.0",
     "husky": "^9.1.7",
     "lint-staged": "^16.1.2",
@@ -32,6 +34,8 @@
     "typescript": "^5.8.3"
   },
   "dependencies": {
+    "aws-cdk-lib": "^2.206.0",
+    "constructs": "^10.4.2",
     "dotenv": "^16.5.0",
     "uuid": "^11.1.0"
   },
