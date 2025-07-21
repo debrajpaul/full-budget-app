@@ -8,12 +8,6 @@ importers:
 
   .:
     dependencies:
-      aws-cdk-lib:
-        specifier: ^2.206.0
-        version: 2.206.0(constructs@10.4.2)
-      constructs:
-        specifier: ^10.4.2
-        version: 10.4.2
       dotenv:
         specifier: ^16.5.0
         version: 16.5.0
@@ -250,19 +244,6 @@ importers:
         version: 3.0.0
 
 packages:
-
-  '@aws-cdk/asset-awscli-v1@2.2.242':
-    resolution: {integrity: sha512-4c1bAy2ISzcdKXYS1k4HYZsNrgiwbiDzj36ybwFVxEWZXVAP0dimQTCaB9fxu7sWzEjw3d+eaw6Fon+QTfTIpQ==}
-
-  '@aws-cdk/asset-node-proxy-agent-v6@2.1.0':
-    resolution: {integrity: sha512-7bY3J8GCVxLupn/kNmpPc5VJz8grx+4RKfnnJiO1LG+uxkZfANZG3RMHhE+qQxxwkyQ9/MfPtTpf748UhR425A==}
-
-  '@aws-cdk/cloud-assembly-schema@45.2.0':
-    resolution: {integrity: sha512-5TTUkGHQ+nfuUGwKA8/Yraxb+JdNUh4np24qk/VHXmrCMq+M6HfmGWfhcg/QlHA2S5P3YIamfYHdQAB4uSNLAg==}
-    engines: {node: '>= 18.0.0'}
-    bundledDependencies:
-      - jsonschema
-      - semver
 
   '@aws-crypto/crc32@5.2.0':
     resolution: {integrity: sha512-nLbCWqQNgUiwwtFsen1AdzAtvuLRsQS8rYgMuxCrdKf9kOssamGLuPwyTY9wyYblNr9+1XM8v6zoDTPPSIeANg==}
@@ -1149,24 +1130,6 @@ packages:
   async@3.2.6:
     resolution: {integrity: sha512-htCUDlxyyCLMgaM3xXg0C0LW2xqfuQ6p05pCEIsXuyQ+a1koYKTuBMzRNwmybfLgvJDMd0r1LTn4+E0Ti6C2AA==}
 
-  aws-cdk-lib@2.206.0:
-    resolution: {integrity: sha512-WQGSSzSX+CvIG3j4GICxCAARGaB2dbB2ZiAn8dqqWdUkF6G9pedlSd3bjB0NHOqrxJMu3jYQCYf3gLYTaJuR8A==}
-    engines: {node: '>= 14.15.0'}
-    peerDependencies:
-      constructs: ^10.0.0
-    bundledDependencies:
-      - '@balena/dockerignore'
-      - case
-      - fs-extra
-      - ignore
-      - jsonschema
-      - minimatch
-      - punycode
-      - semver
-      - table
-      - yaml
-      - mime-types
-
   balanced-match@1.0.2:
     resolution: {integrity: sha512-3oSeUO0TMV67hN1AmbXsK4yaqU7tjiHlbxRDZOpH0KW9+CeX4bRAaX0Anxt0tx2MrpRpWwQaPwIlISEJhYU5Pw==}
 
@@ -1268,9 +1231,6 @@ packages:
 
   concat-map@0.0.1:
     resolution: {integrity: sha512-/Srv4dswyQNBfohGpz9o6Yb3Gz3SrUDqBH5rTuhGR7ahtlbYKnVxw2bCFMRljaA7EXHaXZ8wsHdodFvbkhKmqg==}
-
-  constructs@10.4.2:
-    resolution: {integrity: sha512-wsNxBlAott2qg8Zv87q3eYZYgheb9lchtBfjHzzLHtXbttwSrHPs1NNQbBrmbb1YZvYg2+Vh0Dor76w4mFxJkA==}
 
   conventional-changelog-angular@7.0.0:
     resolution: {integrity: sha512-ROjNchA9LgfNMTTFSIWPzebCwOGFdgkEq45EnvvrmSLvCtAw0HSmrCs7/ty+wAeYUZyNay0YMUNYFTRL72PkBQ==}
@@ -2305,12 +2265,6 @@ packages:
     engines: {node: '>=12.20'}
 
 snapshots:
-
-  '@aws-cdk/asset-awscli-v1@2.2.242': {}
-
-  '@aws-cdk/asset-node-proxy-agent-v6@2.1.0': {}
-
-  '@aws-cdk/cloud-assembly-schema@45.2.0': {}
 
   '@aws-crypto/crc32@5.2.0':
     dependencies:
@@ -3829,13 +3783,6 @@ snapshots:
 
   async@3.2.6: {}
 
-  aws-cdk-lib@2.206.0(constructs@10.4.2):
-    dependencies:
-      '@aws-cdk/asset-awscli-v1': 2.2.242
-      '@aws-cdk/asset-node-proxy-agent-v6': 2.1.0
-      '@aws-cdk/cloud-assembly-schema': 45.2.0
-      constructs: 10.4.2
-
   balanced-match@1.0.2: {}
 
   bcryptjs@3.0.2: {}
@@ -3944,8 +3891,6 @@ snapshots:
       dot-prop: 5.3.0
 
   concat-map@0.0.1: {}
-
-  constructs@10.4.2: {}
 
   conventional-changelog-angular@7.0.0:
     dependencies:
