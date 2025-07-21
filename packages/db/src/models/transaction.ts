@@ -1,5 +1,5 @@
 import { db } from "../dynamoClient";
-import { PutCommand } from "@aws-sdk/lib-dynamodb";
+import { PutCommand, QueryCommand } from "@aws-sdk/lib-dynamodb";
 
 export type TransactionItem = {
   userId: string;
@@ -32,4 +32,18 @@ export async function saveTransaction(txn: TransactionItem, tableName: string) {
     console.error("Error saving transaction:", error);
     throw new Error(`Failed to save transaction: ${error.message}`);
   }
+}
+
+export async function getUserTransactions(userId: string, tableName: string) {
+  const command = new QueryCommand({
+    TableName: tableName,
+    KeyConditionExpression: "PK = :pk AND begins_with(SK, :skPrefix)",
+    ExpressionAttributeValues: {
+      ":pk": `USER#${userId}`,
+      ":skPrefix": "TXN#",
+    },
+  });
+
+  const result = await db.send(command);
+  return result.Items as TransactionItem[];
 }
