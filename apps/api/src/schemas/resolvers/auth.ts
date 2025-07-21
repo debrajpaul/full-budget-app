@@ -7,19 +7,19 @@ export const authResolvers = {
   Mutation: {
     register: async (
       _: any,
-      { email, password }: any,
+      args: { input: { email: string; name: string; password: string } },
       ctx: IGraphQLContext,
     ) => {
       const authService = ctx.dataSources.authorizationService;
       if (!authService) throw new Error("Authorization service not found");
-
-      return await authService.register(email, password);
+      const { email, name, password } = args.input;
+      return await authService.register({ email, name, password });
     },
     login: async (_: any, { email, password }: any, ctx: IGraphQLContext) => {
       const authService = ctx.dataSources.authorizationService;
       if (!authService) throw new Error("Authorization service not found");
 
-      return await authService.login(email, password);
+      return await authService.login({ email, password });
     },
   },
 };

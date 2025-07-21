@@ -24,7 +24,6 @@ export const uploadStatementResolvers = {
       if (!result) {
         throw new Error("Failed to upload statement");
       }
-
       return true;
     },
   },

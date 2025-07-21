@@ -1,5 +1,11 @@
-import { createUser, getUserByEmail } from "@db";
-import { IAuthorizationService, IAuthPayload } from "@common";
+import { saveUser, getUser } from "@db";
+import {
+  IAuthorizationService,
+  IRegisterInput,
+  IRegisterResponse,
+  ILoginInput,
+  ILoginResponse,
+} from "@common";
 import { signToken, verifyToken } from "@auth";
 import { hashPassword, comparePassword } from "@auth";
 import { ILogger } from "@logger";
@@ -12,7 +18,7 @@ export class AuthorizationService implements IAuthorizationService {
     private tableName: string,
   ) {}
 
-  public async verifyToken(token: string): Promise<{ userId: string }> {
+  public async verifyToken(token: string): Promise<{ email: string }> {
     try {
       this.logger.info("Verifying token");
       if (!token) throw new Error("Token is required");
@@ -21,7 +27,7 @@ export class AuthorizationService implements IAuthorizationService {
       this.logger.debug("JWT secret is configured");
       const payload = verifyToken(token, this.jwtSecret);
       this.logger.debug("Token verified successfully", { payload });
-      return { userId: payload.userId };
+      return { email: payload.userId };
     } catch (error) {
       this.logger.error("Error verifying token", error as Error);
       throw new Error("Invalid or expired token");
@@ -29,41 +35,41 @@ export class AuthorizationService implements IAuthorizationService {
   }
 
   public async register(
-    email: string,
-    password: string,
-  ): Promise<IAuthPayload> {
+    registerInput: IRegisterInput,
+  ): Promise<IRegisterResponse> {
+    const { email, name, password } = registerInput;
     this.logger.info("Registering user", { email });
-    if (!email || !password) {
-      this.logger.error("Email and password are required for registration");
-      throw new Error("Email and password are required");
+    if (!email || !name || !password) {
+      this.logger.error("Invalid are required for registration");
+      throw new Error("Invalid are required");
     }
-    this.logger.debug("Email and password provided", { email });
     if (!this.jwtSecret) {
       this.logger.error("JWT secret is not configured");
       throw new Error("JWT secret is not configured");
     }
     this.logger.debug("JWT secret is configured");
-    const existing = await getUserByEmail(email, this.tableName);
-    if (existing) {
-      this.logger.error("User already exists");
-      throw new Error("User already exists");
-    }
 
-    const hashed = await hashPassword(password);
-    await createUser(email, email, hashed, this.tableName);
+    const passwordHash = await hashPassword(password);
+    const timestamp = new Date();
+    const user = {
+      email,
+      name,
+      passwordHash,
+      createdAt: timestamp,
+      updatedAt: timestamp,
+      isActive: true,
+    };
+    await saveUser(user, this.tableName);
 
-    const token = signToken(
-      { userId: email },
-      this.jwtSecret,
-      this.tokenExpiry,
-    );
     this.logger.debug("User registered successfully", { email });
     this.logger.info("User registration successful");
-    return { email, token };
+    return { success: true, message: "User registered successfully" };
   }
 
-  public async login(email: string, password: string): Promise<IAuthPayload> {
-    const user = await getUserByEmail(email, this.tableName);
+  public async login(loginInput: ILoginInput): Promise<ILoginResponse> {
+    const { email, password } = loginInput;
+    this.logger.info("Logging in user", { email });
+    const user = await getUser(email, this.tableName);
     if (!user) {
       this.logger.error("User not found");
       throw new Error("User not found");
@@ -79,6 +85,9 @@ export class AuthorizationService implements IAuthorizationService {
     );
     this.logger.debug("User logged in successfully", { email });
     this.logger.info("User login successful");
-    return { email: user.email, token };
+    return {
+      token,
+      user: { email: user.email, name: user.name, isActive: user.isActive },
+    };
   }
 }

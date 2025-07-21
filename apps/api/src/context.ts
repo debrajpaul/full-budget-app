@@ -17,38 +17,49 @@ const BUCKET = config.awsS3Bucket;
 const QUEUE_URL = config.sqsQueueUrl;
 
 export const createContext = async (ctx: IGraphQLContext) => {
-  const authHeader = ctx.request.headers.get("authorization") || "";
-  const token = authHeader.replace("Bearer ", "") ?? null;
-  let userId: string | null = null;
-
-  if (token) {
-    try {
-      const payload = verifyToken(token, config.jwtSecret);
-      userId = payload.userId;
-    } catch {
-      console.warn("Invalid or expired token");
+  try {
+    const authHeader = ctx.request.headers.get("authorization") || "";
+    if (!authHeader) {
+      logger.warn("No Authorization header provided");
+      return {};
     }
-  }
+    if (!authHeader.startsWith("Bearer ")) {
+      logger.warn(`Malformed Authorization header: ${authHeader}`);
+      return {};
+    }
+    const token = authHeader.replace("Bearer ", "") ?? null;
+    let userId: string | null = null;
 
-  return {
-    ...ctx,
-    userId,
-    dataSources: {
-      authorizationService: new AuthorizationService(
-        logger.child("AuthorizationService"),
-        config.jwtSecret,
-        config.jwtExpiration,
-        config.dynamoUserTable,
-      ),
-      uploadStatementService: new UploadStatementService(
-        logger.child("UploadStatementService"),
-        BUCKET,
-        QUEUE_URL,
-        s3Service,
-        sqsService,
-      ),
-    },
-  };
+    if (token) {
+      const payload = verifyToken(token, config.jwtSecret) as {
+        userId: string;
+      };
+      userId = payload.userId;
+    }
+
+    return {
+      ...ctx,
+      userId,
+      dataSources: {
+        authorizationService: new AuthorizationService(
+          logger.child("AuthorizationService"),
+          config.jwtSecret,
+          config.jwtExpiration,
+          config.dynamoUserTable,
+        ),
+        uploadStatementService: new UploadStatementService(
+          logger.child("UploadStatementService"),
+          BUCKET,
+          QUEUE_URL,
+          s3Service,
+          sqsService,
+        ),
+      },
+    };
+  } catch (error) {
+    logger.warn(`JWT verification failed: ${error}`);
+    return {};
+  }
 };
 
 export type AppContext = ReturnType<typeof createContext>;
