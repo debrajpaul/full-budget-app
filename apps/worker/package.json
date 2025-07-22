@@ -10,13 +10,17 @@
   },
   "dependencies": {
     "@auth": "workspace:*",
+    "@aws-sdk/client-s3": "^3.300.0",
+    "@aws-sdk/client-sqs": "^3.300.0",
+    "@client": "workspace:*",
     "@common": "workspace:*",
     "@db": "workspace:*",
-    "@parser": "workspace:*",
     "@logger": "workspace:*",
-    "@client": "workspace:*",
+    "@parser": "workspace:*",
     "@services": "workspace:*",
-    "@aws-sdk/client-s3": "^3.300.0",
-    "@aws-sdk/client-sqs": "^3.300.0"
+    "aws-lambda": "^1.0.7"
+  },
+  "devDependencies": {
+    "@types/aws-lambda": "^8.10.152"
   }
 }
