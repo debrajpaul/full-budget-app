@@ -17,8 +17,18 @@ export class WorkLoader {
     this.logger.debug("S3 Bucket", { bucket });
     this.logger.info("Waiting for messages from SQS...");
     try {
-      await this.processService.process(table, queueUrl, bucket);
-      this.logger.info(`Processed successfully.`);
+      while (true) {
+        let flag: boolean = await this.processService.process(
+          table,
+          queueUrl,
+          bucket,
+        );
+        this.logger.info("Waiting for messages from SQS...");
+        if (!flag) {
+          await new Promise((res) => setTimeout(res, 2000));
+          continue;
+        }
+      }
     } catch (err) {
       this.logger.error("Error processing message", err as Error);
       await new Promise((res) => setTimeout(res, 2000));
