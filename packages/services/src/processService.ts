@@ -38,14 +38,7 @@ export class ProcessService implements IProcessService {
     bucket: string,
   ): Promise<boolean> {
     this.logger.info("ProcessService started processing messages");
-
-    this.logger.debug("SQS Service initialized", {
-      sqsService: this.sqsService,
-    });
-    this.logger.info("Waiting for messages from SQS...");
     try {
-      this.logger.info("ProcessService started processing messages");
-
       this.logger.debug("SQS Service initialized", {
         sqsService: this.sqsService,
       });
@@ -54,9 +47,10 @@ export class ProcessService implements IProcessService {
       });
       const message = await this.sqsService.receiveFileMessage(queueUrl);
       if (!message) {
-        this.logger.info("No messages received from SQS");
+        this.logger.warn("No messages received from SQS");
         return false;
       }
+      this.logger.debug("###Message received from SQS", { message });
       if (!message.fileKey || !message.bank || !message.userId) {
         this.logger.error("Invalid message body:", message);
         return false;
@@ -71,7 +65,7 @@ export class ProcessService implements IProcessService {
         message.bank,
         message.userId,
       );
-      this.logger.info(`Parsed ${transactions.length} transactions.`);
+      // this.logger.debug(`###transactions. -->`,{data:transactions});
       for (const tx of transactions) {
         await saveTransaction(tx, table);
       }
@@ -90,12 +84,12 @@ export class ProcessService implements IProcessService {
   ): Promise<any[]> {
     switch (bank) {
       case "sbi": {
-        const parser = new SbiBankParser();
-        return parser.parse(buffer, userId);
+        const sbiBankParser = new SbiBankParser();
+        return sbiBankParser.parse(buffer, userId);
       }
       case "hdfc": {
-        const parser = new HdfcBankParser();
-        return parser.parse(buffer, userId);
+        const hdfcBankParser = new HdfcBankParser();
+        return hdfcBankParser.parse(buffer, userId);
       }
       default:
         console.warn(`No parser implemented for bank: ${bank}`);

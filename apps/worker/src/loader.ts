@@ -12,9 +12,9 @@ export class WorkLoader {
 
   async processMessages(table: string, queueUrl: string, bucket: string) {
     this.logger.info("WorkLoader started processing messages");
-    this.logger.debug("table", { table });
-    this.logger.debug("Queue URL", { queueUrl });
-    this.logger.debug("S3 Bucket", { bucket });
+    this.logger.debug("###table", { table });
+    this.logger.debug("###Queue URL", { queueUrl });
+    this.logger.debug("###S3 Bucket", { bucket });
     this.logger.info("Waiting for messages from SQS...");
     try {
       while (true) {

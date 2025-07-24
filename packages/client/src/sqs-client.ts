@@ -35,8 +35,8 @@ export class SQSService implements ISQSService {
    * Returns the parsed message body, or undefined if no messages.
    */
   async receiveFileMessage(queueUrl: string): Promise<any | undefined> {
-    this.logger.info("#ReceivingSQS");
-    this.logger.debug("ReceivingSQS", { queueUrl });
+    this.logger.info("###ReceivingSQS");
+    this.logger.debug("###ReceivingSQS", { queueUrl });
 
     const res = await this.sqs.receiveMessage({
       QueueUrl: queueUrl,
@@ -45,6 +45,7 @@ export class SQSService implements ISQSService {
     });
     if (!res.Messages || res.Messages.length === 0) return undefined;
     const message = res.Messages[0];
+    this.logger.debug("####SQS message received -->", { queueUrl, message });
     await this.sqs.deleteMessage({
       QueueUrl: queueUrl,
       ReceiptHandle: message.ReceiptHandle!,
