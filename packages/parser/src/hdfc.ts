@@ -1,55 +1,80 @@
-import pdf from "pdf-parse";
+import { parse } from "csv-parse";
 import { IBankParser } from "@common";
+import { Readable } from "stream";
 
 export class HdfcBankParser implements IBankParser {
   public async parse(buffer: Buffer, userId: string): Promise<any[]> {
-    const pdfData = await pdf(buffer);
-    const text = pdfData.text;
-    const lines = text
-      .split("\n")
-      .map((l) => l.trim())
-      .filter(Boolean);
+    const txns: any[] = [];
 
-    console.log(`📄 HDFC PDF contains ${lines.length} lines`);
+    const rawText = buffer.toString("utf-8");
+    const lines = rawText.split(/\r?\n/);
 
-    const txns = [];
-    const txnLineRegex =
-      /^(\d{2}\/\d{2}\/\d{2}).*?([\d,]+\.\d{2}).*?([\d,]+\.\d{2})/;
+    // 🔍 Find the first line that contains the header like "Date,Narration,..."
+    const headerIndex = lines.findIndex(
+      (line) =>
+        line.toLowerCase().includes("date") &&
+        line.toLowerCase().includes("narration"),
+    );
 
-    for (let i = 0; i < lines.length; i++) {
-      const line = lines[i];
-      const match = line.match(txnLineRegex);
-      if (!match) continue;
+    if (headerIndex === -1) {
+      throw new Error("### Could not find valid CSV header in HDFC file.");
+    }
 
-      const [, dateRaw, amtRaw, balanceRaw] = match;
+    const validCsv = lines.slice(headerIndex).join("\n");
+
+    const parser = parse({
+      columns: true,
+      skip_empty_lines: true,
+      trim: true,
+    });
+
+    const stream = Readable.from([validCsv]).pipe(parser);
+
+    for await (const row of stream) {
+      const dateRaw = row["Date"];
+      const description = row["Narration"] || "";
+      const withdrawal = parseFloat(
+        (row["Withdrawal Amt."] || "0").replace(/,/g, ""),
+      );
+      const deposit = parseFloat(
+        (row["Deposit Amt."] || "0").replace(/,/g, ""),
+      );
+      const balance = parseFloat(
+        (row["Closing Balance"] || "0").replace(/,/g, ""),
+      );
+
+      if (!dateRaw || isNaN(balance)) continue;
+
+      const amount = deposit || -withdrawal;
+      if (amount === 0 || isNaN(amount)) continue;
+
       const date = this.formatDate(dateRaw);
-      const amount = parseFloat(amtRaw.replace(/,/g, ""));
-      const balance = parseFloat(balanceRaw.replace(/,/g, ""));
-      if (isNaN(amount) || isNaN(balance)) continue;
-      const isDebit = /DR|debit/i.test(line);
-      const signedAmount = isDebit ? -amount : amount;
+      if (!date) continue;
+
+      // optional: check for known junk tokens
+      if (/Generated On|Page No|Statement/i.test(description)) continue;
+
       txns.push({
         userId,
+        bank: "HDFC",
         transactionId: `${userId}-${date.replace(/-/g, "")}-${txns.length}`,
         date,
-        amount: signedAmount,
+        amount,
         balance,
-        description: line
-          .replace(dateRaw, "")
-          .replace(amtRaw, "")
-          .replace(balanceRaw, "")
-          .replace(/\b(DR|CR)\b/i, "")
-          .trim(),
+        description: description.trim(),
       });
     }
-    console.log(`✅ Parsed ${txns.length} transactions from HDFC PDF`);
-    if (txns[0]) console.log("✅ Sample transaction:", txns[0]);
+    console.log(`✅ Parsed ${txns.length} transactions from HDFC CSV`);
+    if (txns[0]) console.log("### Sample transaction:", txns[0]);
     return txns;
   }
 
-  private formatDate(d: string): string {
-    const [dd, mm, yy] = d.split("/");
-    const fullYear = Number(yy) < 50 ? `20${yy}` : `19${yy}`;
-    return `${fullYear}-${mm}-${dd}`;
+  private formatDate(d: string): string | undefined {
+    const parts = d.split("/");
+    if (parts.length !== 3) return undefined;
+    const [dd, mm, yy] = parts;
+    if (!dd || !mm || !yy) return undefined;
+    const yyyy = yy.length === 2 ? (+yy < 50 ? `20${yy}` : `19${yy}`) : yy;
+    return `${yyyy}-${mm}-${dd}`;
   }
 }

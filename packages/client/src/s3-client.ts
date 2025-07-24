@@ -19,8 +19,8 @@ export class S3Service implements IS3Service {
    * Downloads a file from S3 and returns its buffer.
    */
   async getFile(bucket: string, key: string): Promise<Buffer> {
-    this.logger.info("#GettingS3");
-    this.logger.debug("GettingS3", { bucket, key });
+    this.logger.info("###GettingS3");
+    this.logger.debug("###GettingS3", { bucket, key });
     const res = await this.s3Client.send(
       new GetObjectCommand({ Bucket: bucket, Key: key }),
     );

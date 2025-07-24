@@ -21,11 +21,9 @@ export const createContext = async (ctx: IGraphQLContext) => {
     const authHeader = ctx.request.headers.get("authorization") || "";
     if (!authHeader) {
       logger.warn("No Authorization header provided");
-      return {};
     }
     if (!authHeader.startsWith("Bearer ")) {
       logger.warn(`Malformed Authorization header: ${authHeader}`);
-      return {};
     }
     const token = authHeader.replace("Bearer ", "") ?? null;
     let userId: string | null = null;
@@ -58,7 +56,6 @@ export const createContext = async (ctx: IGraphQLContext) => {
     };
   } catch (error) {
     logger.warn(`JWT verification failed: ${error}`);
-    return {};
   }
 };
 

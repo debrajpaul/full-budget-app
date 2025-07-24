@@ -3,7 +3,7 @@ export const authTypeDefs = /* GraphQL */ `
     hello: String!
   }
 
-  type RegisterInput {
+  input RegisterInput {
     email: String!
     name: String!
     password: String!
@@ -14,7 +14,7 @@ export const authTypeDefs = /* GraphQL */ `
     message: String!
   }
 
-  type LoginInput {
+  input LoginInput {
     email: String!
     password: String!
   }
