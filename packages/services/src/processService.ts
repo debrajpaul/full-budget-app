@@ -1,43 +1,49 @@
-import { IS3Service, ISQSService, IProcessService } from "@common";
+import {
+  ILogger,
+  IS3Service,
+  ISQSService,
+  IProcessService,
+  ITransactionStore,
+} from "@common";
 import { HdfcBankParser, SbiBankParser } from "@parser";
-import { saveTransaction } from "@db";
-import { ILogger } from "@logger";
-
 export class ProcessService implements IProcessService {
   private readonly logger: ILogger;
   private readonly s3Service: IS3Service;
   private readonly sqsService: ISQSService;
+  private readonly transactionStore: ITransactionStore;
 
-  constructor(logger: ILogger, s3Service: IS3Service, sqsService: ISQSService) {
+  constructor(
+    logger: ILogger,
+    s3Service: IS3Service,
+    sqsService: ISQSService,
+    transactionStore: ITransactionStore,
+  ) {
     this.logger = logger;
     this.s3Service = s3Service;
     this.sqsService = sqsService;
+    this.transactionStore = transactionStore;
+    this.logger.info("ProcessService initialized");
   }
 
   async processes(event: any): Promise<boolean[]> {
-    this.logger.info("ProcessService started processing messages");
+    this.logger.info("processes started processing messages");
     this.logger.debug("event", { event });
     const results: boolean[] = [];
     for (const record of event.Records) {
       const body = JSON.parse(record.body);
       this.logger.debug("Received job:", body);
       // Process the job...
-      const table = body.table;
       const queueUrl = body.queueUrl;
       const bucket = body.bucket;
-      let flag: boolean = await this.process(table, queueUrl, bucket);
+      let flag: boolean = await this.process(queueUrl, bucket);
       this.logger.debug(`Flag ${flag}`);
       results.push(flag);
     }
     return results;
   }
 
-  async process(
-    table: string,
-    queueUrl: string,
-    bucket: string,
-  ): Promise<boolean> {
-    this.logger.info("ProcessService started processing messages");
+  async process(queueUrl: string, bucket: string): Promise<boolean> {
+    this.logger.info("process started processing messages");
     try {
       this.logger.debug("SQS Service initialized", {
         sqsService: this.sqsService,
@@ -65,10 +71,8 @@ export class ProcessService implements IProcessService {
         message.bank,
         message.userId,
       );
-      // this.logger.debug(`###transactions. -->`,{data:transactions});
-      for (const tx of transactions) {
-        await saveTransaction(tx, table);
-      }
+      this.logger.debug(`###transactions. -->`, { data: transactions });
+      await this.transactionStore.saveTransactions(transactions);
       this.logger.info(`Processed ${transactions.length} transactions.`);
       return true;
     } catch (err) {

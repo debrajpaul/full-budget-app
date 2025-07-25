@@ -1,5 +1,4 @@
-import { ILogger } from "@logger";
-import { ISQSService } from "@common";
+import { ILogger, ISQSService } from "@common";
 import {
   SQS,
   SQSClientConfig,

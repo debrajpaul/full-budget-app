@@ -11,6 +11,9 @@ importers:
       dotenv:
         specifier: ^16.5.0
         version: 16.5.0
+      lodash:
+        specifier: ^4.17.21
+        version: 4.17.21
       uuid:
         specifier: ^11.1.0
         version: 11.1.0
@@ -30,6 +33,9 @@ importers:
       '@types/jest':
         specifier: ^29.5.14
         version: 29.5.14
+      '@types/lodash':
+        specifier: ^4.17.20
+        version: 4.17.20
       '@types/node':
         specifier: ^24.0.3
         version: 24.0.3
@@ -75,12 +81,18 @@ importers:
       '@auth':
         specifier: workspace:*
         version: link:../../packages/auth
+      '@aws-sdk/client-dynamodb':
+        specifier: ^3.844.0
+        version: 3.844.0
       '@aws-sdk/client-s3':
         specifier: ^3.300.0
         version: 3.844.0
       '@aws-sdk/client-sqs':
         specifier: ^3.300.0
         version: 3.844.0
+      '@aws-sdk/lib-dynamodb':
+        specifier: ^3.844.0
+        version: 3.844.0(@aws-sdk/client-dynamodb@3.844.0)
       '@client':
         specifier: workspace:*
         version: link:../../packages/client
@@ -108,12 +120,18 @@ importers:
       '@auth':
         specifier: workspace:*
         version: link:../../packages/auth
+      '@aws-sdk/client-dynamodb':
+        specifier: ^3.844.0
+        version: 3.844.0
       '@aws-sdk/client-s3':
         specifier: ^3.300.0
         version: 3.844.0
       '@aws-sdk/client-sqs':
         specifier: ^3.300.0
         version: 3.844.0
+      '@aws-sdk/lib-dynamodb':
+        specifier: ^3.844.0
+        version: 3.844.0(@aws-sdk/client-dynamodb@3.844.0)
       '@client':
         specifier: workspace:*
         version: link:../../packages/client
@@ -963,6 +981,9 @@ packages:
 
   '@types/jsonwebtoken@9.0.10':
     resolution: {integrity: sha512-asx5hIG9Qmf/1oStypjanR7iKTv0gXQ1Ov/jfrX6kS/EO0OFni8orbmGCn0672NHR3kXHwpAwR+B368ZGN/2rA==}
+
+  '@types/lodash@4.17.20':
+    resolution: {integrity: sha512-H3MHACvFUEiujabxhaI/ImO6gUrd8oOurg7LQtS7mbwIXA/cUqWrvBsaeJ23aZEPk1TAYkurjfMbSELfoCXlGA==}
 
   '@types/ms@2.1.0':
     resolution: {integrity: sha512-GsCCIZDE/p3i96vtEqx+7dBUGXrc7zeSK3wwPHIaRThS+9OhWIXRqzs4d6k1SVU8g91DrNRWxWUGhp5KXQb2VA==}
@@ -1915,6 +1936,9 @@ packages:
 
   lodash.upperfirst@4.3.1:
     resolution: {integrity: sha512-sReKOYJIJf74dhJONhU4e0/shzi1trVbSWDOhKYE5XV2O+H7Sb2Dihwuc7xWxVl+DgFPyTqIN3zMfT9cq5iWDg==}
+
+  lodash@4.17.21:
+    resolution: {integrity: sha512-v2kDEe57lecTulaDIuNTPy3Ry4gLGJ6Z1O3vE1krgXZNrsQ+LFTGHVxVjcXPs17LhbZVGedAJv8XZ1tvj5FvSg==}
 
   log-update@6.1.0:
     resolution: {integrity: sha512-9ie8ItPR6tjY5uYJh8K/Zrv/RMZ5VOlOWvtZdEHYSTFKZfIBPQa9tOAEeAWhd+AnIneLJ22w5fjOYtoutpWq5w==}
@@ -3771,6 +3795,8 @@ snapshots:
       '@types/ms': 2.1.0
       '@types/node': 24.0.3
 
+  '@types/lodash@4.17.20': {}
+
   '@types/ms@2.1.0': {}
 
   '@types/node@24.0.3':
@@ -4773,6 +4799,8 @@ snapshots:
   lodash.uniq@4.5.0: {}
 
   lodash.upperfirst@4.3.1: {}
+
+  lodash@4.17.21: {}
 
   log-update@6.1.0:
     dependencies:

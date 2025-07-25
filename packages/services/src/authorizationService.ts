@@ -1,22 +1,33 @@
-import { saveUser, getUser } from "@db";
 import {
   IAuthorizationService,
   IRegisterInput,
   IRegisterResponse,
   ILoginInput,
   ILoginResponse,
+  ILogger,
+  IUserStore,
 } from "@common";
 import { signToken, verifyToken } from "@auth";
 import { hashPassword, comparePassword } from "@auth";
-import { ILogger } from "@logger";
 
 export class AuthorizationService implements IAuthorizationService {
+  private readonly logger: ILogger;
+  private readonly jwtSecret: string;
+  private readonly tokenExpiry: number;
+  private readonly userStore: IUserStore;
+
   constructor(
-    private readonly logger: ILogger,
-    private jwtSecret: string,
-    private tokenExpiry: number,
-    private tableName: string,
-  ) {}
+    logger: ILogger,
+    jwtSecret: string,
+    tokenExpiry: number,
+    userStore: IUserStore,
+  ) {
+    this.logger = logger;
+    this.jwtSecret = jwtSecret;
+    this.tokenExpiry = tokenExpiry;
+    this.userStore = userStore;
+    this.logger.info("AuthorizationService initialized");
+  }
 
   public async verifyToken(token: string): Promise<{ email: string }> {
     try {
@@ -59,7 +70,7 @@ export class AuthorizationService implements IAuthorizationService {
       updatedAt: timestamp,
       isActive: true,
     };
-    await saveUser(user, this.tableName);
+    await this.userStore.saveUser(user);
 
     this.logger.debug("User registered successfully", { email });
     this.logger.info("User registration successful");
@@ -69,7 +80,7 @@ export class AuthorizationService implements IAuthorizationService {
   public async login(loginInput: ILoginInput): Promise<ILoginResponse> {
     const { email, password } = loginInput;
     this.logger.info("Logging in user", { email });
-    const user = await getUser(email, this.tableName);
+    const user = await this.userStore.getUser(email);
     if (!user) {
       this.logger.error("User not found");
       throw new Error("User not found");

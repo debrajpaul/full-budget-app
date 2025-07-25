@@ -1,6 +1,4 @@
-import { IProcessService } from "@common";
-import { ILogger } from "@logger";
-
+import { IProcessService, ILogger } from "@common";
 export class WorkLoader {
   private readonly logger: ILogger;
   private readonly processService: IProcessService;
