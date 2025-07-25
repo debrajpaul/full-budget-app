@@ -1,6 +1,10 @@
 import { randomUUID } from "crypto";
-import { ILogger } from "@logger";
-import { IS3Service, ISQSService, IUploadStatementService } from "@common";
+import {
+  ILogger,
+  IS3Service,
+  ISQSService,
+  IUploadStatementService,
+} from "@common";
 
 export class UploadStatementService implements IUploadStatementService {
   constructor(
