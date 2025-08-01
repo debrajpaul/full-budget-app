@@ -1,6 +1,7 @@
+import { EBankName } from "./IBankParser";
 export interface IUploadStatementService {
   uploadStatement(
-    bank: string,
+    bank: EBankName,
     fileName: string,
     contentBase64: string,
     userId: string,

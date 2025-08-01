@@ -4,7 +4,7 @@ import { TransactionStore } from "@db";
 import { WinstonLogger } from "@logger";
 import { S3 } from "@aws-sdk/client-s3";
 import { SQS } from "@aws-sdk/client-sqs";
-import { ProcessService } from "@services";
+import { TransactionService } from "@services";
 import { S3Service, SQSService } from "@client";
 import { DynamoDBClient } from "@aws-sdk/client-dynamodb";
 import { DynamoDBDocumentClient } from "@aws-sdk/lib-dynamodb";
@@ -21,17 +21,13 @@ const transactionStore = new TransactionStore(
   config.dynamoTransactionTable,
   dynamoDBDocumentClient,
 );
-const processService = new ProcessService(
-  logger.child("ProcessService"),
+const transactionService = new TransactionService(
+  logger.child("TransactionService"),
   s3Service,
   sqsService,
   transactionStore,
 );
 
-const app = new WorkLoader(logger.child("WorkLoader"), processService);
+const app = new WorkLoader(logger.child("WorkLoader"), transactionService);
 
-app.processMessages(
-  config.dynamoTransactionTable,
-  config.sqsQueueUrl,
-  config.awsS3Bucket,
-);
+app.processMessages(config.sqsQueueUrl, config.awsS3Bucket);

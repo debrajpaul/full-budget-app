@@ -1,5 +1,6 @@
 import { IAuthorizationService } from "./IAuthorizationService";
 import { IUploadStatementService } from "./IUploadStatementService";
+import { ITransactionService } from "./ITransactionService";
 import { YogaInitialContext } from "graphql-yoga";
 
 export interface IGraphQLContext extends YogaInitialContext {
@@ -7,5 +8,6 @@ export interface IGraphQLContext extends YogaInitialContext {
   dataSources: {
     authorizationService: IAuthorizationService;
     uploadStatementService: IUploadStatementService;
+    transactionService: ITransactionService;
   };
 }

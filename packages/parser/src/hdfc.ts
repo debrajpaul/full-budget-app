@@ -1,10 +1,13 @@
 import { parse } from "csv-parse";
-import { IBankParser } from "@common";
+import { IBankParser, ITransaction, EBankName } from "@common";
 import { Readable } from "stream";
 
 export class HdfcBankParser implements IBankParser {
-  public async parse(buffer: Buffer, userId: string): Promise<any[]> {
-    const txns: any[] = [];
+  public async parse(
+    buffer: Buffer,
+    userId: string,
+  ): Promise<Omit<ITransaction, "createdAt">[]> {
+    const txns: Omit<ITransaction, "createdAt">[] = [];
 
     const rawText = buffer.toString("utf-8");
     const lines = rawText.split(/\r?\n/);
@@ -48,17 +51,17 @@ export class HdfcBankParser implements IBankParser {
       const amount = deposit || -withdrawal;
       if (amount === 0 || isNaN(amount)) continue;
 
-      const date = this.formatDate(dateRaw);
-      if (!date) continue;
+      const txnDate = this.formatDate(dateRaw);
+      if (!txnDate) continue;
 
       // optional: check for known junk tokens
       if (/Generated On|Page No|Statement/i.test(description)) continue;
 
       txns.push({
         userId,
-        bank: "HDFC",
-        transactionId: `${userId}-${date.replace(/-/g, "")}-${txns.length}`,
-        date,
+        transactionId: `${userId}-${txnDate.replace(/-/g, "")}-${txns.length}`,
+        bankName: EBankName.hdfc,
+        txnDate,
         amount,
         balance,
         description: description.trim(),

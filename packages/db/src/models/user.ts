@@ -35,15 +35,13 @@ export class UserStore implements IUserStore {
   public async saveUser(user: IUser): Promise<void> {
     this.logger.info("Saving user to DynamoDB");
     this.logger.debug("User", { user });
-    const item = {
+    const item: IUser = {
       email: user.email, // Partition Key
       name: user.name,
       passwordHash: user.passwordHash,
-      createdAt: user.createdAt.toISOString(),
-      updatedAt: user.updatedAt.toISOString(),
+      createdAt: user.createdAt,
+      updatedAt: user.updatedAt,
       isActive: user.isActive,
-      ...(user.deletedAt && { deletedAt: user.deletedAt.toISOString() }),
-      ...(user.lastLogin && { lastLogin: user.lastLogin.toISOString() }),
     };
 
     await this.store.send(

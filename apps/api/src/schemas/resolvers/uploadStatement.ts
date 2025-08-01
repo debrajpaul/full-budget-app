@@ -8,10 +8,8 @@ export const uploadStatementResolvers = {
       ctx: IGraphQLContext,
     ) => {
       if (!ctx.userId) throw new Error("Unauthorized");
-
-      if (!bank || !fileName || !contentBase64) {
+      if (!bank || !fileName || !contentBase64)
         throw new Error("Missing required parameters");
-      }
 
       const result =
         await ctx.dataSources.uploadStatementService.uploadStatement(
@@ -21,9 +19,7 @@ export const uploadStatementResolvers = {
           ctx.userId,
         );
 
-      if (!result) {
-        throw new Error("Failed to upload statement");
-      }
+      if (!result) throw new Error("Failed to upload statement");
       return true;
     },
   },

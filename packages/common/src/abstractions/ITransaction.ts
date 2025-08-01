@@ -4,11 +4,11 @@ export interface ITransaction {
   bankName: string;
   amount: number;
   balance?: number;
-  txnDate: string;
+  txnDate: string | undefined;
   description?: string;
   category?: string;
   type?: string;
-  createdAt: Date;
-  updatedAt: Date;
-  deletedAt?: Date;
+  createdAt: string;
+  updatedAt?: string;
+  deletedAt?: string;
 }

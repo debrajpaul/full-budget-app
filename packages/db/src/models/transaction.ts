@@ -10,6 +10,7 @@ export class TransactionStore implements ITransactionStore {
   private readonly logger: ILogger;
   private readonly tableName: string;
   private readonly store: DynamoDBDocumentClient;
+
   constructor(
     logger: ILogger,
     tableName: string,
@@ -20,7 +21,9 @@ export class TransactionStore implements ITransactionStore {
     this.store = store;
   }
 
-  public async saveTransactions(txns: ITransaction[]): Promise<void> {
+  public async saveTransactions(
+    txns: Omit<ITransaction, "createdAt">[],
+  ): Promise<void> {
     this.logger.info("Saving transactions to DynamoDB");
     this.logger.debug("Transactions", { txns });
 
@@ -33,32 +36,31 @@ export class TransactionStore implements ITransactionStore {
     console.log(`Finished processing ${txns.length} transactions.`);
   }
 
-  async saveTransaction(txn: ITransaction): Promise<void> {
+  async saveTransaction(txn: Omit<ITransaction, "createdAt">): Promise<void> {
     try {
       this.logger.info(`Saving transaction: ${txn.transactionId}`);
       this.logger.debug("Transaction", { txn });
-      const PK = `USER#${txn.userId}`,
-        SK = `TXN#${txn.transactionId}`,
-        item = {
-          PK,
-          SK,
-          userId: { S: txn.userId },
-          transactionId: { S: txn.transactionId },
-          bankName: { S: txn.bankName },
-          amount: { N: txn.amount.toString() },
-          txnDate: { S: new Date(txn.txnDate).toISOString() },
-          createdAt: { S: txn.createdAt },
-          updatedAt: { S: txn.updatedAt },
-          ...(txn.description && { description: { S: txn.description } }),
-          ...(txn.balance !== undefined && {
-            balance: { N: txn.balance.toString() },
-          }),
-          ...(txn.category && { category: { S: txn.category } }),
-          ...(txn.type && { type: { S: txn.type } }),
-          ...(txn.deletedAt && {
-            deletedAt: { S: new Date(txn.deletedAt).toISOString() },
-          }),
-        };
+
+      const PK = `USER#${txn.userId}`;
+      const SK = `TXN#${txn.transactionId}`;
+
+      const item: ITransaction & { PK: string; SK: string } = {
+        PK,
+        SK,
+        userId: txn.userId,
+        transactionId: txn.transactionId,
+        bankName: txn.bankName,
+        txnDate: txn.txnDate,
+        amount: txn.amount,
+        createdAt: new Date().toISOString(),
+        description: txn.description || "NONE",
+        balance: txn.balance,
+        category: txn.category,
+        type: txn.type,
+      };
+
+      console.log("###Item--> ", item);
+
       const command = new PutCommand({
         TableName: this.tableName,
         Item: item,
@@ -74,10 +76,11 @@ export class TransactionStore implements ITransactionStore {
         return;
       }
 
-      this.logger.error(
-        `Error saving transaction: ${txn.transactionId}`,
-        error,
-      );
+      this.logger.error(`Error saving transaction: ${txn.transactionId}`, {
+        message: error.message,
+        name: error.name,
+        stack: error.stack,
+      });
       throw new Error(`Failed to save transaction: ${error.message}`);
     }
   }
@@ -85,6 +88,7 @@ export class TransactionStore implements ITransactionStore {
   public async getUserTransactions(userId: string): Promise<ITransaction[]> {
     this.logger.info(`Getting transactions for user`);
     this.logger.debug("User ID", { userId });
+
     const command = new QueryCommand({
       TableName: this.tableName,
       KeyConditionExpression: "PK = :pk AND begins_with(SK, :skPrefix)",
@@ -95,6 +99,37 @@ export class TransactionStore implements ITransactionStore {
     });
 
     const result = await this.store.send(command);
-    return result.Items as ITransaction[];
+    return (result.Items as ITransaction[]) || [];
+  }
+
+  public async getTransactionsByDateRange(
+    userId: string,
+    startDate: string,
+    endDate: string,
+  ): Promise<ITransaction[]> {
+    this.logger.info(`Getting transactions by date range`);
+    this.logger.debug("User ID, start date & end date", {
+      userId,
+      startDate,
+      endDate,
+    });
+
+    const command = new QueryCommand({
+      TableName: this.tableName,
+      KeyConditionExpression: "PK = :pk",
+      FilterExpression:
+        "#txnDate BETWEEN :start AND :end AND attribute_not_exists(deletedAt)",
+      ExpressionAttributeNames: {
+        "#txnDate": "txnDate",
+      },
+      ExpressionAttributeValues: {
+        ":pk": `USER#${userId}`,
+        ":start": startDate,
+        ":end": endDate,
+      },
+    });
+
+    const result = await this.store.send(command);
+    return (result.Items as ITransaction[]) || [];
   }
 }
