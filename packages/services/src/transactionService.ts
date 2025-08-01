@@ -6,6 +6,8 @@ import {
   ITransaction,
   ITransactionStore,
   ITransactionService,
+  IMonthlyReview,
+  IAnnualReview,
 } from "@common";
 import { HdfcBankParser, SbiBankParser } from "@parser";
 
@@ -88,17 +90,17 @@ export class TransactionService implements ITransactionService {
     userId: string,
     month: number,
     year: number,
-  ): Promise<any> {
+  ): Promise<IMonthlyReview> {
     this.logger.info(`Getting monthlyReview for user`);
     this.logger.debug("User ID, month & year", { userId, month, year });
-    const startDate = new Date(year, month - 1, 1).toISOString();
-    const endDate = new Date(year, month, 1).toISOString(); // start of next month
+    const startDate = new Date(year, month - 1, 1).toISOString(); // start of prev month
+    const endDate = new Date(year, month, 1).toISOString(); // start of this month
     const transactions = await this.transactionStore.getTransactionsByDateRange(
       userId,
       startDate,
       endDate,
     );
-    this.logger.debug(`###transactions. -->`, { data: transactions });
+    // this.logger.debug(`###transactions. -->`, { data: transactions });
     // Calculate totals
     let totalIncome = 0;
     let totalExpense = 0;
@@ -114,6 +116,38 @@ export class TransactionService implements ITransactionService {
       totalExpense,
       netSavings: totalIncome - totalExpense,
       transactions,
+    };
+  }
+
+  public async annualReview(
+    userId: string,
+    year: number,
+  ): Promise<IAnnualReview> {
+    this.logger.info(`Getting annualReview for user`);
+    this.logger.debug("User ID, year", { userId, year });
+    const startDate = new Date(year, 0, 1).toISOString(); // Jan 1
+    const endDate = new Date(year, 11, 1).toISOString(); // Dec 31
+    const txns = await this.transactionStore.getTransactionsByDateRange(
+      userId,
+      startDate,
+      endDate,
+    );
+    // this.logger.debug(`###txns. -->`, { data: txns });
+    // Calculate totals
+    let totalIncome = 0;
+    let totalExpense = 0;
+
+    txns.forEach((txn) => {
+      const amount = Number(txn.amount);
+      if (amount > 0) totalIncome += amount;
+      else totalExpense += Math.abs(amount);
+    });
+
+    return {
+      totalIncome,
+      totalExpense,
+      netSavings: totalIncome - totalExpense,
+      transactions: txns,
     };
   }
 
