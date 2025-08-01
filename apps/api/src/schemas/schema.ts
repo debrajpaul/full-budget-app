@@ -1,8 +1,22 @@
 import { createSchema } from "graphql-yoga";
-import { authResolvers, uploadStatementResolvers } from "./resolvers";
-import { authTypeDefs, uploadStatementTypeDefs } from "./typeDefs";
+import {
+  authResolvers,
+  uploadStatementResolvers,
+  transactionResolvers,
+} from "./resolvers";
+import {
+  authTypeDefs,
+  uploadStatementTypeDefs,
+  commonTypeDefs,
+  transactionTypeDefs,
+} from "./typeDefs";
 
 export const schema = createSchema({
-  typeDefs: [authTypeDefs, uploadStatementTypeDefs],
-  resolvers: [authResolvers, uploadStatementResolvers],
+  typeDefs: [
+    authTypeDefs,
+    uploadStatementTypeDefs,
+    commonTypeDefs,
+    transactionTypeDefs,
+  ],
+  resolvers: [authResolvers, uploadStatementResolvers, transactionResolvers],
 });

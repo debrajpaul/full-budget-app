@@ -1,12 +1,15 @@
 import {
   ILogger,
+  EBankName,
   IS3Service,
   ISQSService,
-  IProcessService,
+  ITransaction,
   ITransactionStore,
+  ITransactionService,
 } from "@common";
 import { HdfcBankParser, SbiBankParser } from "@parser";
-export class ProcessService implements IProcessService {
+
+export class TransactionService implements ITransactionService {
   private readonly logger: ILogger;
   private readonly s3Service: IS3Service;
   private readonly sqsService: ISQSService;
@@ -25,7 +28,7 @@ export class ProcessService implements IProcessService {
     this.logger.info("ProcessService initialized");
   }
 
-  async processes(event: any): Promise<boolean[]> {
+  public async processes(event: any): Promise<boolean[]> {
     this.logger.info("processes started processing messages");
     this.logger.debug("event", { event });
     const results: boolean[] = [];
@@ -42,7 +45,7 @@ export class ProcessService implements IProcessService {
     return results;
   }
 
-  async process(queueUrl: string, bucket: string): Promise<boolean> {
+  public async process(queueUrl: string, bucket: string): Promise<boolean> {
     this.logger.info("process started processing messages");
     try {
       this.logger.debug("SQS Service initialized", {
@@ -81,17 +84,50 @@ export class ProcessService implements IProcessService {
     }
   }
 
+  public async monthlyReview(
+    userId: string,
+    month: number,
+    year: number,
+  ): Promise<any> {
+    this.logger.info(`Getting monthlyReview for user`);
+    this.logger.debug("User ID, month & year", { userId, month, year });
+    const startDate = new Date(year, month - 1, 1).toISOString();
+    const endDate = new Date(year, month, 1).toISOString(); // start of next month
+    const transactions = await this.transactionStore.getTransactionsByDateRange(
+      userId,
+      startDate,
+      endDate,
+    );
+    this.logger.debug(`###transactions. -->`, { data: transactions });
+    // Calculate totals
+    let totalIncome = 0;
+    let totalExpense = 0;
+
+    transactions.forEach((txn) => {
+      const amount = Number(txn.amount);
+      if (amount > 0) totalIncome += amount;
+      else totalExpense += Math.abs(amount);
+    });
+
+    return {
+      totalIncome,
+      totalExpense,
+      netSavings: totalIncome - totalExpense,
+      transactions,
+    };
+  }
+
   private async parseTransactions(
     buffer: Buffer,
-    bank: string,
+    bank: EBankName,
     userId: string,
-  ): Promise<any[]> {
+  ): Promise<Omit<ITransaction, "createdAt">[]> {
     switch (bank) {
-      case "sbi": {
+      case EBankName.sbi: {
         const sbiBankParser = new SbiBankParser();
         return sbiBankParser.parse(buffer, userId);
       }
-      case "hdfc": {
+      case EBankName.hdfc: {
         const hdfcBankParser = new HdfcBankParser();
         return hdfcBankParser.parse(buffer, userId);
       }

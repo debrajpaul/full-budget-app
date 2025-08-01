@@ -7,7 +7,7 @@ export * from "./IUserStore";
 export * from "./IBankParser";
 export * from "./ISQSService";
 export * from "./ITransaction";
-export * from "./IProcessService";
+export * from "./ITransactionService";
 export * from "./ITransactionStore";
 export * from "./IAuthorizationService";
 export * from "./IUploadStatementService";

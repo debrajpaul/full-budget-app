@@ -1,6 +1,7 @@
 import { randomUUID } from "crypto";
 import {
   ILogger,
+  EBankName,
   IS3Service,
   ISQSService,
   IUploadStatementService,
@@ -16,7 +17,7 @@ export class UploadStatementService implements IUploadStatementService {
   ) {}
 
   public async uploadStatement(
-    bank: string,
+    bank: EBankName,
     fileName: string,
     contentBase64: string,
     userId: string,

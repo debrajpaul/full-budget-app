@@ -1,4 +1,3 @@
-import { UserStore } from "@db";
 import { verifyToken } from "@auth";
 import { config } from "./environment";
 import { WinstonLogger } from "@logger";
@@ -6,9 +5,14 @@ import { S3 } from "@aws-sdk/client-s3";
 import { IGraphQLContext } from "@common";
 import { SQS } from "@aws-sdk/client-sqs";
 import { S3Service, SQSService } from "@client";
+import { UserStore, TransactionStore } from "@db";
 import { DynamoDBClient } from "@aws-sdk/client-dynamodb";
 import { DynamoDBDocumentClient } from "@aws-sdk/lib-dynamodb";
-import { UploadStatementService, AuthorizationService } from "@services";
+import {
+  UploadStatementService,
+  AuthorizationService,
+  TransactionService,
+} from "@services";
 
 const client = new DynamoDBClient({ region: config.awsRegion });
 const dynamoDBDocumentClient = DynamoDBDocumentClient.from(client);
@@ -20,6 +24,11 @@ const sqsService = new SQSService(logger.child("SQSService"), sqsClient);
 const userStore = new UserStore(
   logger.child("UserStore"),
   config.dynamoUserTable,
+  dynamoDBDocumentClient,
+);
+const transactionStore = new TransactionStore(
+  logger.child("TransactionStore"),
+  config.dynamoTransactionTable,
   dynamoDBDocumentClient,
 );
 const authorizationService = new AuthorizationService(
@@ -34,6 +43,12 @@ const uploadStatementService = new UploadStatementService(
   config.sqsQueueUrl,
   s3Service,
   sqsService,
+);
+const transactionService = new TransactionService(
+  logger.child("TransactionService"),
+  s3Service,
+  sqsService,
+  transactionStore,
 );
 
 export const createContext = async (ctx: IGraphQLContext) => {
@@ -61,6 +76,7 @@ export const createContext = async (ctx: IGraphQLContext) => {
       dataSources: {
         authorizationService: authorizationService,
         uploadStatementService: uploadStatementService,
+        transactionService: transactionService,
       },
     };
   } catch (error) {
