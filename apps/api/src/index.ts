@@ -17,6 +17,7 @@ async function startServer() {
 
   const server = new ApolloServer<IGraphQLContext>({
     schema,
+    cache: "bounded",
     plugins: [ApolloServerPluginDrainHttpServer({ httpServer })],
   });
   await server.start();
