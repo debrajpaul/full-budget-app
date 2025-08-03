@@ -8,6 +8,7 @@ import {
   ITransactionService,
   IMonthlyReview,
   IAnnualReview,
+  IcategoryGroup,
 } from "@common";
 import { HdfcBankParser, SbiBankParser } from "@parser";
 
@@ -149,6 +150,42 @@ export class TransactionService implements ITransactionService {
       netSavings: totalIncome - totalExpense,
       transactions: txns,
     };
+  }
+
+  public async categoryBreakDown(
+    userId: string,
+    month: number,
+    year: number,
+  ): Promise<IcategoryGroup[]> {
+    this.logger.info(`Getting categoryBreakDown for user`);
+    this.logger.debug("User ID, month & year", { userId, month, year });
+    const startDate = new Date(year, month - 1, 1).toISOString(); // start of prev month
+    const endDate = new Date(year, month, 0).toISOString(); // start of this month
+    const txns = await this.transactionStore.getTransactionsByDateRange(
+      userId,
+      startDate,
+      endDate,
+    );
+    // this.logger.debug(`###txns. -->`, { data: txns });
+    const categoryMap: Record<
+      string,
+      { totalAmount: number; transactions: typeof txns }
+    > = {};
+
+    for (const txn of txns) {
+      const category = txn.category || "Uncategorized";
+      if (!categoryMap[category]) {
+        categoryMap[category] = { totalAmount: 0, transactions: [] };
+      }
+      categoryMap[category].totalAmount += txn.amount;
+      categoryMap[category].transactions.push(txn);
+    }
+
+    return Object.entries(categoryMap).map(([category, data]) => ({
+      category,
+      totalAmount: data.totalAmount,
+      transactions: data.transactions,
+    }));
   }
 
   private async parseTransactions(
