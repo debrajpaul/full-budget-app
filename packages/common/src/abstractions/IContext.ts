@@ -1,9 +1,10 @@
+import { Request, Response } from "express";
 import { IAuthorizationService } from "./IAuthorizationService";
 import { IUploadStatementService } from "./IUploadStatementService";
 import { ITransactionService } from "./ITransactionService";
-import { YogaInitialContext } from "graphql-yoga";
-
-export interface IGraphQLContext extends YogaInitialContext {
+export interface IGraphQLContext {
+  req: Request;
+  res: Response;
   userId: string | null;
   dataSources: {
     authorizationService: IAuthorizationService;

@@ -42,5 +42,11 @@ export const transactionTypeDefs = /* GraphQL */ `
     monthlyReview(month: Int!, year: Int!): MonthlyReview!
     aggregateSummary(year: Int!, month: Int): AggregatedSummary!
     categoryBreakdown(month: Int!, year: Int!): [CategoryGroup!]!
+    filteredTransactions(
+      year: Int!
+      month: Int!
+      bankName: BankName
+      category: String
+    ): [Transaction!]!
   }
 `;
