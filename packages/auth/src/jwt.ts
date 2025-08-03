@@ -1,11 +1,7 @@
 import jwt from "jsonwebtoken";
 
-export function signToken(
-  payload: object,
-  jwtSecret: string,
-  expiry: number,
-): string {
-  return jwt.sign(payload, jwtSecret, { expiresIn: expiry });
+export function signToken(payload: object, jwtSecret: string): string {
+  return jwt.sign(payload, jwtSecret, { expiresIn: "1H" });
 }
 
 export function verifyToken(token: string, jwtSecret: string): any {

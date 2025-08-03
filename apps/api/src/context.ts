@@ -35,7 +35,6 @@ const transactionStore = new TransactionStore(
 const authorizationService = new AuthorizationService(
   logger.child("AuthorizationService"),
   config.jwtSecret,
-  config.jwtExpiration,
   userStore,
 );
 const uploadStatementService = new UploadStatementService(
