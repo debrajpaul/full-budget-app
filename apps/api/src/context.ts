@@ -13,6 +13,7 @@ import {
   AuthorizationService,
   TransactionService,
 } from "@services";
+import { ExpressContextFunctionArgument } from "@as-integrations/express5";
 
 const client = new DynamoDBClient({ region: config.awsRegion });
 const dynamoDBDocumentClient = DynamoDBDocumentClient.from(client);
@@ -51,37 +52,34 @@ const transactionService = new TransactionService(
   transactionStore,
 );
 
-export const createContext = async (ctx: IGraphQLContext) => {
+export const createContext = async (
+  ctx: ExpressContextFunctionArgument,
+): Promise<IGraphQLContext> => {
+  const authHeader = ctx.req.headers["authorization"] || "";
+  let userId: string | null = null;
+  if (!authHeader) {
+    logger.warn("No Authorization header provided");
+  }
+  if (!authHeader.startsWith("Bearer ")) {
+    logger.warn(`Malformed Authorization header: ${authHeader}`);
+  }
+  const token = authHeader.replace("Bearer ", "") ?? null;
   try {
-    const authHeader = ctx.request.headers.get("authorization") || "";
-    if (!authHeader) {
-      logger.warn("No Authorization header provided");
-    }
-    if (!authHeader.startsWith("Bearer ")) {
-      logger.warn(`Malformed Authorization header: ${authHeader}`);
-    }
-    const token = authHeader.replace("Bearer ", "") ?? null;
-    let userId: string | null = null;
-
-    if (token) {
-      const payload = verifyToken(token, config.jwtSecret) as {
-        userId: string;
-      };
-      userId = payload.userId;
-    }
-
-    return {
-      ...ctx,
-      userId,
-      dataSources: {
-        authorizationService: authorizationService,
-        uploadStatementService: uploadStatementService,
-        transactionService: transactionService,
-      },
+    const payload = verifyToken(token, config.jwtSecret) as {
+      userId: string;
     };
+    userId = payload.userId;
   } catch (error) {
     logger.warn(`JWT verification failed: ${error}`);
   }
-};
 
-export type AppContext = ReturnType<typeof createContext>;
+  return {
+    ...ctx,
+    userId,
+    dataSources: {
+      authorizationService: authorizationService,
+      uploadStatementService: uploadStatementService,
+      transactionService: transactionService,
+    },
+  };
+};

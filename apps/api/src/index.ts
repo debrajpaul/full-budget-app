@@ -1,20 +1,39 @@
 import dotenv from "dotenv";
 import { config } from "./environment";
-import { createServer } from "node:http";
-import { createYoga } from "graphql-yoga";
+import { ApolloServer } from "@apollo/server";
+import { expressMiddleware } from "@as-integrations/express5";
+import { ApolloServerPluginDrainHttpServer } from "@apollo/server/plugin/drainHttpServer";
+import express from "express";
+import cors from "cors";
+import http from "http";
 import { schema } from "./schemas/schema";
 import { createContext } from "./context";
 import { IGraphQLContext } from "@common";
 
 dotenv.config();
+async function startServer() {
+  const app = express();
+  const httpServer = http.createServer(app);
 
-const yoga = createYoga<IGraphQLContext>({
-  schema,
-  context: createContext,
-  healthCheckEndpoint: "/health",
-});
+  const server = new ApolloServer<IGraphQLContext>({
+    schema,
+    plugins: [ApolloServerPluginDrainHttpServer({ httpServer })],
+  });
+  await server.start();
 
-const server = createServer(yoga);
-server.listen(config.port, () => {
-  console.info(`Server is running on http://localhost:${config.port}/graphql`);
-});
+  app.use(
+    cors(),
+    express.json(),
+    expressMiddleware(server, {
+      context: createContext,
+    }),
+  );
+
+  httpServer.listen(config.port, () => {
+    console.log(
+      `🚀 Apollo Server ready at http://localhost:${config.port}/graphql`,
+    );
+  });
+}
+
+startServer();

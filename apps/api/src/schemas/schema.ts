@@ -1,4 +1,4 @@
-import { createSchema } from "graphql-yoga";
+import { makeExecutableSchema } from "@graphql-tools/schema";
 import {
   authResolvers,
   uploadStatementResolvers,
@@ -11,7 +11,7 @@ import {
   transactionTypeDefs,
 } from "./typeDefs";
 
-export const schema = createSchema({
+export const schema = makeExecutableSchema({
   typeDefs: [
     authTypeDefs,
     uploadStatementTypeDefs,
