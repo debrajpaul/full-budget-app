@@ -4,12 +4,9 @@ export interface IConfig {
   port: string;
   nodeEnv: string;
   logLevel: LogLevel;
-  mongoHost: string;
-  mongoPort: string;
-  mongoDB: string;
   kafkaBrokersHost: string;
   kafkaBrokersPort: string;
-  clientId: string;
+  kafkaClientId: string;
   awsAccessKeyId: string;
   awsSecretAccessKey: string;
   awsRegion: string;
@@ -18,5 +15,4 @@ export interface IConfig {
   dynamoUserTable: string;
   dynamoTransactionTable: string;
   jwtSecret: string;
-  jwtExpiration: number;
 }
