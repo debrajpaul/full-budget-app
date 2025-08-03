@@ -31,9 +31,16 @@ export const transactionTypeDefs = /* GraphQL */ `
     transactions: [Transaction!]!
   }
 
+  type AggregatedSummary {
+    totalIncome: Float!
+    totalExpense: Float!
+    netSavings: Float!
+  }
+
   type Query {
     annualReview(year: Int!): AnnualReview!
     monthlyReview(month: Int!, year: Int!): MonthlyReview!
+    aggregateSummary(year: Int!, month: Int): AggregatedSummary!
     categoryBreakdown(month: Int!, year: Int!): [CategoryGroup!]!
   }
 `;

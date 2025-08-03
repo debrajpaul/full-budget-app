@@ -17,6 +17,11 @@ export interface IcategoryGroup {
   totalAmount: number;
   transactions: ITransaction[];
 }
+export interface IAggregatedSummary {
+  totalIncome: number;
+  totalExpense: number;
+  netSavings: number;
+}
 export interface ITransactionService {
   processes(event: any): Promise<boolean[]>;
   process(queueUrl: string, bucket: string): Promise<boolean>;
@@ -31,4 +36,9 @@ export interface ITransactionService {
     month: number,
     year: number,
   ): Promise<IcategoryGroup[]>;
+  aggregateSummary(
+    userId: string,
+    year: number,
+    month?: number,
+  ): Promise<IAggregatedSummary>;
 }
