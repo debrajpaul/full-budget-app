@@ -18,6 +18,7 @@ export const transactionResolvers = {
       if (!result) throw new Error("Failed to upload statement");
       return result;
     },
+
     async annualReview(
       _: any,
       { year }: { year: number },
@@ -30,6 +31,24 @@ export const transactionResolvers = {
         context.userId,
         year,
       );
+      if (!result) throw new Error("Failed to upload statement");
+      return result;
+    },
+
+    async categoryBreakdown(
+      _: any,
+      { month, year }: { month: number; year: number },
+      context: IGraphQLContext,
+    ) {
+      if (!context.userId) throw new Error("Unauthorized");
+      if (!month || !year) throw new Error("Missing required parameters");
+
+      const result =
+        await context.dataSources.transactionService.categoryBreakDown(
+          context.userId,
+          month,
+          year,
+        );
       if (!result) throw new Error("Failed to upload statement");
       return result;
     },
