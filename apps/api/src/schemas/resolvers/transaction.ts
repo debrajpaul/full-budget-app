@@ -1,4 +1,4 @@
-import { IGraphQLContext } from "@common";
+import { IGraphQLContext, EBankName } from "@common";
 
 export const transactionResolvers = {
   Query: {
@@ -15,7 +15,7 @@ export const transactionResolvers = {
         month,
         year,
       );
-      if (!result) throw new Error("Failed to upload statement");
+      if (!result) throw new Error("Failed to get monthly review statement");
       return result;
     },
 
@@ -31,7 +31,7 @@ export const transactionResolvers = {
         context.userId,
         year,
       );
-      if (!result) throw new Error("Failed to upload statement");
+      if (!result) throw new Error("Failed to get annual review statement");
       return result;
     },
 
@@ -49,7 +49,8 @@ export const transactionResolvers = {
           month,
           year,
         );
-      if (!result) throw new Error("Failed to upload statement");
+      if (!result)
+        throw new Error("Failed to get category breakdown statement");
       return result;
     },
 
@@ -67,7 +68,37 @@ export const transactionResolvers = {
           year,
           month,
         );
-      if (!result) throw new Error("Failed to upload statement");
+      if (!result) throw new Error("Failed to get aggregate summary statement");
+      return result;
+    },
+
+    async filteredTransactions(
+      _: any,
+      {
+        year,
+        month,
+        bankName,
+        category,
+      }: {
+        year: number;
+        month: number;
+        bankName?: EBankName;
+        category?: string;
+      },
+      context: IGraphQLContext,
+    ) {
+      if (!context.userId) throw new Error("Unauthorized");
+      if (!year || !month) throw new Error("Missing required parameters");
+      const result =
+        await context.dataSources.transactionService.filteredTransactions(
+          context.userId,
+          year,
+          month,
+          bankName,
+          category,
+        );
+      if (!result)
+        throw new Error("Failed to get filtered transactions statement");
       return result;
     },
   },

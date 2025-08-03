@@ -1,4 +1,4 @@
-import { ITransaction } from "./ITransaction";
+import { ITransaction, EBankName } from "./index";
 export interface IMonthlyReview {
   totalIncome: number;
   totalExpense: number;
@@ -41,4 +41,11 @@ export interface ITransactionService {
     year: number,
     month?: number,
   ): Promise<IAggregatedSummary>;
+  filteredTransactions(
+    userId: string,
+    year: number,
+    month: number,
+    bankName?: EBankName,
+    category?: string,
+  ): Promise<ITransaction[]>;
 }

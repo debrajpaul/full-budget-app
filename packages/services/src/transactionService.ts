@@ -227,6 +227,32 @@ export class TransactionService implements ITransactionService {
     };
   }
 
+  public async filteredTransactions(
+    userId: string,
+    year: number,
+    month: number,
+    bankName?: EBankName,
+    category?: string,
+  ): Promise<ITransaction[]> {
+    this.logger.info(`Getting filteredTransactions for user`);
+    this.logger.debug("User ID, month & year", { userId, month, year });
+    const startDate = new Date(year, month - 1, 1).toISOString(); // start of prev month
+    const endDate = new Date(year, month, 0).toISOString(); // start of this month
+    const txns = await this.transactionStore.getTransactionsByDateRange(
+      userId,
+      startDate,
+      endDate,
+    );
+    // this.logger.debug(`###txns. -->`, { data: txns });
+    if (bankName) {
+      txns.filter((txn) => txn.bankName === bankName);
+    }
+    if (category) {
+      txns.filter((txn) => txn.category === category);
+    }
+    return txns;
+  }
+
   private async parseTransactions(
     buffer: Buffer,
     bank: EBankName,
