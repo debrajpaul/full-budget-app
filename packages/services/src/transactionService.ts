@@ -9,6 +9,7 @@ import {
   IMonthlyReview,
   IAnnualReview,
   IcategoryGroup,
+  IAggregatedSummary,
 } from "@common";
 import { HdfcBankParser, SbiBankParser } from "@parser";
 
@@ -186,6 +187,44 @@ export class TransactionService implements ITransactionService {
       totalAmount: data.totalAmount,
       transactions: data.transactions,
     }));
+  }
+
+  public async aggregateSummary(
+    userId: string,
+    year: number,
+    month?: number,
+  ): Promise<IAggregatedSummary> {
+    this.logger.info(`Getting aggregateSummary for user`);
+    this.logger.debug("User ID, month & year", { userId, month, year });
+    let startDate: string, endDate: string;
+
+    if (month) {
+      // Monthly range
+      startDate = new Date(year, month - 1, 1).toISOString();
+      endDate = new Date(year, month, 0).toISOString();
+    } else {
+      // Annual range
+      startDate = new Date(year, 0, 1).toISOString();
+      endDate = new Date(year, 11, 31).toISOString();
+    }
+    const txns = await this.transactionStore.getTransactionsByDateRange(
+      userId,
+      startDate,
+      endDate,
+    );
+    // this.logger.debug(`###txns. -->`, { data: txns });
+    let totalIncome = 0;
+    let totalExpense = 0;
+    txns.forEach((txn) => {
+      const amount = Number(txn.amount);
+      if (amount > 0) totalIncome += amount;
+      else totalExpense += Math.abs(amount);
+    });
+    return {
+      totalIncome,
+      totalExpense,
+      netSavings: totalIncome - totalExpense,
+    };
   }
 
   private async parseTransactions(

@@ -52,5 +52,23 @@ export const transactionResolvers = {
       if (!result) throw new Error("Failed to upload statement");
       return result;
     },
+
+    async aggregateSummary(
+      _: any,
+      args: { year: number; month?: number },
+      context: IGraphQLContext,
+    ) {
+      if (!context.userId) throw new Error("Unauthorized");
+      const { year, month } = args;
+      if (!year) throw new Error("Missing required parameters");
+      const result =
+        await context.dataSources.transactionService.aggregateSummary(
+          context.userId,
+          year,
+          month,
+        );
+      if (!result) throw new Error("Failed to upload statement");
+      return result;
+    },
   },
 };
