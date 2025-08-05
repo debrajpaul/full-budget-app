@@ -1,17 +1,28 @@
 {
   "name": "infra",
-  "version": "1.0.0",
-  "description": "infra",
-  "main": "index.js",
-  "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+  "version": "0.1.0",
+  "bin": {
+    "infra": "bin/infra.js"
   },
-  "keywords": [],
-  "author": "",
-  "license": "ISC",
-  "packageManager": "pnpm@10.11.0",
+  "scripts": {
+    "build": "cd ../apps/api && pnpm build",
+    "cdk:deploy": "pnpm build && cdk deploy",
+    "cdk:synth": "pnpm build && cdk synth",
+    "cdk:bootstrap": "cdk bootstrap aws://333208197562/ap-south-1",
+    "cdk:deploy:all": "pnpm build && cdk deploy --all",
+    "cdk:destroy:all": "cdk destroy --all"
+  },
+  "devDependencies": {
+    "@types/jest": "^29.5.14",
+    "@types/node": "22.7.9",
+    "aws-cdk": "2.1023.0",
+    "jest": "^29.7.0",
+    "ts-jest": "^29.2.5",
+    "ts-node": "^10.9.2",
+    "typescript": "~5.6.3"
+  },
   "dependencies": {
-    "aws-cdk-lib": "^2.206.0",
-    "constructs": "^10.0.0"
+    "aws-cdk-lib": "2.206.0",
+    "constructs": "^10.4.2"
   }
 }

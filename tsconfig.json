@@ -17,9 +17,9 @@
       "@db/*": ["packages/db/src/*"],
       "@logger/*": ["packages/logger/src/*"],
       "@parser/*": ["packages/parser/src/*"],
-      "@client/*": ["packages/client/src/*"],
+      "@client/*": ["packages/client/src/*"]
     }
   },
-  "include": ["apps","packages"],
+  "include": ["apps", "packages", "Infra"],
   "exclude": ["node_modules", "data", ".github"]
 }

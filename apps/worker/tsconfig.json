@@ -7,7 +7,7 @@
     "target": "ES2020",
     "resolveJsonModule": true,
     "outDir": "./dist",
-    "noEmit": true,
+    "noEmit": false,
     "baseUrl": ".",
     "paths": {
       "@common/*": ["packages/common/src/*"],
