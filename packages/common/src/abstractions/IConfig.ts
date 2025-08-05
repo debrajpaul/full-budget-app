@@ -4,9 +4,6 @@ export interface IConfig {
   port: string;
   nodeEnv: string;
   logLevel: LogLevel;
-  kafkaBrokersHost: string;
-  kafkaBrokersPort: string;
-  kafkaClientId: string;
   awsAccessKeyId: string;
   awsSecretAccessKey: string;
   awsRegion: string;

@@ -4,9 +4,10 @@
   "version": "1.0.0",
   "main": "src/index.ts",
   "scripts": {
-    "dev": "ts-node-dev --project ../../tsconfig.json --require tsconfig-paths/register --respawn src/index.ts",
+    "build": "tsc",
     "lint": "eslint . --ext .ts --fix",
-    "format": "prettier --write ."
+    "format": "prettier --write .",
+    "dev": "ts-node-dev --respawn src/index.ts"
   },
   "dependencies": {
     "@apollo/server": "^5.0.0",
