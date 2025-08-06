@@ -1,30 +1,35 @@
 # full-budget-app
 
-A modular, scalable microservice architecture for handling books and reviews using:
+A modular, scalable microservice architecture for managing transactions, budgets, and reviews. using AWS CDK, Lambda, DynamoDB, SQS, and S3.
 
-- **GraphQL Yoga** for the API layer
-- **KafkaJS** for event-driven background processing
-- **MongoDB** with Mongoose ODM
+- **GraphQL Apollo** for the API layer
+- **SQS** for event-driven background processing
+- **S3** to store the bank statement
+- **DynamoDB** for the persistence layer
 - **pnpm workspaces** for package management
 
 ## Design Decisions
 
     * Monorepo (pnpm workspaces)
-        * Enables code reuse (commons) across graphql, processor
+        * Enables code reuse (commons) across graphql api, processor worker
         * Clear project separation with fast local builds
-    * GraphQL Yoga
+    * AWS CDK
+        * Infrastructure-as-code with reusable L3 Constructs
+    * Parameter Store (SSM)
+        * Used for secrets/config management.
+    * GraphQL Apollo
         * Simple schema-first API with modern middleware support
-        * Exposes /metrics endpoint for Prometheus
-    * Kafka with KafkaJS
-        * Background task processing (review verification)
+        * Exposes /metrics endpoint for cloudwatch dashboad
+    * Simple Queue Service (SQS)
+        * Background task processing (bank parcer)
         * Decouples write-heavy or async logic from API
-    * MongoDB with Mongoose
-        * Document-oriented for nested data (Book -> reviews[])
+    * DynamoDB
+        * Document-oriented for nested data (bank -> transactions[])
         * Easy ODM support with validation
     * Winston Logger
         * Standardized logs across all services
         * Tagged by topic, service, and error level
-    
+
     * Architecture Diagram
 
     +-------------------+         Kafka Topic          +------------------+
@@ -52,15 +57,47 @@ A modular, scalable microservice architecture for handling books and reviews usi
             |  - Zod Revalidation                      |
             +------------------------------------------+
 
-
 ## What is this repository for?
 
     Monorepo Structure
     .
-    ├── projects/
-    │ ├── graphql/ # GraphQL API (reads/writes to Mongo)
-    │ ├── processor/ # Kafka consumer (adds verified reviews)
-    │ └── commons/ # Shared code: logger, kafka, services, models
+    ├── apps/
+    │ ├── api/ # GraphQL API (reads/writes to DynamoDB)
+    │ │ ├── dockerfile
+    │ │ ├── package.json
+    │ │ └── tsconfig.json
+    │ ├── worker/ # SQS consumer (adds transaction to DynamoDB)
+    │ │ ├── dockerfile
+    │ │ ├── package.json
+    │ │ └── tsconfig.json
+    ├── infra/
+    │ ├── bin/ # root entry (AWS CDK)
+    │ ├── lib/ # all reusable L3 Constructs (AWS CDK)
+    ├── packages/
+    │ ├── auth/ # Authentication service for managing user sessions and security
+    │ │ ├── package.json
+    │ │ └── tsconfig.json
+    │ ├── client/ # Client for managing file uploads and downloads
+    │ │ ├── package.json
+    │ │ └── tsconfig.json
+    │ ├── commons/ # Common service providing foundational functionality for the application
+    │ │ ├── package.json
+    │ │ └── tsconfig.json
+    │ ├── db/ # Database service for managing data storage and retrieval
+    │ │ ├── package.json
+    │ │ └── tsconfig.json
+    │ ├── logger/ # Logger for application events
+    │ │ ├── package.json
+    │ │ └── tsconfig.json
+    │ ├── nlp-tagger/ # NLP Tagger service for processing and tagging text data
+    │ │ ├── package.json
+    │ │ └── tsconfig.json
+    │ ├── parser/ # Parser service for HDFC and SBI data processing
+    │ │ ├── package.json
+    │ │ └── tsconfig.json
+    │ └── services/ # Service layer for handling business logic
+    │   ├── package.json
+    │   └── tsconfig.json
     ├── pnpm-workspace.yaml
     ├── docker-compose.yml
     ├── package.json
@@ -68,22 +105,44 @@ A modular, scalable microservice architecture for handling books and reviews usi
 
 ## How do I get set up?
 
-    Set up all dependencies mentioned below
-    Summary of set up:- Clone the file from repository and follow the "deployment instructions".
-    Version:- 1.0
-    Git clone :-https://github.com/debrajpaul/book-review-microservice.git
+1. Clone the repo:
+   ```bash
+   git clone https://github.com/debrajpaul/full-budget-app.git
+   ```
+2. Go to the root folder and install dependencies:
+   ```bash
+   pnpm install
+   ```
+
+> 📦 Version: `1.0`
+
+---
 
 ## Server Configuration:-
 
-    Node 20+
-    Docker & Docker Compose
-    pnpm
+- Region: `ap-south-1`
+- Deployed via: AWS CDK v2
+- Log Retention: 7 days (set via CDK)
+- CDK Bootstrapping Required:
+  ```bash
+  cdk bootstrap aws://<account-id>/ap-south-1
+  ```
+
+---
 
 ## Dependencies
 
-    All dependencies are listed in package.json file
-    * In terminal go to your project directory
-    * In terminal type "pnpm i" to add all dependencies.
+All dependencies are listed in the `package.json` files across `apps/`, `infra/` and `packages/`.
+
+Steps:
+
+1. In terminal, go to your project directory
+2. Run:
+   ```bash
+   pnpm install
+   ```
+
+---
 
 ## .env file
 
@@ -103,42 +162,48 @@ KAFKA_BROKERS_PORT=9092
 CLIENT_ID=book-service
 ```
 
+---
+
 ## Local Deployment instructions:-
 
-    In terminal go to your project directory
-    * GraphQL API
-        cd projects/graphql
-        pnpm run dev
-    * Kafka Processor
-        cd projects/processor
-        pnpm run dev
+1. Build backend:
 
-## Docker Compose (Kafka + Mongo + Prometheus + Grafana):-
+   ```bash
+   cd apps/api && pnpm build
+   ```
 
-    In terminal go to your project directory
-    * docker-compose up --build
-    * Services:
-        * MongoDB: localhost:27017
-        * Kafka: localhost:9092
-        * Prometheus: localhost:9090
-        * Grafana: localhost:3000
+2. Deploy CDK Stacks:
+
+   ```bash
+   cd infra && pnpm run build && pnpm exec cdk deploy --all
+   ```
+
+3. If deployment fails due to LogGroup already exists, go to AWS CloudWatch Logs and delete the corresponding log group manually.
+
+4. (Optional) Delete failed CloudFormation stacks via CloudFormation Console.
+
+---
 
 ## Suggested Improvements
 
-    * Security:- Add input validation (Zod or GraphQL types), auth middleware
-    * Testing:- Add Jest unit + integration tests with CI
-    * Deployment:- Use Docker multi-stage builds and GitHub Actions
-    * Observability:- Integrate Prometheus + Grafana for logs, alerts on failure metrics
-    * Retry Logic:- Implement retry queues or dead-letter support for Kafka
-    * API Evolution:- Add versioning to GraphQL schema (via modules or federation)
-    * Reduce Latency:- Redia caache to GraphQl API
-    * Traceability:- Add OpenTelemetry for distributed tracing
+    * Security:- Use KMS encryption and least-privilege IAM roles.
+    * Testing:- Add unit/integration tests for background jobs and Lambda handlers.
+    * Deployment:- Integrate CI/CD pipelines with rollback support.
+    * Observability:- Integrate with AWS X-Ray or third-party tracing.
+    * Retry Logic:- Improve SQS + Lambda dead-letter handling and retries.
+    * API Evolution:- GraphQL schema versioning support.
+    * Reduce Latency:- Enable Lambda provisioned concurrency if needed.
+    * Traceability:- Include X-Request-ID or correlation IDs in logs.
+
+---
 
 ## Who do I talk to?
 
     Debraj Paul
     contact info:- pauldebraj7@gmail.com
     LinkedIn:- https://www.linkedin.com/in/debraj-paul
+
+---
 
 ## License
 

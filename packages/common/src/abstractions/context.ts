@@ -1,7 +1,7 @@
 import { Request, Response } from "express";
-import { IAuthorizationService } from "./IAuthorizationService";
-import { IUploadStatementService } from "./IUploadStatementService";
-import { ITransactionService } from "./ITransactionService";
+import { IAuthorizationService } from "./authorization-service";
+import { IUploadStatementService } from "./upload-statement-service";
+import { ITransactionService } from "./transaction-service";
 export interface IGraphQLContext {
   req: Request;
   res: Response;

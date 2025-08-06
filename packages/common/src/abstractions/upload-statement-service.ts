@@ -1,4 +1,4 @@
-import { EBankName } from "./IBankParser";
+import { EBankName } from "./bank-parser";
 export interface IUploadStatementService {
   uploadStatement(
     bank: EBankName,

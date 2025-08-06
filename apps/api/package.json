@@ -25,7 +25,8 @@
     "@services": "workspace:*",
     "cors": "^2.8.5",
     "express": "^5.1.0",
-    "graphql": "^16.11.0"
+    "graphql": "^16.11.0",
+    "zod": "^4.0.15"
   },
   "devDependencies": {
     "@types/cors": "^2.8.19",

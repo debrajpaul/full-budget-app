@@ -1,15 +1,21 @@
+import {
+  MonthlyReviewArgs,
+  AnnualReviewArgs,
+  CategoryBreakdownArgs,
+  AggregateSummaryArgs,
+  FilteredTransactionsArgs,
+} from "../../utils";
 import { IGraphQLContext, EBankName } from "@common";
 
 export const transactionResolvers = {
   Query: {
     async monthlyReview(
       _: any,
-      { month, year }: { month: number; year: number },
+      args: { month: number; year: number },
       context: IGraphQLContext,
     ) {
       if (!context.userId) throw new Error("Unauthorized");
-      if (!month || !year) throw new Error("Missing required parameters");
-
+      const { month, year } = MonthlyReviewArgs.parse(args);
       const result = await context.dataSources.transactionService.monthlyReview(
         context.userId,
         month,
@@ -21,12 +27,11 @@ export const transactionResolvers = {
 
     async annualReview(
       _: any,
-      { year }: { year: number },
+      args: { year: number },
       context: IGraphQLContext,
     ) {
       if (!context.userId) throw new Error("Unauthorized");
-      if (!year) throw new Error("Missing required parameters");
-
+      const { year } = AnnualReviewArgs.parse(args);
       const result = await context.dataSources.transactionService.annualReview(
         context.userId,
         year,
@@ -37,12 +42,11 @@ export const transactionResolvers = {
 
     async categoryBreakdown(
       _: any,
-      { month, year }: { month: number; year: number },
+      args: { month: number; year: number },
       context: IGraphQLContext,
     ) {
       if (!context.userId) throw new Error("Unauthorized");
-      if (!month || !year) throw new Error("Missing required parameters");
-
+      const { month, year } = CategoryBreakdownArgs.parse(args);
       const result =
         await context.dataSources.transactionService.categoryBreakDown(
           context.userId,
@@ -60,8 +64,7 @@ export const transactionResolvers = {
       context: IGraphQLContext,
     ) {
       if (!context.userId) throw new Error("Unauthorized");
-      const { year, month } = args;
-      if (!year) throw new Error("Missing required parameters");
+      const { year, month } = AggregateSummaryArgs.parse(args);
       const result =
         await context.dataSources.transactionService.aggregateSummary(
           context.userId,
@@ -74,12 +77,7 @@ export const transactionResolvers = {
 
     async filteredTransactions(
       _: any,
-      {
-        year,
-        month,
-        bankName,
-        category,
-      }: {
+      args: {
         year: number;
         month: number;
         bankName?: EBankName;
@@ -88,7 +86,8 @@ export const transactionResolvers = {
       context: IGraphQLContext,
     ) {
       if (!context.userId) throw new Error("Unauthorized");
-      if (!year || !month) throw new Error("Missing required parameters");
+      const { year, month, bankName, category } =
+        FilteredTransactionsArgs.parse(args);
       const result =
         await context.dataSources.transactionService.filteredTransactions(
           context.userId,

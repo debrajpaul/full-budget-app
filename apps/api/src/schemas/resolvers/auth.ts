@@ -1,4 +1,5 @@
 import { IGraphQLContext, IRegisterInput, ILoginInput } from "@common";
+import { RegisterArgs, LoginArgs } from "../../utils";
 
 export const authResolvers = {
   Query: {
@@ -12,7 +13,7 @@ export const authResolvers = {
     ) => {
       const authService = ctx.dataSources.authorizationService;
       if (!authService) throw new Error("Authorization service not found");
-      const { email, name, password } = args.input;
+      const { email, name, password } = RegisterArgs.parse(args.input);
       return await authService.register({ email, name, password });
     },
     login: async (
@@ -22,7 +23,7 @@ export const authResolvers = {
     ) => {
       const authService = ctx.dataSources.authorizationService;
       if (!authService) throw new Error("Authorization service not found");
-      const { email, password } = args.input;
+      const { email, password } = LoginArgs.parse(args.input);
       return await authService.login({ email, password });
     },
   },
