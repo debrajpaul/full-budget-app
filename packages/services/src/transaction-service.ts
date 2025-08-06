@@ -102,7 +102,9 @@ export class TransactionService implements ITransactionService {
       startDate,
       endDate,
     );
-    // this.logger.debug(`###transactions. -->`, { data: transactions });
+    this.logger.debug(`MonthlyReview transactions`, {
+      count: transactions.length,
+    });
     // Calculate totals
     let totalIncome = 0;
     let totalExpense = 0;
@@ -128,13 +130,13 @@ export class TransactionService implements ITransactionService {
     this.logger.info(`Getting annualReview for user`);
     this.logger.debug("User ID, year", { userId, year });
     const startDate = new Date(year, 0, 1).toISOString(); // Jan 1
-    const endDate = new Date(year, 11, 1).toISOString(); // Dec 31
+    const endDate = new Date(year + 1, 0, 1).toISOString(); // Jan 1 next year
     const txns = await this.transactionStore.getTransactionsByDateRange(
       userId,
       startDate,
       endDate,
     );
-    // this.logger.debug(`###txns. -->`, { data: txns });
+    this.logger.debug(`AnnualReview transactions`, { count: txns.length });
     // Calculate totals
     let totalIncome = 0;
     let totalExpense = 0;
@@ -167,7 +169,7 @@ export class TransactionService implements ITransactionService {
       startDate,
       endDate,
     );
-    // this.logger.debug(`###txns. -->`, { data: txns });
+    this.logger.debug(`CategoryBreakDown transactions`, { count: txns.length });
     const categoryMap: Record<
       string,
       { totalAmount: number; transactions: typeof txns }
@@ -212,7 +214,7 @@ export class TransactionService implements ITransactionService {
       startDate,
       endDate,
     );
-    // this.logger.debug(`###txns. -->`, { data: txns });
+    this.logger.debug(`AggregateSummary transactions`, { count: txns.length });
     let totalIncome = 0;
     let totalExpense = 0;
     txns.forEach((txn) => {
@@ -243,7 +245,9 @@ export class TransactionService implements ITransactionService {
       startDate,
       endDate,
     );
-    // this.logger.debug(`###txns. -->`, { data: txns });
+    this.logger.debug(`FilteredTransactions transactions`, {
+      count: txns.length,
+    });
     if (bankName) {
       txns.filter((txn) => txn.bankName === bankName);
     }

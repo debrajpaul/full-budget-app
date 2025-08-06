@@ -1,5 +1,6 @@
 import { EBankName, IGraphQLContext } from "@common";
 import { UploadStatementArgs } from "../../utils";
+import { CustomError } from "@services";
 
 export const uploadStatementResolvers = {
   Mutation: {
@@ -8,7 +9,7 @@ export const uploadStatementResolvers = {
       args: { bank: EBankName; fileName: string; contentBase64: string },
       ctx: IGraphQLContext,
     ) => {
-      if (!ctx.userId) throw new Error("Unauthorized");
+      if (!ctx.userId) throw new CustomError("Unauthorized", "UNAUTHORIZED");
       const { bank, fileName, contentBase64 } = UploadStatementArgs.parse(args);
       const result =
         await ctx.dataSources.uploadStatementService.uploadStatement(
@@ -18,7 +19,8 @@ export const uploadStatementResolvers = {
           ctx.userId,
         );
 
-      if (!result) throw new Error("Failed to upload statement");
+      if (!result)
+        throw new CustomError("Failed to upload statement", "UPLOAD_FAILED");
       return true;
     },
   },

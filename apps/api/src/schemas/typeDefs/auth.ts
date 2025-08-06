@@ -1,6 +1,7 @@
 export const authTypeDefs = /* GraphQL */ `
   type Query {
-    hello: String!
+    apiVersion: String!
+    healthCheck: String!
   }
 
   input RegisterInput {
