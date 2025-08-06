@@ -1,16 +1,15 @@
-import { IGraphQLContext } from "@common";
+import { EBankName, IGraphQLContext } from "@common";
+import { UploadStatementArgs } from "../../utils";
 
 export const uploadStatementResolvers = {
   Mutation: {
     uploadStatement: async (
       _: any,
-      { bank, fileName, contentBase64 }: any,
+      args: { bank: EBankName; fileName: string; contentBase64: string },
       ctx: IGraphQLContext,
     ) => {
       if (!ctx.userId) throw new Error("Unauthorized");
-      if (!bank || !fileName || !contentBase64)
-        throw new Error("Missing required parameters");
-
+      const { bank, fileName, contentBase64 } = UploadStatementArgs.parse(args);
       const result =
         await ctx.dataSources.uploadStatementService.uploadStatement(
           bank,

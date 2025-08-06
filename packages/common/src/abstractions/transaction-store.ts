@@ -1,4 +1,4 @@
-import { ITransaction } from "./ITransaction";
+import { ITransaction } from "./transaction";
 
 export interface ITransactionStore {
   saveTransactions(txns: Omit<ITransaction, "createdAt">[]): Promise<void>;

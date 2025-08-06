@@ -1,3 +1,3 @@
 export * from "./auth";
 export * from "./transaction";
-export * from "./uploadStatement";
+export * from "./upload-statement";
