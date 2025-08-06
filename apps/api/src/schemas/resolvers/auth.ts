@@ -1,9 +1,11 @@
 import { IGraphQLContext, IRegisterInput, ILoginInput } from "@common";
 import { RegisterArgs, LoginArgs } from "../../utils";
+import { CustomError } from "@services";
 
 export const authResolvers = {
   Query: {
-    hello: () => "Hello World",
+    apiVersion: () => "v1.0.0",
+    healthCheck: () => "API is healthy",
   },
   Mutation: {
     register: async (
@@ -12,7 +14,11 @@ export const authResolvers = {
       ctx: IGraphQLContext,
     ) => {
       const authService = ctx.dataSources.authorizationService;
-      if (!authService) throw new Error("Authorization service not found");
+      if (!authService)
+        throw new CustomError(
+          "Authorization service not found",
+          "SERVICE_NOT_FOUND",
+        );
       const { email, name, password } = RegisterArgs.parse(args.input);
       return await authService.register({ email, name, password });
     },
@@ -22,7 +28,11 @@ export const authResolvers = {
       ctx: IGraphQLContext,
     ) => {
       const authService = ctx.dataSources.authorizationService;
-      if (!authService) throw new Error("Authorization service not found");
+      if (!authService)
+        throw new CustomError(
+          "Authorization service not found",
+          "SERVICE_NOT_FOUND",
+        );
       const { email, password } = LoginArgs.parse(args.input);
       return await authService.login({ email, password });
     },

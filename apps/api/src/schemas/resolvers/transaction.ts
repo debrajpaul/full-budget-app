@@ -6,6 +6,7 @@ import {
   FilteredTransactionsArgs,
 } from "../../utils";
 import { IGraphQLContext, EBankName } from "@common";
+import { CustomError } from "@services";
 
 export const transactionResolvers = {
   Query: {
@@ -14,14 +15,19 @@ export const transactionResolvers = {
       args: { month: number; year: number },
       context: IGraphQLContext,
     ) {
-      if (!context.userId) throw new Error("Unauthorized");
+      if (!context.userId)
+        throw new CustomError("Unauthorized", "UNAUTHORIZED");
       const { month, year } = MonthlyReviewArgs.parse(args);
       const result = await context.dataSources.transactionService.monthlyReview(
         context.userId,
         month,
         year,
       );
-      if (!result) throw new Error("Failed to get monthly review statement");
+      if (!result)
+        throw new CustomError(
+          "No transactions found for the selected period",
+          "NOT_FOUND",
+        );
       return result;
     },
 
@@ -30,13 +36,18 @@ export const transactionResolvers = {
       args: { year: number },
       context: IGraphQLContext,
     ) {
-      if (!context.userId) throw new Error("Unauthorized");
+      if (!context.userId)
+        throw new CustomError("Unauthorized", "UNAUTHORIZED");
       const { year } = AnnualReviewArgs.parse(args);
       const result = await context.dataSources.transactionService.annualReview(
         context.userId,
         year,
       );
-      if (!result) throw new Error("Failed to get annual review statement");
+      if (!result)
+        throw new CustomError(
+          "No transactions found for the selected year",
+          "NOT_FOUND",
+        );
       return result;
     },
 
@@ -45,7 +56,8 @@ export const transactionResolvers = {
       args: { month: number; year: number },
       context: IGraphQLContext,
     ) {
-      if (!context.userId) throw new Error("Unauthorized");
+      if (!context.userId)
+        throw new CustomError("Unauthorized", "UNAUTHORIZED");
       const { month, year } = CategoryBreakdownArgs.parse(args);
       const result =
         await context.dataSources.transactionService.categoryBreakDown(
@@ -54,7 +66,10 @@ export const transactionResolvers = {
           year,
         );
       if (!result)
-        throw new Error("Failed to get category breakdown statement");
+        throw new CustomError(
+          "No category breakdown found for the selected period",
+          "NOT_FOUND",
+        );
       return result;
     },
 
@@ -63,7 +78,8 @@ export const transactionResolvers = {
       args: { year: number; month?: number },
       context: IGraphQLContext,
     ) {
-      if (!context.userId) throw new Error("Unauthorized");
+      if (!context.userId)
+        throw new CustomError("Unauthorized", "UNAUTHORIZED");
       const { year, month } = AggregateSummaryArgs.parse(args);
       const result =
         await context.dataSources.transactionService.aggregateSummary(
@@ -71,7 +87,11 @@ export const transactionResolvers = {
           year,
           month,
         );
-      if (!result) throw new Error("Failed to get aggregate summary statement");
+      if (!result)
+        throw new CustomError(
+          "No aggregate summary found for the selected period",
+          "NOT_FOUND",
+        );
       return result;
     },
 
@@ -85,7 +105,8 @@ export const transactionResolvers = {
       },
       context: IGraphQLContext,
     ) {
-      if (!context.userId) throw new Error("Unauthorized");
+      if (!context.userId)
+        throw new CustomError("Unauthorized", "UNAUTHORIZED");
       const { year, month, bankName, category } =
         FilteredTransactionsArgs.parse(args);
       const result =
@@ -97,7 +118,10 @@ export const transactionResolvers = {
           category,
         );
       if (!result)
-        throw new Error("Failed to get filtered transactions statement");
+        throw new CustomError(
+          "No filtered transactions found for the selected criteria",
+          "NOT_FOUND",
+        );
       return result;
     },
   },
