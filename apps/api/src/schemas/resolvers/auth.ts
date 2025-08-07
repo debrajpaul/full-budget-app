@@ -9,7 +9,7 @@ export const authResolvers = {
   },
   Mutation: {
     register: async (
-      _: any,
+      _: unknown,
       args: { input: IRegisterInput },
       ctx: IGraphQLContext,
     ) => {
@@ -23,7 +23,7 @@ export const authResolvers = {
       return await authService.register({ email, name, password });
     },
     login: async (
-      _: any,
+      _: unknown,
       args: { input: ILoginInput },
       ctx: IGraphQLContext,
     ) => {

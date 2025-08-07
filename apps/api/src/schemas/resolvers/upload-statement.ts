@@ -5,7 +5,7 @@ import { CustomError } from "@services";
 export const uploadStatementResolvers = {
   Mutation: {
     uploadStatement: async (
-      _: any,
+      _: unknown,
       args: { bank: EBankName; fileName: string; contentBase64: string },
       ctx: IGraphQLContext,
     ) => {

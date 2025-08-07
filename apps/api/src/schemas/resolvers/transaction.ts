@@ -11,7 +11,7 @@ import { CustomError } from "@services";
 export const transactionResolvers = {
   Query: {
     async monthlyReview(
-      _: any,
+      _: unknown,
       args: { month: number; year: number },
       context: IGraphQLContext,
     ) {
@@ -32,7 +32,7 @@ export const transactionResolvers = {
     },
 
     async annualReview(
-      _: any,
+      _: unknown,
       args: { year: number },
       context: IGraphQLContext,
     ) {
@@ -52,7 +52,7 @@ export const transactionResolvers = {
     },
 
     async categoryBreakdown(
-      _: any,
+      _: unknown,
       args: { month: number; year: number },
       context: IGraphQLContext,
     ) {
@@ -74,7 +74,7 @@ export const transactionResolvers = {
     },
 
     async aggregateSummary(
-      _: any,
+      _: unknown,
       args: { year: number; month?: number },
       context: IGraphQLContext,
     ) {
@@ -96,7 +96,7 @@ export const transactionResolvers = {
     },
 
     async filteredTransactions(
-      _: any,
+      _: unknown,
       args: {
         year: number;
         month: number;
