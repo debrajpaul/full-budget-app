@@ -30,32 +30,7 @@ A modular, scalable microservice architecture for managing transactions, budgets
         * Standardized logs across all services
         * Tagged by topic, service, and error level
 
-    * Architecture Diagram
-
-    +-------------------+         Kafka Topic          +------------------+
-    | GraphQL API (Yoga)|  ──────> "review-events" ──> | Kafka Broker     |
-    |  - Zod Validation |                              |                  |
-    |  - Mongoose       |                              +------------------+
-    |  - Prom-client    |
-    +--------+----------+
-            |
-            | MongoDB Write
-            ▼
-    +--------------------+
-    |   MongoDB          |
-    |  - Books + Reviews |
-    +--------------------+
-
-    <-------------------- Prometheus scrapes /metrics ------------------->
-            Grafana visualizes latency, errors, consumer lag
-
-            +------------------------------------------+
-            | Kafka Consumer (Processor Service)       |
-            |  - KafkaJS                               |
-            |  - Mongoose                              |
-            |  - Winston logger                        |
-            |  - Zod Revalidation                      |
-            +------------------------------------------+
+    * Architecture Diagram **coming soon**
 
 ## What is this repository for?
 

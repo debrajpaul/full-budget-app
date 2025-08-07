@@ -5,7 +5,8 @@
   "main": "src/index.ts",
   "scripts": {
     "lint": "eslint . --ext .ts --fix",
-    "format": "prettier --write ."
+    "format": "prettier --write .",
+    "test": "jest --config jest.config.js"
   },
   "dependencies": {
     "@common": "workspace:*",

@@ -3,6 +3,7 @@ export class CustomError extends Error {
   constructor(message: string, code: string) {
     super(message);
     this.code = code;
+    this.name = "CustomError";
     Object.setPrototypeOf(this, CustomError.prototype);
   }
 }

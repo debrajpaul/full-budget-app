@@ -59,8 +59,6 @@ export class TransactionStore implements ITransactionStore {
         type: txn.type,
       };
 
-      console.log("###Item--> ", item);
-
       const command = new PutCommand({
         TableName: this.tableName,
         Item: item,
