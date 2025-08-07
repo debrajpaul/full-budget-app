@@ -15,13 +15,11 @@ describe("SQSService", () => {
     };
     sqsMock = {
       sendMessage: jest.fn().mockResolvedValue({ MessageId: "msgid123" }),
-      receiveMessage: jest
-        .fn()
-        .mockResolvedValue({
-          Messages: [
-            { Body: JSON.stringify(messageBody), ReceiptHandle: "rh123" },
-          ],
-        }),
+      receiveMessage: jest.fn().mockResolvedValue({
+        Messages: [
+          { Body: JSON.stringify(messageBody), ReceiptHandle: "rh123" },
+        ],
+      }),
       deleteMessage: jest.fn().mockResolvedValue({}),
     };
     service = new SQSService(loggerMock, sqsMock);
