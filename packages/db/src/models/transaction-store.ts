@@ -22,31 +22,31 @@ export class TransactionStore implements ITransactionStore {
   }
 
   public async saveTransactions(
-    txns: Omit<ITransaction, "createdAt">[],
+    tenantId: string,
+    txns: Omit<ITransaction, "createdAt" | "tenantId">[],
   ): Promise<void> {
     this.logger.info("Saving transactions to DynamoDB");
     this.logger.debug("Transactions", { txns });
 
     const chunks = chunk(txns, 25);
     for (const chunk of chunks) {
-      const promises = chunk.map((txn) => this.saveTransaction(txn));
+      const promises = chunk.map((txn) => this.saveTransaction(tenantId, txn));
       await Promise.all(promises);
     }
 
     console.log(`Finished processing ${txns.length} transactions.`);
   }
 
-  async saveTransaction(txn: Omit<ITransaction, "createdAt">): Promise<void> {
+  async saveTransaction(
+    tenantId: string,
+    txn: Omit<ITransaction, "createdAt" | "tenantId">,
+  ): Promise<void> {
     try {
       this.logger.info(`Saving transaction: ${txn.transactionId}`);
       this.logger.debug("Transaction", { txn });
 
-      const PK = `USER#${txn.userId}`;
-      const SK = `TXN#${txn.transactionId}`;
-
-      const item: ITransaction & { PK: string; SK: string } = {
-        PK,
-        SK,
+      const item: ITransaction = {
+        tenantId: tenantId,
         userId: txn.userId,
         transactionId: txn.transactionId,
         bankName: txn.bankName,
@@ -63,7 +63,7 @@ export class TransactionStore implements ITransactionStore {
         TableName: this.tableName,
         Item: item,
         ConditionExpression:
-          "attribute_not_exists(PK) AND attribute_not_exists(SK)",
+          "attribute_not_exists(tenantId) AND attribute_not_exists(transactionId)",
       });
 
       await this.store.send(command);
@@ -83,16 +83,20 @@ export class TransactionStore implements ITransactionStore {
     }
   }
 
-  public async getUserTransactions(userId: string): Promise<ITransaction[]> {
+  public async getUserTransactions(
+    tenantId: string,
+    userId: string,
+  ): Promise<ITransaction[]> {
     this.logger.info(`Getting transactions for user`);
     this.logger.debug("User ID", { userId });
 
     const command = new QueryCommand({
       TableName: this.tableName,
-      KeyConditionExpression: "PK = :pk AND begins_with(SK, :skPrefix)",
+      KeyConditionExpression:
+        "tenantId = :tenantId AND begins_with(transactionId, :prefix)",
       ExpressionAttributeValues: {
-        ":pk": `USER#${userId}`,
-        ":skPrefix": "TXN#",
+        ":tenantId": tenantId,
+        ":prefix": `${userId}#`,
       },
     });
 
@@ -101,6 +105,7 @@ export class TransactionStore implements ITransactionStore {
   }
 
   public async getTransactionsByDateRange(
+    tenantId: string,
     userId: string,
     startDate: string,
     endDate: string,
@@ -114,14 +119,16 @@ export class TransactionStore implements ITransactionStore {
 
     const command = new QueryCommand({
       TableName: this.tableName,
-      KeyConditionExpression: "PK = :pk",
+      KeyConditionExpression:
+        "tenantId = :tenantId AND begins_with(transactionId, :prefix)",
       FilterExpression:
         "#txnDate BETWEEN :start AND :end AND attribute_not_exists(deletedAt)",
       ExpressionAttributeNames: {
         "#txnDate": "txnDate",
       },
       ExpressionAttributeValues: {
-        ":pk": `USER#${userId}`,
+        ":tenantId": tenantId,
+        ":prefix": `${userId}#`,
         ":start": startDate,
         ":end": endDate,
       },

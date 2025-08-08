@@ -17,8 +17,11 @@ export const transactionResolvers = {
     ) {
       if (!context.userId)
         throw new CustomError("Unauthorized", "UNAUTHORIZED");
+      if (!context.tenantId)
+        throw new CustomError("Tenant ID is required", "TENANT_ID_REQUIRED");
       const { month, year } = MonthlyReviewArgs.parse(args);
       const result = await context.dataSources.transactionService.monthlyReview(
+        context.tenantId,
         context.userId,
         month,
         year,
@@ -38,8 +41,11 @@ export const transactionResolvers = {
     ) {
       if (!context.userId)
         throw new CustomError("Unauthorized", "UNAUTHORIZED");
+      if (!context.tenantId)
+        throw new CustomError("Tenant ID is required", "TENANT_ID_REQUIRED");
       const { year } = AnnualReviewArgs.parse(args);
       const result = await context.dataSources.transactionService.annualReview(
+        context.tenantId,
         context.userId,
         year,
       );
@@ -58,9 +64,12 @@ export const transactionResolvers = {
     ) {
       if (!context.userId)
         throw new CustomError("Unauthorized", "UNAUTHORIZED");
+      if (!context.tenantId)
+        throw new CustomError("Tenant ID is required", "TENANT_ID_REQUIRED");
       const { month, year } = CategoryBreakdownArgs.parse(args);
       const result =
         await context.dataSources.transactionService.categoryBreakDown(
+          context.tenantId,
           context.userId,
           month,
           year,
@@ -80,9 +89,12 @@ export const transactionResolvers = {
     ) {
       if (!context.userId)
         throw new CustomError("Unauthorized", "UNAUTHORIZED");
+      if (!context.tenantId)
+        throw new CustomError("Tenant ID is required", "TENANT_ID_REQUIRED");
       const { year, month } = AggregateSummaryArgs.parse(args);
       const result =
         await context.dataSources.transactionService.aggregateSummary(
+          context.tenantId,
           context.userId,
           year,
           month,
@@ -107,10 +119,13 @@ export const transactionResolvers = {
     ) {
       if (!context.userId)
         throw new CustomError("Unauthorized", "UNAUTHORIZED");
+      if (!context.tenantId)
+        throw new CustomError("Tenant ID is required", "TENANT_ID_REQUIRED");
       const { year, month, bankName, category } =
         FilteredTransactionsArgs.parse(args);
       const result =
         await context.dataSources.transactionService.filteredTransactions(
+          context.tenantId,
           context.userId,
           year,
           month,

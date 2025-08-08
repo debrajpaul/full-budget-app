@@ -6,6 +6,7 @@ export interface IGraphQLContext {
   req: Request;
   res: Response;
   userId: string | null;
+  tenantId: string | null;
   dataSources: {
     authorizationService: IAuthorizationService;
     uploadStatementService: IUploadStatementService;

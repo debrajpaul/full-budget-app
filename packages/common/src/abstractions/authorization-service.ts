@@ -1,5 +1,6 @@
 export interface IRegisterInput {
   email: string;
+  tenantId: string;
   name: string;
   password: string;
 }
@@ -11,12 +12,14 @@ export interface IRegisterResponse {
 
 export interface ILoginInput {
   email: string;
+  tenantId: string;
   password: string;
 }
 
 export interface User {
   email: string;
   name: string;
+  tenantId: string;
   isActive: boolean;
 }
 export interface ILoginResponse {

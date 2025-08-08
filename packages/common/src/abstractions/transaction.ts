@@ -1,4 +1,5 @@
 export interface ITransaction {
+  tenantId: string;
   userId: string;
   transactionId: string;
   bankName: string;

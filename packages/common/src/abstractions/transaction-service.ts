@@ -1,11 +1,10 @@
-import { ITransaction, EBankName } from "./index";
+import { ITransaction, EBankName, ITransactionRequest } from "./index";
 export interface IMonthlyReview {
   totalIncome: number;
   totalExpense: number;
   netSavings: number;
   transactions: ITransaction[];
 }
-
 export interface IAnnualReview {
   totalIncome: number;
   totalExpense: number;
@@ -23,25 +22,33 @@ export interface IAggregatedSummary {
   netSavings: number;
 }
 export interface ITransactionService {
-  processes(event: any): Promise<boolean[]>;
-  process(queueUrl: string, bucket: string): Promise<boolean>;
+  processes(): Promise<boolean>;
+  process(request: ITransactionRequest): Promise<boolean>;
   monthlyReview(
+    tenantId: string,
     userId: string,
     month: number,
     year: number,
   ): Promise<IMonthlyReview>;
-  annualReview(userId: string, year: number): Promise<IAnnualReview>;
+  annualReview(
+    tenantId: string,
+    userId: string,
+    year: number,
+  ): Promise<IAnnualReview>;
   categoryBreakDown(
+    tenantId: string,
     userId: string,
     month: number,
     year: number,
   ): Promise<IcategoryGroup[]>;
   aggregateSummary(
+    tenantId: string,
     userId: string,
     year: number,
     month?: number,
   ): Promise<IAggregatedSummary>;
   filteredTransactions(
+    tenantId: string,
     userId: string,
     year: number,
     month: number,
