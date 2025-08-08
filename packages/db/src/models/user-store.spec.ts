@@ -39,7 +39,7 @@ describe("UserStore", () => {
 
   it("should save a user to DynamoDB", async () => {
     storeMock.send = jest.fn().mockResolvedValue({});
-    await userStore.saveUser(tenantId, user);
+    await userStore.saveUser(user);
     expect(storeMock.send).toHaveBeenCalled();
     expect(loggerMock.info).toHaveBeenCalledWith("Saving user to DynamoDB");
   });
