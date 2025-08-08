@@ -6,8 +6,8 @@ export class HdfcBankParser implements IBankParser {
   public async parse(
     buffer: Buffer,
     userId: string,
-  ): Promise<Omit<ITransaction, "createdAt">[]> {
-    const txns: Omit<ITransaction, "createdAt">[] = [];
+  ): Promise<Omit<ITransaction, "createdAt" | "tenantId">[]> {
+    const txns: Omit<ITransaction, "createdAt" | "tenantId">[] = [];
 
     const rawText = buffer.toString("utf-8");
     const lines = rawText.split(/\r?\n/);

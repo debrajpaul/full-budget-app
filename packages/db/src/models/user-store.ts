@@ -8,6 +8,7 @@ import {
 export class UserStore implements IUserStore {
   private readonly logger: ILogger;
   private readonly tableName: string;
+
   private readonly store: DynamoDBDocumentClient;
 
   constructor(
@@ -17,16 +18,20 @@ export class UserStore implements IUserStore {
   ) {
     this.logger = logger;
     this.tableName = tableName;
+    this.tableName = tableName;
     this.store = store;
   }
 
-  public async getUser(email: string): Promise<IUser | undefined> {
+  public async getUser(
+    tenantId: string,
+    email: string,
+  ): Promise<IUser | undefined> {
     this.logger.info("Getting user from DynamoDB");
-    this.logger.debug("User", { email });
+    this.logger.debug("User", { email, tenantId });
     const result = await this.store.send(
       new GetCommand({
         TableName: this.tableName,
-        Key: { email },
+        Key: { email, tenantId },
       }),
     );
     return result.Item as IUser | undefined;
@@ -36,7 +41,8 @@ export class UserStore implements IUserStore {
     this.logger.info("Saving user to DynamoDB");
     this.logger.debug("User", { user });
     const item: IUser = {
-      email: user.email, // Partition Key
+      tenantId: user.tenantId,
+      email: user.email,
       name: user.name,
       passwordHash: user.passwordHash,
       createdAt: user.createdAt,
@@ -48,14 +54,15 @@ export class UserStore implements IUserStore {
       new PutCommand({
         TableName: this.tableName,
         Item: item,
-        ConditionExpression: "attribute_not_exists(email)",
+        ConditionExpression:
+          "attribute_not_exists(email) AND attribute_not_exists(tenantId)",
       }),
     );
   }
 
-  public async updateUser(input: IUserUpdate): Promise<void> {
+  public async updateUser(tenantId: string, input: IUserUpdate): Promise<void> {
     this.logger.info("Updating user in DynamoDB");
-    this.logger.debug("User", { input });
+    this.logger.debug("User", { input, tenantId });
     const { email, ...rest } = input;
 
     const updateExpressions: string[] = [];
@@ -83,7 +90,7 @@ export class UserStore implements IUserStore {
     await this.store.send(
       new UpdateCommand({
         TableName: this.tableName,
-        Key: { email },
+        Key: { email, tenantId },
         UpdateExpression: "SET " + updateExpressions.join(", "),
         ExpressionAttributeNames: expressionAttributeNames,
         ExpressionAttributeValues: expressionAttributeValues,

@@ -9,7 +9,7 @@ export const authResolvers = {
   },
   Mutation: {
     register: async (
-      _: any,
+      _: unknown,
       args: { input: IRegisterInput },
       ctx: IGraphQLContext,
     ) => {
@@ -19,11 +19,13 @@ export const authResolvers = {
           "Authorization service not found",
           "SERVICE_NOT_FOUND",
         );
-      const { email, name, password } = RegisterArgs.parse(args.input);
-      return await authService.register({ email, name, password });
+      const { email, name, tenantId, password } = RegisterArgs.parse(
+        args.input,
+      );
+      return await authService.register({ email, name, tenantId, password });
     },
     login: async (
-      _: any,
+      _: unknown,
       args: { input: ILoginInput },
       ctx: IGraphQLContext,
     ) => {
@@ -33,8 +35,8 @@ export const authResolvers = {
           "Authorization service not found",
           "SERVICE_NOT_FOUND",
         );
-      const { email, password } = LoginArgs.parse(args.input);
-      return await authService.login({ email, password });
+      const { email, tenantId, password } = LoginArgs.parse(args.input);
+      return await authService.login({ email, tenantId, password });
     },
   },
 };

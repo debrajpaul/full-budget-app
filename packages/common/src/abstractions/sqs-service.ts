@@ -1,4 +1,12 @@
+import { EBankName } from "./index";
+export interface ITransactionRequest {
+  bank: EBankName;
+  fileName: string;
+  fileKey: string;
+  userId: string;
+  tenantId: string;
+}
 export interface ISQSService {
-  sendFileMessage(queueUrl: string, messageBody: object): Promise<void>;
-  receiveFileMessage(queueUrl: string): Promise<any | undefined>;
+  sendFileMessage(messageBody: ITransactionRequest): Promise<void>;
+  receiveFileMessage(): Promise<ITransactionRequest | undefined>;
 }

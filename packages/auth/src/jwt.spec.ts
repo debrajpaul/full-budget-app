@@ -2,14 +2,19 @@ import { signToken, verifyToken } from "./jwt";
 
 describe("JWT Auth", () => {
   const jwtSecret = "test_secret";
-  const payload = { userId: "user123", role: "admin" };
+  const payload = {
+    userId: "user123",
+    email: "user@example.com",
+    tenantId: "tenant123",
+  };
 
   it("should sign a token and verify it", () => {
     const token = signToken(payload, jwtSecret);
     expect(typeof token).toBe("string");
     const decoded = verifyToken(token, jwtSecret);
     expect(decoded.userId).toBe(payload.userId);
-    expect(decoded.role).toBe(payload.role);
+    expect(decoded.email).toBe(payload.email);
+    expect(decoded.tenantId).toBe(payload.tenantId);
   });
 
   it("should throw error for invalid token", () => {

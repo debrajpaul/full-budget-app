@@ -1,4 +1,5 @@
 export interface IUser {
+  tenantId: string;
   email: string;
   name: string;
   passwordHash: string;

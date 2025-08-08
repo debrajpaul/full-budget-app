@@ -12,6 +12,10 @@ export class UsersTableStack extends Stack {
     this.usersTable = new Table(this, 'UsersTable', {
       tableName: 'users',
       partitionKey: {
+        name: 'tenantId',
+        type: AttributeType.STRING,
+      },
+      sortKey: {
         name: 'email',
         type: AttributeType.STRING,
       },

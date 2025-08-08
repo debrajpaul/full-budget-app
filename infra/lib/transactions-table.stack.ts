@@ -1,5 +1,5 @@
 import * as cdk from 'aws-cdk-lib';
-import { Stack, StackProps, RemovalPolicy } from "aws-cdk-lib";
+import { Stack, StackProps, RemovalPolicy } from 'aws-cdk-lib';
 import { Table, AttributeType, BillingMode } from 'aws-cdk-lib/aws-dynamodb';
 import { Construct } from 'constructs';
 
@@ -12,20 +12,23 @@ export class TransactionsTableStack extends Stack {
     this.transactionsTable = new Table(this, 'TransactionsTable', {
       tableName: 'transactions',
       partitionKey: {
-        name: 'transactionId',
+        name: 'tenantId', // Multi-tenant partitioning
         type: AttributeType.STRING,
       },
-      billingMode: BillingMode.PAY_PER_REQUEST, // OR BillingMode.PROVISIONED
-      removalPolicy: RemovalPolicy.DESTROY, // for dev only; change for prod
+      sortKey: {
+        name: 'transactionId', // Sort by transaction ID within tenant
+        type: AttributeType.STRING,
+      },
+      billingMode: BillingMode.PAY_PER_REQUEST,
+      removalPolicy: RemovalPolicy.DESTROY, // For dev only
     });
 
-    // Optional TTL setup
+    // Optional: enable TTL for data expiry
     // this.transactionsTable.addTimeToLiveAttribute('expiresAt');
 
-    new cdk.CfnOutput(this, 'UploadsTableName', {
+    new cdk.CfnOutput(this, 'TransactionsTableName', {
       value: this.transactionsTable.tableName,
-      exportName: 'UploadsTableName',
+      exportName: 'TransactionsTableName',
     });
-
   }
 }

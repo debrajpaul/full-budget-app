@@ -1,33 +1,28 @@
 import { randomUUID } from "crypto";
 import {
   ILogger,
-  EBankName,
   IS3Service,
   ISQSService,
+  IUploadRequest,
+  ITransactionRequest,
   IUploadStatementService,
 } from "@common";
 
 export class UploadStatementService implements IUploadStatementService {
   constructor(
     private readonly logger: ILogger,
-    private readonly bucket: string,
-    private readonly queueUrl: string,
     private readonly s3Service: IS3Service,
     private readonly sqsService: ISQSService,
   ) {}
 
-  public async uploadStatement(
-    bank: EBankName,
-    fileName: string,
-    contentBase64: string,
-    userId: string,
-  ): Promise<boolean> {
+  public async uploadStatement(request: IUploadRequest): Promise<boolean> {
     try {
+      const { bank, fileName, contentBase64, userId, tenantId } = request;
       this.logger.info(
         `Uploading statement for bank: ${bank}, fileName: ${fileName}, userId: ${userId}`,
       );
       this.logger.debug("Parameters", { bank, fileName, userId });
-      if (!bank || !fileName || !contentBase64 || !userId) {
+      if (!bank || !fileName || !contentBase64 || !userId || !tenantId) {
         const errorMessage = new Error(
           "Missing required parameters for uploading statement",
         );
@@ -35,20 +30,27 @@ export class UploadStatementService implements IUploadStatementService {
           bank,
           fileName,
           userId,
+          tenantId,
         });
         throw errorMessage;
       }
-      this.logger.debug("All parameters are valid", { bank, fileName, userId });
+      this.logger.debug("All parameters are valid", {
+        bank,
+        fileName,
+        userId,
+        tenantId,
+      });
       const buffer = Buffer.from(contentBase64, "base64");
       const fileKey = `${bank}/${randomUUID()}-${fileName}`;
-
-      await this.s3Service.putFile(this.bucket, fileKey, buffer);
-      await this.sqsService.sendFileMessage(this.queueUrl, {
+      const transactionRequest: ITransactionRequest = {
         bank,
         fileName,
         fileKey,
         userId,
-      });
+        tenantId,
+      };
+      await this.s3Service.putFile(fileKey, buffer);
+      await this.sqsService.sendFileMessage(transactionRequest);
       this.logger.info(`Statement uploaded successfully: ${fileKey}`, {
         bank,
         fileName,
@@ -56,11 +58,7 @@ export class UploadStatementService implements IUploadStatementService {
       });
       return true;
     } catch (error) {
-      this.logger.error("Error uploading statement", error as Error, {
-        bank,
-        fileName,
-        userId,
-      });
+      this.logger.error("Error uploading statement", error as Error, request);
       throw new Error("Failed to upload statement");
     }
   }

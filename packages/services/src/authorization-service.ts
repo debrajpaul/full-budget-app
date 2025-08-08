@@ -41,9 +41,9 @@ export class AuthorizationService implements IAuthorizationService {
   public async register(
     registerInput: IRegisterInput,
   ): Promise<IRegisterResponse> {
-    const { email, name, password } = registerInput;
+    const { email, name, tenantId, password } = registerInput;
     this.logger.info("Registering user", { email });
-    if (!email || !name || !password) {
+    if (!email || !tenantId || !name || !password) {
       this.logger.error("Invalid are required for registration");
       throw new Error("Invalid are required");
     }
@@ -56,6 +56,7 @@ export class AuthorizationService implements IAuthorizationService {
     const passwordHash = await hashPassword(password);
     const timestamp = new Date();
     const user = {
+      tenantId,
       email,
       name,
       passwordHash,
@@ -65,15 +66,15 @@ export class AuthorizationService implements IAuthorizationService {
     };
     await this.userStore.saveUser(user);
 
-    this.logger.debug("User registered successfully", { email });
+    this.logger.debug("User registered successfully", { email, tenantId });
     this.logger.info("User registration successful");
     return { success: true, message: "User registered successfully" };
   }
 
   public async login(loginInput: ILoginInput): Promise<ILoginResponse> {
-    const { email, password } = loginInput;
+    const { email, tenantId, password } = loginInput;
     this.logger.info("Logging in user", { email });
-    const user = await this.userStore.getUser(email);
+    const user = await this.userStore.getUser(tenantId, email);
     if (!user) {
       this.logger.error("User not found");
       throw new Error("User not found");
@@ -82,12 +83,20 @@ export class AuthorizationService implements IAuthorizationService {
       this.logger.error("Invalid credentials");
       throw new Error("Invalid credentials");
     }
-    const token = signToken({ userId: user.email }, this.jwtSecret);
+    const token = signToken(
+      { userId: user.email, email: user.email, tenantId: user.tenantId },
+      this.jwtSecret,
+    );
     this.logger.debug("User logged in successfully", { email });
     this.logger.info("User login successful");
     return {
       token,
-      user: { email: user.email, name: user.name, isActive: user.isActive },
+      user: {
+        email: user.email,
+        name: user.name,
+        tenantId: user.tenantId,
+        isActive: user.isActive,
+      },
     };
   }
 }

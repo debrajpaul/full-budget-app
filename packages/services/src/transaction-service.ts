@@ -6,6 +6,7 @@ import {
   ITransaction,
   ITransactionStore,
   ITransactionService,
+  ITransactionRequest,
   IMonthlyReview,
   IAnnualReview,
   IcategoryGroup,
@@ -32,54 +33,50 @@ export class TransactionService implements ITransactionService {
     this.logger.info("ProcessService initialized");
   }
 
-  public async processes(event: any): Promise<boolean[]> {
+  public async processes(): Promise<boolean> {
     this.logger.info("processes started processing messages");
-    this.logger.debug("event", { event });
-    const results: boolean[] = [];
-    for (const record of event.Records) {
-      const body = JSON.parse(record.body);
-      this.logger.debug("Received job:", body);
-      // Process the job...
-      const queueUrl = body.queueUrl;
-      const bucket = body.bucket;
-      let flag: boolean = await this.process(queueUrl, bucket);
-      this.logger.debug(`Flag ${flag}`);
-      results.push(flag);
+    // Process the job...
+    this.logger.debug("SQS Service initialized", {
+      sqsService: this.sqsService,
+    });
+    const messageData = await this.sqsService.receiveFileMessage();
+    if (!messageData) {
+      this.logger.warn("No messages received from SQS");
+      return false;
     }
-    return results;
+    this.logger.debug("###Message received from SQS", { messageData });
+    if (
+      !messageData.fileKey ||
+      !messageData.bank ||
+      !messageData.userId ||
+      !messageData.tenantId
+    ) {
+      this.logger.error("Invalid message body:");
+      return false;
+    }
+    this.logger.info(
+      `Processing fileKey: ${messageData.fileKey}, bank: ${messageData.bank}, userId: ${messageData.userId}, tenantId: ${messageData.tenantId}`,
+    );
+    let flag: boolean = await this.process(messageData);
+    this.logger.debug(`Flag ${flag}`);
+    return flag;
   }
 
-  public async process(queueUrl: string, bucket: string): Promise<boolean> {
+  public async process(request: ITransactionRequest): Promise<boolean> {
     this.logger.info("process started processing messages");
     try {
-      this.logger.debug("SQS Service initialized", {
-        sqsService: this.sqsService,
-      });
-      this.logger.debug("Attempting to receive message from SQS", {
-        queueUrl: queueUrl,
-      });
-      const message = await this.sqsService.receiveFileMessage(queueUrl);
-      if (!message) {
-        this.logger.warn("No messages received from SQS");
-        return false;
-      }
-      this.logger.debug("###Message received from SQS", { message });
-      if (!message.fileKey || !message.bank || !message.userId) {
-        this.logger.error("Invalid message body:", message);
-        return false;
-      }
-      this.logger.info(
-        `Processing fileKey: ${message.fileKey}, bank: ${message.bank}, userId: ${message.userId}`,
-      );
-      const fileBuffer = await this.s3Service.getFile(bucket, message.fileKey);
+      const fileBuffer = await this.s3Service.getFile(request.fileKey);
       this.logger.info(`fileBuffer length: ${fileBuffer.length}`);
       const transactions = await this.parseTransactions(
         fileBuffer,
-        message.bank,
-        message.userId,
+        request.bank,
+        request.userId,
       );
       this.logger.debug(`###transactions. -->`, { data: transactions });
-      await this.transactionStore.saveTransactions(transactions);
+      await this.transactionStore.saveTransactions(
+        request.tenantId,
+        transactions,
+      );
       this.logger.info(`Processed ${transactions.length} transactions.`);
       return true;
     } catch (err) {
@@ -89,6 +86,7 @@ export class TransactionService implements ITransactionService {
   }
 
   public async monthlyReview(
+    tenantId: string,
     userId: string,
     month: number,
     year: number,
@@ -98,6 +96,7 @@ export class TransactionService implements ITransactionService {
     const startDate = new Date(year, month - 1, 1).toISOString(); // start of prev month
     const endDate = new Date(year, month, 1).toISOString(); // start of this month
     const transactions = await this.transactionStore.getTransactionsByDateRange(
+      tenantId,
       userId,
       startDate,
       endDate,
@@ -124,6 +123,7 @@ export class TransactionService implements ITransactionService {
   }
 
   public async annualReview(
+    tenantId: string,
     userId: string,
     year: number,
   ): Promise<IAnnualReview> {
@@ -132,6 +132,7 @@ export class TransactionService implements ITransactionService {
     const startDate = new Date(year, 0, 1).toISOString(); // Jan 1
     const endDate = new Date(year + 1, 0, 1).toISOString(); // Jan 1 next year
     const txns = await this.transactionStore.getTransactionsByDateRange(
+      tenantId,
       userId,
       startDate,
       endDate,
@@ -156,6 +157,7 @@ export class TransactionService implements ITransactionService {
   }
 
   public async categoryBreakDown(
+    tenantId: string,
     userId: string,
     month: number,
     year: number,
@@ -165,6 +167,7 @@ export class TransactionService implements ITransactionService {
     const startDate = new Date(year, month - 1, 1).toISOString(); // start of prev month
     const endDate = new Date(year, month, 0).toISOString(); // start of this month
     const txns = await this.transactionStore.getTransactionsByDateRange(
+      tenantId,
       userId,
       startDate,
       endDate,
@@ -192,6 +195,7 @@ export class TransactionService implements ITransactionService {
   }
 
   public async aggregateSummary(
+    tenantId: string,
     userId: string,
     year: number,
     month?: number,
@@ -210,6 +214,7 @@ export class TransactionService implements ITransactionService {
       endDate = new Date(year, 11, 31).toISOString();
     }
     const txns = await this.transactionStore.getTransactionsByDateRange(
+      tenantId,
       userId,
       startDate,
       endDate,
@@ -230,6 +235,7 @@ export class TransactionService implements ITransactionService {
   }
 
   public async filteredTransactions(
+    tenantId: string,
     userId: string,
     year: number,
     month: number,
@@ -241,6 +247,7 @@ export class TransactionService implements ITransactionService {
     const startDate = new Date(year, month - 1, 1).toISOString(); // start of prev month
     const endDate = new Date(year, month, 0).toISOString(); // start of this month
     const txns = await this.transactionStore.getTransactionsByDateRange(
+      tenantId,
       userId,
       startDate,
       endDate,
@@ -261,7 +268,7 @@ export class TransactionService implements ITransactionService {
     buffer: Buffer,
     bank: EBankName,
     userId: string,
-  ): Promise<Omit<ITransaction, "createdAt">[]> {
+  ): Promise<Omit<ITransaction, "createdAt" | "tenantId">[]> {
     switch (bank) {
       case EBankName.sbi: {
         const sbiBankParser = new SbiBankParser();

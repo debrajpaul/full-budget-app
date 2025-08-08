@@ -1,28 +1,27 @@
+import { mock } from "jest-mock-extended";
 import { S3Service } from "./s3-client";
+import { ILogger } from "@common";
+import { S3 } from "@aws-sdk/client-s3";
 
 describe("S3Service", () => {
-  let s3Mock: any;
-  let loggerMock: any;
+  let s3Client: S3;
+  let loggerMock: ReturnType<typeof mock<ILogger>>;
   let service: S3Service;
   const bucket = "test-bucket";
   const key = "test-key";
   const fileBuffer = Buffer.from("test-data");
 
   beforeEach(() => {
-    loggerMock = {
-      info: jest.fn(),
-      debug: jest.fn(),
-    };
-    s3Mock = {
-      send: jest.fn(),
-    };
-    service = new S3Service(loggerMock, s3Mock);
+    loggerMock = mock<ILogger>();
+    s3Client = new S3({});
+    jest.spyOn(s3Client, "send").mockImplementation(jest.fn());
+    service = new S3Service(loggerMock, bucket, s3Client);
   });
 
   it("should upload a file to S3", async () => {
-    s3Mock.send.mockResolvedValue({});
-    await service.putFile(bucket, key, fileBuffer);
-    expect(s3Mock.send).toHaveBeenCalled();
+    (s3Client.send as jest.Mock).mockResolvedValue({});
+    await service.putFile(key, fileBuffer);
+    expect(s3Client.send).toHaveBeenCalled();
     expect(loggerMock.info).toHaveBeenCalledWith("#PuttingS3");
   });
 
@@ -34,17 +33,17 @@ describe("S3Service", () => {
         for (const chunk of chunks) yield chunk;
       },
     };
-    s3Mock.send.mockResolvedValue({ Body: asyncIterable });
-    const result = await service.getFile(bucket, key);
-    expect(s3Mock.send).toHaveBeenCalled();
+    (s3Client.send as jest.Mock).mockResolvedValue({ Body: asyncIterable });
+    const result = await service.getFile(key);
+    expect(s3Client.send).toHaveBeenCalled();
     expect(loggerMock.info).toHaveBeenCalledWith("###GettingS3");
     expect(Buffer.isBuffer(result)).toBe(true);
     expect(result.toString()).toBe("chunk1chunk2");
   });
 
   it("should throw error if S3 Body is missing", async () => {
-    s3Mock.send.mockResolvedValue({});
-    await expect(service.getFile(bucket, key)).rejects.toThrow(
+    (s3Client.send as jest.Mock).mockResolvedValue({});
+    await expect(service.getFile(key)).rejects.toThrow(
       "No file body returned from S3",
     );
   });
