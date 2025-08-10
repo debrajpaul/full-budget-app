@@ -55,7 +55,6 @@ export function setupServices(
   );
 
   return {
-    userStore,
     transactionService,
     authorizationService,
     uploadStatementService,

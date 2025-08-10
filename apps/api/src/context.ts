@@ -1,9 +1,21 @@
 import { verifyToken } from "@auth";
 import { config } from "./environment";
 import { IGraphQLContext } from "@common";
+import { Request, Response } from "express";
 import { ExpressContextFunctionArgument } from "@as-integrations/express5";
+import {
+  LambdaContextFunctionArgument,
+  handlers,
+} from "@as-integrations/aws-lambda";
+import { APIGatewayProxyEventV2, Context as LambdaCtx } from "aws-lambda";
 import { setupDependency } from "./setup-dependency";
 import { setupServices } from "./setup-services";
+
+type IncomingRequest =
+  | ExpressContextFunctionArgument
+  | LambdaContextFunctionArgument<
+      handlers.RequestHandler<APIGatewayProxyEventV2, any>
+    >;
 
 const { logger, s3Client, sqsClient, dynamoDBDocumentClient } =
   setupDependency();
@@ -12,19 +24,35 @@ const { transactionService, authorizationService, uploadStatementService } =
   setupServices(logger, s3Client, sqsClient, dynamoDBDocumentClient);
 
 export const createContext = async (
-  ctx: ExpressContextFunctionArgument,
+  ctx: IncomingRequest,
 ): Promise<IGraphQLContext> => {
-  const authHeader = ctx.req.headers["authorization"] || "";
   const loggerCtx = logger.child("GraphQLContext");
-  let userId: string | null = null;
+  // Detect Express vs Lambda & get auth header
+  let request: Request | APIGatewayProxyEventV2;
+  let response: Response | undefined;
+  let lambdaContext: LambdaCtx | undefined;
+  let authHeader: string | undefined = undefined;
   let tenantId: string | null = null;
+  let userId: string | null = null;
+
+  if (isExpressContext(ctx)) {
+    // Express context
+    authHeader = ctx.req.headers["authorization"] as string | undefined;
+    request = ctx.req;
+    response = ctx.res;
+  } else {
+    // Lambda context
+    authHeader = ctx.event.headers?.authorization;
+    request = ctx.event;
+    lambdaContext = ctx.context;
+  }
 
   if (!authHeader?.startsWith("Bearer ")) {
     loggerCtx.warn(`Malformed Authorization header: ${authHeader}`);
   }
-  const token = authHeader.replace("Bearer ", "") ?? null;
+  const token = authHeader?.replace("Bearer ", "") ?? null;
   try {
-    const payload = verifyToken(token, config.jwtSecret) as {
+    const payload = verifyToken(token || "", config.jwtSecret) as {
       userId: string;
       tenantId: string;
     };
@@ -34,18 +62,14 @@ export const createContext = async (
     loggerCtx.warn(`JWT verification failed: ${error}`);
   }
 
-  if (!userId) {
-    loggerCtx.error("Missing userId from JWT");
+  if (!userId || !tenantId) {
+    loggerCtx.error("Missing userId or tenantId from JWT");
     throw new Error("Unauthorized");
   }
-
-  if (!tenantId) {
-    loggerCtx.error("Missing tenantId from JWT");
-    throw new Error("Unauthorized");
-  }
-
   return {
-    ...ctx,
+    request,
+    response,
+    lambdaContext,
     userId,
     tenantId,
     dataSources: {
@@ -55,3 +79,9 @@ export const createContext = async (
     },
   };
 };
+
+function isExpressContext(
+  ctx: IncomingRequest,
+): ctx is ExpressContextFunctionArgument {
+  return "req" in ctx;
+}

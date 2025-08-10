@@ -5,7 +5,8 @@
     "infra": "bin/infra.js"
   },
   "scripts": {
-    "build": "cd ../apps/api && pnpm build",
+    "build:app": "cd ../apps/api && pnpm build",
+    "build:worker": "cd ../apps/worker && pnpm build",
     "cdk:deploy": "pnpm build && cdk deploy",
     "cdk:synth": "pnpm build && cdk synth",
     "cdk:bootstrap": "cdk bootstrap aws://333208197562/ap-south-1",
