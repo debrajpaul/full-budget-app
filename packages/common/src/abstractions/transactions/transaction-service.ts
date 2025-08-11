@@ -1,4 +1,7 @@
-import { ITransaction, EBankName, ITransactionRequest } from "./index";
+import { ITransaction } from "./transaction";
+import { EBankName } from "../bank-parser";
+import { ITransactionRequest } from "../sqs-service";
+
 export interface IMonthlyReview {
   totalIncome: number;
   totalExpense: number;

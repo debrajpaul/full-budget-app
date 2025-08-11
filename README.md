@@ -1,6 +1,6 @@
 # full-budget-app
 
-A modular, scalable microservice architecture for managing transactions, budgets, and reviews. using AWS CDK, Lambda, DynamoDB, SQS, and S3.
+A modular, scalable microservice architecture with best practices of multi-tenancy SaaS platform for managing transactions, budgets, and reviews. using AWS CDK, Lambda, DynamoDB, SQS, and S3.
 
 - **GraphQL Apollo** for the API layer
 - **SQS** for event-driven background processing
@@ -10,27 +10,95 @@ A modular, scalable microservice architecture for managing transactions, budgets
 
 ## Design Decisions
 
-    * Monorepo (pnpm workspaces)
-        * Enables code reuse (commons) across graphql api, processor worker
-        * Clear project separation with fast local builds
-    * AWS CDK
-        * Infrastructure-as-code with reusable L3 Constructs
-    * Parameter Store (SSM)
-        * Used for secrets/config management.
-    * GraphQL Apollo
-        * Simple schema-first API with modern middleware support
-        * Exposes /metrics endpoint for cloudwatch dashboad
-    * Simple Queue Service (SQS)
-        * Background task processing (bank parcer)
-        * Decouples write-heavy or async logic from API
-    * DynamoDB
-        * Document-oriented for nested data (bank -> transactions[])
-        * Easy ODM support with validation
-    * Winston Logger
-        * Standardized logs across all services
-        * Tagged by topic, service, and error level
+- **Monorepo (pnpm workspaces)**
+  - Enables code reuse (commons) across GraphQL API and worker
+  - Clear project separation with fast local builds
+- **AWS CDK**
+  - Infrastructure-as-code with reusable L3 Constructs
+- **Parameter Store (SSM)**
+  - Used for secrets/config management
+- **GraphQL Apollo**
+  - Simple schema-first API with modern middleware support
+  - Exposes /metrics endpoint for CloudWatch dashboard
+- **SQS**
+  - Background task processing (bank parser)
+  - Decouples write-heavy or async logic from API
+- **DynamoDB**
+  - Document-oriented for nested data (bank → transactions[])
+  - Easy ODM support with validation
+- **Winston Logger**
+  - Standardized logs across all services
+  - Tagged by topic, service, and error level
 
-    * Architecture Diagram **coming soon**
+## \*Architecture Diagram **coming soon\***
+
+### Multi-Tenancy Models
+
+**Single Table / Shared Infrastructure (Recommended Initially)**
+
+- Add `tenantId` to every DynamoDB record
+- Inject `tenantId` into GraphQL context via middleware
+- Enforce tenant scoping in queries and mutations
+
+**Isolated Resources per Tenant (Enterprise)**
+
+- S3: Prefix all paths with `tenantId` → `s3://bucket/<tenantId>/`
+- DynamoDB: Table-per-tenant for strict isolation
+
+### Authentication
+
+- JWT includes `tenantId`:
+
+```json
+{
+  "sub": "user-id",
+  "tenantId": "tenant-abc123",
+  "email": "user@example.com"
+}
+```
+
+- Middleware extracts and validates `tenantId`
+
+### Tenant Provisioning
+
+1. Generate unique `tenantId`
+2. Create entry in `Tenants` table with plan and limits
+3. Initialize S3 prefix
+4. Send onboarding email
+
+### Billing & Plans
+
+- Integrate **Stripe** for subscriptions
+- Store `stripeCustomerId` in `Tenants`
+- Track usage in DynamoDB and enforce limits
+
+### Security
+
+- Use IAM condition keys to restrict access by `tenantId`
+- Include `tenantId` in CloudWatch logs for auditing
+
+### Observability
+
+- Tag all logs with `tenantId`
+- Filter logs in CloudWatch Insights by `tenantId`
+
+### Testing Isolation
+
+- Create mock tenants in seed data
+- Run integration tests to ensure no cross-tenant data leaks
+
+### SaaS Readiness Checklist
+
+| Area           | Implementation                                     |
+| -------------- | -------------------------------------------------- |
+| Multi-Tenancy  | Tenant-aware context, `tenantId` filtering         |
+| Authentication | JWT with `tenantId`                                |
+| Billing        | Stripe + usage tracking                            |
+| Data Isolation | S3 prefixes, Dynamo filters                        |
+| Observability  | Logs & metrics tagged with `tenantId`              |
+| Scalability    | Serverless infra, provisioned concurrency optional |
+
+---
 
 ## What is this repository for?
 
@@ -99,9 +167,10 @@ A modular, scalable microservice architecture for managing transactions, budgets
 - Deployed via: AWS CDK v2
 - Log Retention: 7 days (set via CDK)
 - CDK Bootstrapping Required:
-  ```bash
-  cdk bootstrap aws://<account-id>/ap-south-1
-  ```
+
+```bash
+cdk bootstrap aws://<account-id>/ap-south-1
+```
 
 ---
 

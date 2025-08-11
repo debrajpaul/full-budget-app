@@ -1,5 +1,5 @@
-import * as dotenv from "dotenv";
 import path from "path";
+import * as dotenv from "dotenv";
 import { IConfig, LogLevel } from "@common";
 
 console.log(`### path:${path.join(__dirname, "../../../.env")}`);
@@ -16,6 +16,7 @@ const {
   SQS_QUEUE_URL,
   DYNAMO_USER_TABLE,
   DYNAMO_TRANSACTION_TABLE,
+  DYNAMO_CATEGORY_RULES_TABLE,
   JWT_SECRET,
 } = process.env;
 
@@ -30,5 +31,6 @@ export const config: IConfig = {
   sqsQueueUrl: SQS_QUEUE_URL as string,
   dynamoUserTable: DYNAMO_USER_TABLE as string,
   dynamoTransactionTable: DYNAMO_TRANSACTION_TABLE as string,
+  dynamoCategoryRulesTable: DYNAMO_CATEGORY_RULES_TABLE as string,
   jwtSecret: JWT_SECRET as string,
 };

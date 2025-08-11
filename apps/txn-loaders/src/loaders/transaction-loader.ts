@@ -1,7 +1,7 @@
 import { SQSRecord } from "aws-lambda";
 import { ILogger, ITransactionService, ITransactionRequest } from "@common";
 
-export class TransactionController {
+export class TransactionLoader {
   constructor(
     private readonly logger: ILogger,
     private readonly transactionService: ITransactionService,

@@ -3,6 +3,7 @@ import { ITransaction, ILogger, ITransactionStore } from "@common";
 import {
   PutCommand,
   QueryCommand,
+  UpdateCommand,
   DynamoDBDocumentClient,
 } from "@aws-sdk/lib-dynamodb";
 
@@ -136,5 +137,36 @@ export class TransactionStore implements ITransactionStore {
 
     const result = await this.store.send(command);
     return (result.Items as ITransaction[]) || [];
+  }
+
+  public async updateTransactionCategory(
+    tenantId: string,
+    transactionId: string,
+    matchedCategory: string,
+  ): Promise<void> {
+    this.logger.info(`Updating transaction category`);
+    this.logger.debug("Transaction ID & Category", {
+      transactionId,
+      matchedCategory,
+    });
+
+    const command = new UpdateCommand({
+      TableName: this.tableName,
+      Key: {
+        tenantId,
+        transactionId,
+      },
+      UpdateExpression: "SET #category = :cat, taggedBy = :tagger",
+      ExpressionAttributeNames: {
+        "#category": "category",
+        "#taggedBy": "taggedBy",
+      },
+      ExpressionAttributeValues: {
+        ":cat": matchedCategory,
+        ":tagger": matchedCategory ? "RULE_ENGINE" : "AI_TAGGER",
+      },
+    });
+    await this.store.send(command);
+    this.logger.info(`Updated category for transaction: ${transactionId}`);
   }
 }

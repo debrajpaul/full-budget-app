@@ -1,6 +1,6 @@
 {
-  "name": "@app/api",
-  "description": "API service for handling requests",
+  "name": "@app/graphql-api",
+  "description": "GraphQL API service for handling requests",
   "version": "1.0.0",
   "main": "src/index.ts",
   "scripts": {
