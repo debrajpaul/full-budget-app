@@ -15,4 +15,9 @@ export interface ITransactionStore {
     startDate: string,
     endDate: string,
   ): Promise<ITransaction[]>;
+  updateTransactionCategory(
+    tenantId: string,
+    transactionId: string,
+    matchedCategory: string,
+  ): Promise<void>;
 }

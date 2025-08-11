@@ -5,5 +5,7 @@ export * from "./transactions-table.stack";
 export * from "./lambda-alarms-construct";
 export * from "./graphql-api-construct";
 export * from "./graphql-api.stack";
-export * from "./worker.stack";
+export * from "./transaction-loader.stack";
 export * from "./ssm-param.stack";
+export * from "./transaction-category-loader.stack";
+export * from "./transaction-category-table.stack";

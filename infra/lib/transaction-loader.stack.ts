@@ -12,44 +12,44 @@ import { StringParameter } from 'aws-cdk-lib/aws-ssm';
 import * as eventSources from 'aws-cdk-lib/aws-lambda-event-sources';
 import { LambdaAlarmsConstruct } from './lambda-alarms-construct';
 
-interface WorkerStackProps extends StackProps {
+interface TransactionLoaderStackProps extends StackProps {
   jobsQueue: sqs.Queue;
   transactionTableArn: string;
   jwtParameter: StringParameter;
   environment: Record<string, string>;
 }
 
-export class WorkerStack extends Stack {
-  constructor(scope: Construct, id: string, props: WorkerStackProps) {
+export class TransactionLoaderStack extends Stack {
+  constructor(scope: Construct, id: string, props: TransactionLoaderStackProps) {
     super(scope, id, props);
 
-    const workerLambda = new lambda.Function(this, 'WorkerLambda', {
-      functionName: 'TransactionWorker',
+    const transactionLambda = new lambda.Function(this, 'TransactionLambda', {
+      functionName: 'TransactionLoader',
       runtime: lambda.Runtime.NODEJS_20_X,
       handler: 'index.handler',
-      code: lambda.Code.fromAsset(path.resolve(__dirname, '../../apps/worker/dist')),
+      code: lambda.Code.fromAsset(path.resolve(__dirname, '../../apps/txn-loader/dist')),
       timeout: Duration.seconds(30),
       environment: props.environment,
     });
 
-    workerLambda.addEnvironment(
+    transactionLambda.addEnvironment(
       'JWT_SECRET',
       props.jwtParameter.stringValue,
     );
     // Grant permission to read secret
-    props.jwtParameter.grantRead(workerLambda);
+    props.jwtParameter.grantRead(transactionLambda);
 
     // Attach queue trigger
-    workerLambda.addEventSource(
+    transactionLambda.addEventSource(
       new eventSources.SqsEventSource(props.jobsQueue, {
         batchSize: 10,
       })
     );
 
-    props.jobsQueue.grantConsumeMessages(workerLambda);
+    props.jobsQueue.grantConsumeMessages(transactionLambda);
 
     // DynamoDB access
-    workerLambda.addToRolePolicy(
+    transactionLambda.addToRolePolicy(
       new iam.PolicyStatement({
         actions: ['dynamodb:PutItem', 'dynamodb:UpdateItem', 'dynamodb:GetItem'],
         resources: [props.transactionTableArn],
@@ -57,9 +57,9 @@ export class WorkerStack extends Stack {
     );
 
     // Reusable monitoring
-    new LambdaAlarmsConstruct(this, 'WorkerLambdaAlarms', {
-      lambdaFn: workerLambda,
-      alarmPrefix: 'TransactionWorker',
+    new LambdaAlarmsConstruct(this, 'TransactionLoaderAlarms', {
+      lambdaFn: transactionLambda,
+      alarmPrefix: 'TransactionLoader',
     });
   }
 }

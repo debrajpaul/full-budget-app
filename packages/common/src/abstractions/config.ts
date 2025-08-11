@@ -11,5 +11,6 @@ export interface IConfig {
   sqsQueueUrl: string;
   dynamoUserTable: string;
   dynamoTransactionTable: string;
+  dynamoCategoryRulesTable: string;
   jwtSecret: string;
 }

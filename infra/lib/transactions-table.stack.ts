@@ -1,6 +1,6 @@
 import * as cdk from 'aws-cdk-lib';
 import { Stack, StackProps, RemovalPolicy } from 'aws-cdk-lib';
-import { Table, AttributeType, BillingMode } from 'aws-cdk-lib/aws-dynamodb';
+import { Table, AttributeType, BillingMode, StreamViewType } from 'aws-cdk-lib/aws-dynamodb';
 import { Construct } from 'constructs';
 
 export class TransactionsTableStack extends Stack {
@@ -19,6 +19,7 @@ export class TransactionsTableStack extends Stack {
         name: 'transactionId', // Sort by transaction ID within tenant
         type: AttributeType.STRING,
       },
+      stream: StreamViewType.NEW_AND_OLD_IMAGES, // Enable streams for change data capture
       billingMode: BillingMode.PAY_PER_REQUEST,
       removalPolicy: RemovalPolicy.DESTROY, // For dev only
     });
