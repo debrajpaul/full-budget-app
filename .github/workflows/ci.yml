@@ -9,15 +9,15 @@ jobs:
     strategy:
       matrix:
         workspace:
-          - apps/api
-          - apps/worker
+          - apps/graphql-api
+          - apps/txn-loaders
           - packages/auth
-          - packages/db
+          - packages/client
           - packages/common
+          - packages/db
           - packages/logger
           - packages/parser
           - packages/services
-          - packages/client
 
     defaults:
       run:
@@ -46,3 +46,5 @@ jobs:
 
       - name: Check Prettier formatting
         run: pnpm exec prettier --check .
+      - name: Run tests
+        run: pnpm test
