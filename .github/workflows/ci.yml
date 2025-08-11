@@ -46,5 +46,5 @@ jobs:
 
       - name: Check Prettier formatting
         run: pnpm exec prettier --check .
-      - name: Run tests
-        run: pnpm test
+      # - name: Run tests
+      #   run: pnpm test

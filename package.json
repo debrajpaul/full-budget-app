@@ -9,7 +9,6 @@
   "packageManager": "pnpm@10.11.0",
   "workspaces": [
     "apps/*",
-    "infra/*",
     "packages/*"
   ],
   "devDependencies": {
