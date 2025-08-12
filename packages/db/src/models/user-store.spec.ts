@@ -13,8 +13,7 @@ describe("UserStore", () => {
     email: "test@example.com",
     name: "Test User",
     passwordHash: "hashedpw",
-    createdAt: new Date(),
-    updatedAt: new Date(),
+    createdAt: new Date().toISOString(),
     isActive: true,
   };
 

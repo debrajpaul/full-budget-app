@@ -25,7 +25,7 @@ export class TransactionCategoryStack extends Stack {
       functionName: 'TransactionCategoryLoader',
       runtime: lambda.Runtime.NODEJS_20_X,
       handler: 'index.handler',
-      code: lambda.Code.fromAsset(path.resolve(__dirname, '../../apps/tag-loader/dist')),
+      code: lambda.Code.fromAsset(path.resolve(__dirname, '../../apps/tag-loaders/dist')),
       timeout: Duration.seconds(30),
       environment: props.environment,
     });

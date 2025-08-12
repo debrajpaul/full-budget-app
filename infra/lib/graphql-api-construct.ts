@@ -27,7 +27,7 @@ export class GraphQLApiConstruct extends Construct {
     const graphqlFunction = new lambda.Function(this, 'GraphQLLambda', {
       runtime: lambda.Runtime.NODEJS_20_X,
       handler: 'index.handler',
-      code: lambda.Code.fromAsset(path.resolve(__dirname, '../../apps/api/dist')), // Adjust to match your output dir
+      code: lambda.Code.fromAsset(path.resolve(__dirname, '../../apps/graphql-api/dist')), // Adjust to match your output dir
       memorySize: 1024,
       timeout: Duration.seconds(15),
       environment: props.environment,
@@ -69,11 +69,17 @@ export class GraphQLApiConstruct extends Construct {
     // API Gateway
     const api = new apigateway.RestApi(this, 'GraphQLApiGateway', {
       restApiName: 'GraphQL API',
-      deployOptions: { stageName: 'prod'},
+      deployOptions: { stageName: props.environment.NODE_ENV || 'dev' },
+      description: 'GraphQL API for Full Budget App',
+      defaultCorsPreflightOptions: {
+        allowOrigins: apigateway.Cors.ALL_ORIGINS,
+        allowMethods: ['POST', 'OPTIONS'],
+        allowHeaders: ['Content-Type', 'Authorization'],
+      },
     });
 
     const graphql = api.root.addResource('graphql');
-    graphql.addMethod('POST', new apigateway.LambdaIntegration(graphqlFunction));
+    graphql.addMethod('POST', new apigateway.LambdaIntegration(graphqlFunction, { proxy: true }));
 
     this.apiUrl = `${api.url}graphql`;
   }

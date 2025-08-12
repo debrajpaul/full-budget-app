@@ -76,8 +76,7 @@ export class UserStore implements IUserStore {
         const val = `:${key}`;
         updateExpressions.push(`${attr} = ${val}`);
         expressionAttributeNames[attr] = key;
-        expressionAttributeValues[val] =
-          value instanceof Date ? value.toISOString() : value;
+        expressionAttributeValues[val] = value;
       }
     }
 

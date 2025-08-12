@@ -10,7 +10,7 @@ export class TransactionsCategoryTableStack extends Stack {
     super(scope, id, props);
 
     this.transactionsCategoryTable = new Table(this, 'TransactionsCategoryTable', {
-      tableName: 'transactions',
+      tableName: 'categories',
       partitionKey: {
         name: 'tenantId', // Multi-tenant partitioning
         type: AttributeType.STRING,

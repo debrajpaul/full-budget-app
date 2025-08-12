@@ -4,7 +4,7 @@
   "version": "1.0.0",
   "main": "src/index.ts",
   "scripts": {
-    "build": "tsc",
+    "build": "esbuild src/index.ts --bundle --platform=node --target=node20 --outdir=dist --external:aws-sdk",
     "lint": "eslint . --ext .ts --fix",
     "format": "prettier --write .",
     "dev": "ts-node-dev --respawn src/index.ts"

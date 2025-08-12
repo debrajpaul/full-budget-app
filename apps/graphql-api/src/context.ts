@@ -7,14 +7,14 @@ import {
   LambdaContextFunctionArgument,
   handlers,
 } from "@as-integrations/aws-lambda";
-import { APIGatewayProxyEventV2, Context as LambdaCtx } from "aws-lambda";
+import { APIGatewayProxyEvent, Context as LambdaCtx } from "aws-lambda";
 import { setupDependency } from "./setup-dependency";
 import { setupServices } from "./setup-services";
 
 type IncomingRequest =
   | ExpressContextFunctionArgument
   | LambdaContextFunctionArgument<
-      handlers.RequestHandler<APIGatewayProxyEventV2, any>
+      handlers.RequestHandler<APIGatewayProxyEvent, any>
     >;
 
 const { logger, s3Client, sqsClient, dynamoDBDocumentClient } =
@@ -28,12 +28,13 @@ export const createContext = async (
 ): Promise<IGraphQLContext> => {
   const loggerCtx = logger.child("GraphQLContext");
   // Detect Express vs Lambda & get auth header
-  let request: Request | APIGatewayProxyEventV2;
+  let request: Request | APIGatewayProxyEvent;
   let response: Response | undefined;
   let lambdaContext: LambdaCtx | undefined;
   let authHeader: string | undefined = undefined;
   let tenantId: string | null = null;
   let userId: string | null = null;
+  let email: string | null = null;
 
   if (isExpressContext(ctx)) {
     // Express context
@@ -55,23 +56,22 @@ export const createContext = async (
     const payload = verifyToken(token || "", config.jwtSecret) as {
       userId: string;
       tenantId: string;
+      email: string;
     };
     userId = payload.userId;
     tenantId = payload.tenantId;
+    email = payload.email;
   } catch (error) {
     loggerCtx.warn(`JWT verification failed: ${error}`);
   }
 
-  if (!userId || !tenantId) {
-    loggerCtx.error("Missing userId or tenantId from JWT");
-    throw new Error("Unauthorized");
-  }
   return {
     request,
     response,
     lambdaContext,
     userId,
     tenantId,
+    email,
     dataSources: {
       authorizationService: authorizationService,
       uploadStatementService: uploadStatementService,
