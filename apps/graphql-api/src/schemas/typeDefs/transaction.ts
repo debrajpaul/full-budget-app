@@ -1,6 +1,6 @@
 export const transactionTypeDefs = /* GraphQL */ `
   type Transaction {
-    tenantId: String!
+    tenantId: TenantType!
     userId: String!
     transactionId: String!
     bankName: BankName!

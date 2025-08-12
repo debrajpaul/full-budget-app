@@ -1,6 +1,8 @@
+import { ETenantType } from "./user";
+
 export interface IRegisterInput {
   email: string;
-  tenantId: string;
+  tenantId: ETenantType;
   name: string;
   password: string;
 }
@@ -12,14 +14,14 @@ export interface IRegisterResponse {
 
 export interface ILoginInput {
   email: string;
-  tenantId: string;
+  tenantId: ETenantType;
   password: string;
 }
 
 export interface User {
   email: string;
   name: string;
-  tenantId: string;
+  tenantId: ETenantType;
   isActive: boolean;
 }
 export interface ILoginResponse {

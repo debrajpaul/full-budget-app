@@ -1,4 +1,4 @@
-import { EBankName } from "@common";
+import { EBankName, ETenantType } from "@common";
 import { z } from "zod";
 
 export const MonthlyReviewArgs = z.object({
@@ -38,11 +38,11 @@ export const RegisterArgs = z.object({
   email: z.string().email("Invalid email address"),
   password: z.string().min(6, "Password must be at least 6 characters"),
   name: z.string().min(1, "Name is required"),
-  tenantId: z.string().min(1, "Tenant ID is required"),
+  tenantId: z.nativeEnum(ETenantType),
 });
 
 export const LoginArgs = z.object({
   email: z.string().email("Invalid email address"),
-  tenantId: z.string().min(1, "Tenant ID is required"),
   password: z.string().min(6, "Password must be at least 6 characters"),
+  tenantId: z.nativeEnum(ETenantType),
 });

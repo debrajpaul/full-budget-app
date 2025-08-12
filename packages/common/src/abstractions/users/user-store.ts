@@ -1,7 +1,7 @@
-import { IUser, IUserUpdate } from "./index";
+import { IUser, IUserUpdate, ETenantType } from "./index";
 
 export interface IUserStore {
-  getUser(tenantId: string, email: string): Promise<IUser | undefined>;
+  getUser(tenantId: ETenantType, email: string): Promise<IUser | undefined>;
   saveUser(user: IUser): Promise<void>;
-  updateUser(tenantId: string, input: IUserUpdate): Promise<void>;
+  updateUser(tenantId: ETenantType, input: IUserUpdate): Promise<void>;
 }

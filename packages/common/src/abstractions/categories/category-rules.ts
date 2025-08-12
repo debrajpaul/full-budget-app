@@ -1,6 +1,7 @@
+import { ETenantType } from "../users";
 export interface ICategoryRules {
   ruleId: string;
-  tenantId: string;
+  tenantId: ETenantType;
   keyword: string;
   category: string;
   isActive: boolean;

@@ -1,5 +1,6 @@
+import { ETenantType } from "../users";
 export interface ITransaction {
-  tenantId: string;
+  tenantId: ETenantType;
   userId: string;
   transactionId: string;
   bankName: string;

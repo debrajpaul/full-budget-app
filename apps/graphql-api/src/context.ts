@@ -1,6 +1,6 @@
 import { verifyToken } from "@auth";
 import { config } from "./environment";
-import { IGraphQLContext } from "@common";
+import { IGraphQLContext, ETenantType } from "@common";
 import { Request, Response } from "express";
 import { ExpressContextFunctionArgument } from "@as-integrations/express5";
 import {
@@ -10,6 +10,7 @@ import {
 import { APIGatewayProxyEvent, Context as LambdaCtx } from "aws-lambda";
 import { setupDependency } from "./setup-dependency";
 import { setupServices } from "./setup-services";
+import { convertToTenantId } from "./utils";
 
 type IncomingRequest =
   | ExpressContextFunctionArgument
@@ -32,7 +33,7 @@ export const createContext = async (
   let response: Response | undefined;
   let lambdaContext: LambdaCtx | undefined;
   let authHeader: string | undefined = undefined;
-  let tenantId: string | null = null;
+  let tenantId: ETenantType = ETenantType.default;
   let userId: string | null = null;
   let email: string | null = null;
 
@@ -59,7 +60,7 @@ export const createContext = async (
       email: string;
     };
     userId = payload.userId;
-    tenantId = payload.tenantId;
+    tenantId = convertToTenantId(payload.tenantId);
     email = payload.email;
   } catch (error) {
     loggerCtx.warn(`JWT verification failed: ${error}`);

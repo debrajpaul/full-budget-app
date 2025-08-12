@@ -1,5 +1,13 @@
+export enum ETenantType {
+  personal = "PERSONAL",
+  client = "CLIENT",
+  // government = "GOVERNMENT",
+  // ngo = "NGO",
+  // educational = "EDUCATIONAL",
+  default = "DEFAULT",
+}
 export interface IUser {
-  tenantId: string;
+  tenantId: ETenantType;
   email: string;
   name: string;
   passwordHash: string;

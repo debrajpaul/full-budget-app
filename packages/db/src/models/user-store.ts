@@ -1,4 +1,4 @@
-import { IUser, IUserUpdate, ILogger, IUserStore } from "@common";
+import { IUser, IUserUpdate, ILogger, IUserStore, ETenantType } from "@common";
 import {
   PutCommand,
   GetCommand,
@@ -23,7 +23,7 @@ export class UserStore implements IUserStore {
   }
 
   public async getUser(
-    tenantId: string,
+    tenantId: ETenantType,
     email: string,
   ): Promise<IUser | undefined> {
     this.logger.info("Getting user from DynamoDB");
@@ -60,7 +60,10 @@ export class UserStore implements IUserStore {
     );
   }
 
-  public async updateUser(tenantId: string, input: IUserUpdate): Promise<void> {
+  public async updateUser(
+    tenantId: ETenantType,
+    input: IUserUpdate,
+  ): Promise<void> {
     this.logger.info("Updating user in DynamoDB");
     this.logger.debug("User", { input, tenantId });
     const { email, ...rest } = input;

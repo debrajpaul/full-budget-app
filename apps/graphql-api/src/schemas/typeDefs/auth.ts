@@ -7,7 +7,7 @@ export const authTypeDefs = /* GraphQL */ `
   input RegisterInput {
     email: String!
     name: String!
-    tenantId: String!
+    tenantId: TenantType!
     password: String!
   }
 
@@ -18,14 +18,14 @@ export const authTypeDefs = /* GraphQL */ `
 
   input LoginInput {
     email: String!
-    tenantId: String!
+    tenantId: TenantType!
     password: String!
   }
 
   type User {
     email: String!
     name: String!
-    tenantId: String!
+    tenantId: TenantType!
     isActive: Boolean!
   }
 

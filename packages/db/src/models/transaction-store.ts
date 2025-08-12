@@ -1,5 +1,5 @@
 import { chunk } from "lodash";
-import { ITransaction, ILogger, ITransactionStore } from "@common";
+import { ITransaction, ILogger, ITransactionStore, ETenantType } from "@common";
 import {
   PutCommand,
   QueryCommand,
@@ -23,7 +23,7 @@ export class TransactionStore implements ITransactionStore {
   }
 
   public async saveTransactions(
-    tenantId: string,
+    tenantId: ETenantType,
     txns: Omit<ITransaction, "createdAt" | "tenantId">[],
   ): Promise<void> {
     this.logger.info("Saving transactions to DynamoDB");
@@ -39,7 +39,7 @@ export class TransactionStore implements ITransactionStore {
   }
 
   async saveTransaction(
-    tenantId: string,
+    tenantId: ETenantType,
     txn: Omit<ITransaction, "createdAt" | "tenantId">,
   ): Promise<void> {
     try {
@@ -85,7 +85,7 @@ export class TransactionStore implements ITransactionStore {
   }
 
   public async getUserTransactions(
-    tenantId: string,
+    tenantId: ETenantType,
     userId: string,
   ): Promise<ITransaction[]> {
     this.logger.info(`Getting transactions for user`);
@@ -106,7 +106,7 @@ export class TransactionStore implements ITransactionStore {
   }
 
   public async getTransactionsByDateRange(
-    tenantId: string,
+    tenantId: ETenantType,
     userId: string,
     startDate: string,
     endDate: string,
@@ -140,7 +140,7 @@ export class TransactionStore implements ITransactionStore {
   }
 
   public async updateTransactionCategory(
-    tenantId: string,
+    tenantId: ETenantType,
     transactionId: string,
     matchedCategory: string,
   ): Promise<void> {
