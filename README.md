@@ -51,7 +51,7 @@ A modular, scalable microservice architecture with best practices of multi-tenan
 
 ```json
 {
-  "sub": "user-id",
+  "userId": "user-id",
   "tenantId": "tenant-abc123",
   "email": "user@example.com"
 }
@@ -105,11 +105,15 @@ A modular, scalable microservice architecture with best practices of multi-tenan
     Monorepo Structure
     .
     ├── apps/
-    │ ├── api/ # GraphQL API (reads/writes to DynamoDB)
+    │ ├── graphql-api/ # GraphQL API (reads/writes to DynamoDB)
     │ │ ├── dockerfile
     │ │ ├── package.json
     │ │ └── tsconfig.json
-    │ ├── worker/ # SQS consumer (adds transaction to DynamoDB)
+    │ ├── txn-loaders/ # SQS consumer (adds transaction to DynamoDB)
+    │ │ ├── dockerfile
+    │ │ ├── package.json
+    │ │ └── tsconfig.json
+    │ ├── tag-loaders/ # DynamoDB stream consumer (adds categories to DynamoDB)
     │ │ ├── dockerfile
     │ │ ├── package.json
     │ │ └── tsconfig.json

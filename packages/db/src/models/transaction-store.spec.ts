@@ -2,14 +2,14 @@
 import { TransactionStore } from "./transaction-store";
 import { mock } from "jest-mock-extended";
 import { DynamoDBDocumentClient } from "@aws-sdk/lib-dynamodb";
-import type { ILogger, ITransaction } from "@common";
+import { ILogger, ITransaction, ETenantType } from "@common";
 
 describe("TransactionStore", () => {
   let storeMock: { send: jest.Mock };
   let loggerMock: ReturnType<typeof mock<ILogger>>;
   let transactionStore: TransactionStore;
   const tableName = "transactions";
-  const tenantId = "tenant1";
+  const tenantId = ETenantType.default;
   const txn: ITransaction = {
     tenantId,
     userId: "user1",

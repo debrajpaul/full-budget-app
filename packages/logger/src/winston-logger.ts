@@ -80,7 +80,7 @@ export class WinstonLogger implements ILogger {
     this.logger?.info(message, { data, tags });
   }
 
-  debug(message: string, error?: Error, data?: object, tags?: string[]): void {
-    this.logger?.debug(message, { error, data, tags });
+  debug(message: string, data?: object, tags?: string[]): void {
+    this.logger?.debug(message, { data, tags });
   }
 }

@@ -1,20 +1,19 @@
 import { UserStore } from "./user-store";
 import { mock } from "jest-mock-extended";
-import type { ILogger } from "@common";
+import { ILogger, ETenantType } from "@common";
 
 describe("UserStore", () => {
   let storeMock: any;
   let loggerMock: ReturnType<typeof mock<ILogger>>;
   let userStore: UserStore;
   const tableName = "users";
-  const tenantId = "tenant1";
+  const tenantId = ETenantType.default;
   const user = {
     tenantId: tenantId,
     email: "test@example.com",
     name: "Test User",
     passwordHash: "hashedpw",
-    createdAt: new Date(),
-    updatedAt: new Date(),
+    createdAt: new Date().toISOString(),
     isActive: true,
   };
 

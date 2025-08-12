@@ -10,6 +10,8 @@ export const uploadStatementResolvers = {
       ctx: IGraphQLContext,
     ) => {
       if (!ctx.userId) throw new CustomError("Unauthorized", "UNAUTHORIZED");
+      if (!ctx.tenantId)
+        throw new CustomError("Tenant ID is required", "TENANT_ID_REQUIRED");
       const { bank, fileName, contentBase64 } = UploadStatementArgs.parse(args);
       const result =
         await ctx.dataSources.uploadStatementService.uploadStatement({

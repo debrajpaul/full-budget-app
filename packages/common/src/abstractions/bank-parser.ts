@@ -9,7 +9,7 @@ export enum EBankName {
   // ubi = 'UBI',
   // yes = 'YES',
   // canara = 'CANARA',
-  // other = 'OTHER'
+  other = "OTHER",
 }
 export interface IBankParser {
   parse(buffer: Buffer, userId: string): Promise<any[]>;

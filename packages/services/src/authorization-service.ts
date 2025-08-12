@@ -54,14 +54,12 @@ export class AuthorizationService implements IAuthorizationService {
     this.logger.debug("JWT secret is configured");
 
     const passwordHash = await hashPassword(password);
-    const timestamp = new Date();
     const user = {
       tenantId,
       email,
       name,
       passwordHash,
-      createdAt: timestamp,
-      updatedAt: timestamp,
+      createdAt: new Date().toISOString(),
       isActive: true,
     };
     await this.userStore.saveUser(user);

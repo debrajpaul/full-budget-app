@@ -1,6 +1,11 @@
 import { chunk } from "lodash";
 import { v4 as uuid } from "uuid";
-import { ICategoryRules, ILogger, ICategoryRulesStore } from "@common";
+import {
+  ICategoryRules,
+  ILogger,
+  ICategoryRulesStore,
+  ETenantType,
+} from "@common";
 import {
   PutCommand,
   QueryCommand,
@@ -24,7 +29,7 @@ export class CategoryRulesStore implements ICategoryRulesStore {
   }
 
   public async getRulesByTenant(
-    tenantId: string,
+    tenantId: ETenantType,
   ): Promise<Record<string, string>> {
     const rules: Record<string, string> = {};
 
@@ -36,8 +41,9 @@ export class CategoryRulesStore implements ICategoryRulesStore {
     });
 
     // Load global defaults (only if tenant doesn't override)
-    const globalRules: ICategoryRules[] =
-      await this.loadRules("GLOBAL_DEFAULT");
+    const globalRules: ICategoryRules[] = await this.loadRules(
+      ETenantType.default,
+    );
     globalRules.forEach((item) => {
       const key = item.keyword.toLowerCase();
       if (!rules[key]) {
@@ -48,7 +54,7 @@ export class CategoryRulesStore implements ICategoryRulesStore {
   }
 
   public async addRules(
-    tenantId: string,
+    tenantId: ETenantType,
     rules: Record<string, string>,
   ): Promise<void> {
     this.logger.info("Saving rules to DynamoDB");
@@ -64,7 +70,7 @@ export class CategoryRulesStore implements ICategoryRulesStore {
   }
 
   public async addRule(
-    tenantId: string,
+    tenantId: ETenantType,
     keyword: string,
     category: string,
   ): Promise<void> {
@@ -88,7 +94,7 @@ export class CategoryRulesStore implements ICategoryRulesStore {
     await this.store.send(command);
   }
 
-  public removeRule(tenantId: string, ruleId: string): void {
+  public removeRule(tenantId: ETenantType, ruleId: string): void {
     this.logger.info("Removing rule from DynamoDB");
     this.logger.debug("Rule", { tenantId, ruleId });
     const command = new DeleteCommand({
@@ -102,7 +108,7 @@ export class CategoryRulesStore implements ICategoryRulesStore {
     this.logger.info("Rule removed successfully", { tenantId, ruleId });
   }
 
-  private async loadRules(tenantId: string): Promise<ICategoryRules[]> {
+  private async loadRules(tenantId: ETenantType): Promise<ICategoryRules[]> {
     const command = new QueryCommand({
       TableName: this.tableName,
       KeyConditionExpression: "tenantId = :tid",

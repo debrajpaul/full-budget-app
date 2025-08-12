@@ -1,6 +1,6 @@
 import { SQSService } from "./sqs-client";
 import { mock } from "jest-mock-extended";
-import { ILogger, ITransactionRequest, EBankName } from "@common";
+import { ILogger, ITransactionRequest, EBankName, ETenantType } from "@common";
 import { SQS } from "@aws-sdk/client-sqs";
 
 describe("SQSService", () => {
@@ -14,7 +14,7 @@ describe("SQSService", () => {
     fileName: "test.txt",
     fileKey: "test.txt",
     userId: "user123",
-    tenantId: "tenant123",
+    tenantId: ETenantType.default,
   };
 
   beforeEach(() => {

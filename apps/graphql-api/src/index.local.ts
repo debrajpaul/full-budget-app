@@ -18,6 +18,7 @@ async function startServer() {
   const server = new ApolloServer<IGraphQLContext>({
     schema,
     cache: "bounded",
+    introspection: config.nodeEnv !== "prod",
     plugins: [ApolloServerPluginDrainHttpServer({ httpServer })],
   });
   await server.start();

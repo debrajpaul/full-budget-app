@@ -52,11 +52,8 @@ describe("WinstonLogger", () => {
   });
 
   it("should call debug method", () => {
-    winstonLogger.debug("debug message", new Error("err"), { foo: "bar" }, [
-      "tag",
-    ]);
+    winstonLogger.debug("debug message", { foo: "bar" }, ["tag"]);
     expect(loggerMock.debug).toHaveBeenCalledWith("debug message", {
-      error: expect.any(Error),
       data: { foo: "bar" },
       tags: ["tag"],
     });

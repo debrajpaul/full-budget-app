@@ -27,7 +27,7 @@ export class TransactionLoaderStack extends Stack {
       functionName: 'TransactionLoader',
       runtime: lambda.Runtime.NODEJS_20_X,
       handler: 'index.handler',
-      code: lambda.Code.fromAsset(path.resolve(__dirname, '../../apps/txn-loader/dist')),
+      code: lambda.Code.fromAsset(path.resolve(__dirname, '../../apps/txn-loaders/dist')),
       timeout: Duration.seconds(30),
       environment: props.environment,
     });

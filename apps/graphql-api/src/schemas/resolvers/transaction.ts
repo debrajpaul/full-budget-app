@@ -13,16 +13,15 @@ export const transactionResolvers = {
     async monthlyReview(
       _: unknown,
       args: { month: number; year: number },
-      context: IGraphQLContext,
+      ctx: IGraphQLContext,
     ) {
-      if (!context.userId)
-        throw new CustomError("Unauthorized", "UNAUTHORIZED");
-      if (!context.tenantId)
+      if (!ctx.userId) throw new CustomError("Unauthorized", "UNAUTHORIZED");
+      if (!ctx.tenantId)
         throw new CustomError("Tenant ID is required", "TENANT_ID_REQUIRED");
       const { month, year } = MonthlyReviewArgs.parse(args);
-      const result = await context.dataSources.transactionService.monthlyReview(
-        context.tenantId,
-        context.userId,
+      const result = await ctx.dataSources.transactionService.monthlyReview(
+        ctx.tenantId,
+        ctx.userId,
         month,
         year,
       );
@@ -37,16 +36,15 @@ export const transactionResolvers = {
     async annualReview(
       _: unknown,
       args: { year: number },
-      context: IGraphQLContext,
+      ctx: IGraphQLContext,
     ) {
-      if (!context.userId)
-        throw new CustomError("Unauthorized", "UNAUTHORIZED");
-      if (!context.tenantId)
+      if (!ctx.userId) throw new CustomError("Unauthorized", "UNAUTHORIZED");
+      if (!ctx.tenantId)
         throw new CustomError("Tenant ID is required", "TENANT_ID_REQUIRED");
       const { year } = AnnualReviewArgs.parse(args);
-      const result = await context.dataSources.transactionService.annualReview(
-        context.tenantId,
-        context.userId,
+      const result = await ctx.dataSources.transactionService.annualReview(
+        ctx.tenantId,
+        ctx.userId,
         year,
       );
       if (!result)
@@ -60,20 +58,18 @@ export const transactionResolvers = {
     async categoryBreakdown(
       _: unknown,
       args: { month: number; year: number },
-      context: IGraphQLContext,
+      ctx: IGraphQLContext,
     ) {
-      if (!context.userId)
-        throw new CustomError("Unauthorized", "UNAUTHORIZED");
-      if (!context.tenantId)
+      if (!ctx.userId) throw new CustomError("Unauthorized", "UNAUTHORIZED");
+      if (!ctx.tenantId)
         throw new CustomError("Tenant ID is required", "TENANT_ID_REQUIRED");
       const { month, year } = CategoryBreakdownArgs.parse(args);
-      const result =
-        await context.dataSources.transactionService.categoryBreakDown(
-          context.tenantId,
-          context.userId,
-          month,
-          year,
-        );
+      const result = await ctx.dataSources.transactionService.categoryBreakDown(
+        ctx.tenantId,
+        ctx.userId,
+        month,
+        year,
+      );
       if (!result)
         throw new CustomError(
           "No category breakdown found for the selected period",
@@ -85,20 +81,18 @@ export const transactionResolvers = {
     async aggregateSummary(
       _: unknown,
       args: { year: number; month?: number },
-      context: IGraphQLContext,
+      ctx: IGraphQLContext,
     ) {
-      if (!context.userId)
-        throw new CustomError("Unauthorized", "UNAUTHORIZED");
-      if (!context.tenantId)
+      if (!ctx.userId) throw new CustomError("Unauthorized", "UNAUTHORIZED");
+      if (!ctx.tenantId)
         throw new CustomError("Tenant ID is required", "TENANT_ID_REQUIRED");
       const { year, month } = AggregateSummaryArgs.parse(args);
-      const result =
-        await context.dataSources.transactionService.aggregateSummary(
-          context.tenantId,
-          context.userId,
-          year,
-          month,
-        );
+      const result = await ctx.dataSources.transactionService.aggregateSummary(
+        ctx.tenantId,
+        ctx.userId,
+        year,
+        month,
+      );
       if (!result)
         throw new CustomError(
           "No aggregate summary found for the selected period",
@@ -115,18 +109,17 @@ export const transactionResolvers = {
         bankName?: EBankName;
         category?: string;
       },
-      context: IGraphQLContext,
+      ctx: IGraphQLContext,
     ) {
-      if (!context.userId)
-        throw new CustomError("Unauthorized", "UNAUTHORIZED");
-      if (!context.tenantId)
+      if (!ctx.userId) throw new CustomError("Unauthorized", "UNAUTHORIZED");
+      if (!ctx.tenantId)
         throw new CustomError("Tenant ID is required", "TENANT_ID_REQUIRED");
       const { year, month, bankName, category } =
         FilteredTransactionsArgs.parse(args);
       const result =
-        await context.dataSources.transactionService.filteredTransactions(
-          context.tenantId,
-          context.userId,
+        await ctx.dataSources.transactionService.filteredTransactions(
+          ctx.tenantId,
+          ctx.userId,
           year,
           month,
           bankName,

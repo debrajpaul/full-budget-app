@@ -1,22 +1,23 @@
 import { ITransaction } from "./transaction";
+import { ETenantType } from "../users";
 
 export interface ITransactionStore {
   saveTransactions(
-    tenantId: string,
+    tenantId: ETenantType,
     txns: Omit<ITransaction, "createdAt" | "tenantId">[],
   ): Promise<void>;
   getUserTransactions(
-    tenantId: string,
+    tenantId: ETenantType,
     userId: string,
   ): Promise<ITransaction[]>;
   getTransactionsByDateRange(
-    tenantId: string,
+    tenantId: ETenantType,
     userId: string,
     startDate: string,
     endDate: string,
   ): Promise<ITransaction[]>;
   updateTransactionCategory(
-    tenantId: string,
+    tenantId: ETenantType,
     transactionId: string,
     matchedCategory: string,
   ): Promise<void>;

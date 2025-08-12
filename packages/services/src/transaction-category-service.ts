@@ -69,6 +69,7 @@ export class TransactionCategoryService implements ITransactionCategoryService {
       return false;
     }
   }
+
   private categorizeByRules(
     description: string,
     rules: Record<string, string>,

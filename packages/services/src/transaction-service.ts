@@ -3,6 +3,7 @@ import {
   EBankName,
   IS3Service,
   ISQSService,
+  ETenantType,
   ITransaction,
   ITransactionStore,
   ITransactionService,
@@ -86,7 +87,7 @@ export class TransactionService implements ITransactionService {
   }
 
   public async monthlyReview(
-    tenantId: string,
+    tenantId: ETenantType,
     userId: string,
     month: number,
     year: number,
@@ -123,7 +124,7 @@ export class TransactionService implements ITransactionService {
   }
 
   public async annualReview(
-    tenantId: string,
+    tenantId: ETenantType,
     userId: string,
     year: number,
   ): Promise<IAnnualReview> {
@@ -157,7 +158,7 @@ export class TransactionService implements ITransactionService {
   }
 
   public async categoryBreakDown(
-    tenantId: string,
+    tenantId: ETenantType,
     userId: string,
     month: number,
     year: number,
@@ -195,7 +196,7 @@ export class TransactionService implements ITransactionService {
   }
 
   public async aggregateSummary(
-    tenantId: string,
+    tenantId: ETenantType,
     userId: string,
     year: number,
     month?: number,
@@ -235,7 +236,7 @@ export class TransactionService implements ITransactionService {
   }
 
   public async filteredTransactions(
-    tenantId: string,
+    tenantId: ETenantType,
     userId: string,
     year: number,
     month: number,

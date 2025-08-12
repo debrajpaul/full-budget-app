@@ -1,9 +1,11 @@
 export const uploadStatementTypeDefs = /* GraphQL */ `
+  input StatementInput {
+    bank: BankName!
+    fileName: String!
+    contentBase64: String!
+  }
+
   type Mutation {
-    uploadStatement(
-      bank: BankName!
-      fileName: String!
-      contentBase64: String!
-    ): Boolean!
+    uploadStatement(input: StatementInput!): Boolean!
   }
 `;

@@ -10,6 +10,14 @@ export const commonTypeDefs = /* GraphQL */ `
     # UBI
     # YES
     # CANARA
-    # OTHER
+    OTHER
+  }
+  enum TenantType {
+    PERSONAL
+    BUSINESS
+    # GOVERNMENT
+    # NGO
+    # EDUCATIONAL
+    DEFAULT
   }
 `;
