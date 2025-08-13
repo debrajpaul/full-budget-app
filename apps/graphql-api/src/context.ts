@@ -10,7 +10,6 @@ import {
 import { APIGatewayProxyEvent, Context as LambdaCtx } from "aws-lambda";
 import { setupDependency } from "./setup-dependency";
 import { setupServices } from "./setup-services";
-import { convertToTenantId } from "./utils";
 
 type IncomingRequest =
   | ExpressContextFunctionArgument
@@ -56,11 +55,11 @@ export const createContext = async (
   try {
     const payload = verifyToken(token || "", config.jwtSecret) as {
       userId: string;
-      tenantId: string;
+      tenantId: ETenantType;
       email: string;
     };
     userId = payload.userId;
-    tenantId = convertToTenantId(payload.tenantId);
+    tenantId = payload.tenantId;
     email = payload.email;
   } catch (error) {
     loggerCtx.warn(`JWT verification failed: ${error}`);

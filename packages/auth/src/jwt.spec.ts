@@ -1,3 +1,4 @@
+import { ETenantType } from "@common";
 import { signToken, verifyToken } from "./jwt";
 
 describe("JWT Auth", () => {
@@ -5,7 +6,7 @@ describe("JWT Auth", () => {
   const payload = {
     userId: "user123",
     email: "user@example.com",
-    tenantId: "tenant123",
+    tenantId: ETenantType.default,
   };
 
   it("should sign a token and verify it", () => {

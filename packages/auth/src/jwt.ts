@@ -1,10 +1,11 @@
 import jwt from "jsonwebtoken";
+import { ETenantType } from "@common";
 
 export function signToken(
   user: {
     userId: string;
     email: string;
-    tenantId: string;
+    tenantId: ETenantType;
   },
   secret: string,
 ): string {

@@ -1,9 +1,10 @@
-import path from "path";
+// import path from "path";
 import * as dotenv from "dotenv";
 import { IConfig, LogLevel } from "@common";
 
-console.log(`### path:${path.join(__dirname, "../../../.env")}`);
-dotenv.config({ path: path.join(__dirname, "../../../.env") });
+// console.log(`### path:${path.join(__dirname, "../../../.env")}`);
+// dotenv.config({ path: path.join(__dirname, "../../../.env") });
+dotenv.config();
 
 const {
   PORT,
