@@ -49,6 +49,6 @@ export const transactionTypeDefs = /* GraphQL */ `
       bankName: BankName
       category: String
     ): [Transaction!]!
-    addTransactionCategory(): Boolean!
+    addTransactionCategory: Boolean!
   }
 `;
