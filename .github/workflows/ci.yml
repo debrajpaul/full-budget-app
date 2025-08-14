@@ -11,12 +11,14 @@ jobs:
         workspace:
           - apps/graphql-api
           - apps/txn-loaders
+          - apps/tag-loaders
           - packages/auth
           - packages/client
           - packages/common
           - packages/db
           - packages/logger
           - packages/parser
+          - packages/nlp-tagger
           - packages/services
 
     defaults:
