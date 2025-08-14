@@ -15,6 +15,7 @@
     "@parser": "workspace:*",
     "@logger": "workspace:*",
     "@client": "workspace:*",
+    "@nlp-tagger": "workspace:*",
     "bcryptjs": "^3.0.2"
   },
   "devDependencies": {

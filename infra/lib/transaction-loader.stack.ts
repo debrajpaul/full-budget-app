@@ -5,17 +5,17 @@ import {
   aws_lambda as lambda,
   aws_iam as iam,
   aws_sqs as sqs,
+  aws_s3 as s3,
 } from 'aws-cdk-lib';
 import { Construct } from 'constructs';
 import * as path from 'path';
-import { StringParameter } from 'aws-cdk-lib/aws-ssm';
 import * as eventSources from 'aws-cdk-lib/aws-lambda-event-sources';
 import { LambdaAlarmsConstruct } from './lambda-alarms-construct';
 
 interface TransactionLoaderStackProps extends StackProps {
   jobsQueue: sqs.Queue;
+  uploadBucket: s3.Bucket;
   transactionTableArn: string;
-  jwtParameter: StringParameter;
   environment: Record<string, string>;
 }
 
@@ -31,13 +31,6 @@ export class TransactionLoaderStack extends Stack {
       timeout: Duration.seconds(30),
       environment: props.environment,
     });
-
-    transactionLambda.addEnvironment(
-      'JWT_SECRET',
-      props.jwtParameter.stringValue,
-    );
-    // Grant permission to read secret
-    props.jwtParameter.grantRead(transactionLambda);
 
     // Attach queue trigger
     transactionLambda.addEventSource(
@@ -55,6 +48,17 @@ export class TransactionLoaderStack extends Stack {
         resources: [props.transactionTableArn],
       })
     );
+
+    // s3 access
+    transactionLambda.addToRolePolicy(
+      new iam.PolicyStatement({
+        actions: ['s3:PutObject', 's3:GetObject'],
+        resources: [`${props.uploadBucket.bucketArn}/*`],
+      })
+    );
+
+    props.uploadBucket.grantRead(transactionLambda);
+    props.uploadBucket.grantWrite(transactionLambda);
 
     // Reusable monitoring
     new LambdaAlarmsConstruct(this, 'TransactionLoaderAlarms', {

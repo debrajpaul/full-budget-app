@@ -156,7 +156,7 @@ export class TransactionStore implements ITransactionStore {
         tenantId,
         transactionId,
       },
-      UpdateExpression: "SET #category = :cat, taggedBy = :tagger",
+      UpdateExpression: "SET #category = :cat, #taggedBy = :tagger",
       ExpressionAttributeNames: {
         "#category": "category",
         "#taggedBy": "taggedBy",

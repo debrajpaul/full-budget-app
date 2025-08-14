@@ -10,7 +10,7 @@ describe("SQSService", () => {
   const queueUrl =
     "https://sqs.us-east-1.amazonaws.com/123456789012/test-queue";
   const messageBody: ITransactionRequest = {
-    bank: EBankName.hdfc,
+    bankName: EBankName.hdfc,
     fileName: "test.txt",
     fileKey: "test.txt",
     userId: "user123",

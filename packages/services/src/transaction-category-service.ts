@@ -1,9 +1,11 @@
 import {
   ILogger,
+  ETenantType,
   ITransactionStore,
   ITransactionCategoryService,
   ICategoryRulesStore,
 } from "@common";
+import { keywordCategoryMap } from "@nlp-tagger";
 
 export class TransactionCategoryService implements ITransactionCategoryService {
   private readonly logger: ILogger;
@@ -68,6 +70,13 @@ export class TransactionCategoryService implements ITransactionCategoryService {
       this.logger.error("Error processing message", err as Error);
       return false;
     }
+  }
+
+  public async addRulesByTenant(
+    tenantId: ETenantType = ETenantType.default,
+  ): Promise<void> {
+    this.logger.info(`Adding rules for tenant ${tenantId}`);
+    return await this.categoryRulesStore.addRules(tenantId, keywordCategoryMap);
   }
 
   private categorizeByRules(

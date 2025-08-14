@@ -2,11 +2,12 @@ import { ILogger } from "@common";
 import { config } from "./environment";
 import { S3 } from "@aws-sdk/client-s3";
 import { SQS } from "@aws-sdk/client-sqs";
-import { TransactionStore, UserStore } from "@db";
+import { TransactionStore, UserStore, CategoryRulesStore } from "@db";
 import {
   TransactionService,
   AuthorizationService,
   UploadStatementService,
+  TransactionCategoryService,
 } from "@services";
 import { S3Service, SQSService } from "@client";
 import { DynamoDBDocumentClient } from "@aws-sdk/lib-dynamodb";
@@ -37,6 +38,11 @@ export function setupServices(
     config.dynamoTransactionTable,
     dynamoDBDocumentClient,
   );
+  const categoryRulesStore = new CategoryRulesStore(
+    logger.child("CategoryRulesStore"),
+    config.dynamoCategoryRulesTable,
+    dynamoDBDocumentClient,
+  );
   const authorizationService = new AuthorizationService(
     logger.child("AuthorizationService"),
     config.jwtSecret,
@@ -54,9 +60,16 @@ export function setupServices(
     transactionStore,
   );
 
+  const transactionCategoryService = new TransactionCategoryService(
+    logger.child("TransactionCategoryService"),
+    transactionStore,
+    categoryRulesStore,
+  );
+
   return {
     transactionService,
     authorizationService,
     uploadStatementService,
+    transactionCategoryService,
   };
 }

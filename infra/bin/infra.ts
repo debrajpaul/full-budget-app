@@ -23,11 +23,13 @@ new GraphQLApiStack(app, 'GraphQLApiStack', {
   uploadBucketArn: storageStack.uploadBucket.bucketArn,
   statementQueueArn: queueStack.statementProcessingQueue.queueArn,
   transactionTableArn: transactionsTableStack.transactionsTable.tableArn,
+  categoryTableArn: transactionsCategoryTableStack.transactionsCategoryTable.tableArn,
   userTableArn: usersTableStack.usersTable.tableArn,
   jwtParameter: ssmParamStack.parameter,
   environment: {
     NODE_ENV: 'dev',
     LOG_LEVEL: 'debug',
+    DYNAMO_CATEGORY_RULES_TABLE: transactionsCategoryTableStack.transactionsCategoryTable.tableName,
     DYNAMO_TRANSACTION_TABLE: transactionsTableStack.transactionsTable.tableName,
     DYNAMO_USER_TABLE: usersTableStack.usersTable.tableName,
     SQS_QUEUE_URL: queueStack.statementProcessingQueue.queueUrl,
@@ -37,8 +39,8 @@ new GraphQLApiStack(app, 'GraphQLApiStack', {
 
 new TransactionLoaderStack(app, 'TransactionLoaderStack', {
   jobsQueue: queueStack.statementProcessingQueue,
+  uploadBucket: storageStack.uploadBucket,
   transactionTableArn: transactionsTableStack.transactionsTable.tableArn,
-  jwtParameter: ssmParamStack.parameter,
   environment: {
     NODE_ENV: 'dev',
     LOG_LEVEL: 'debug',
@@ -49,12 +51,12 @@ new TransactionLoaderStack(app, 'TransactionLoaderStack', {
 });
 
 new TransactionCategoryStack(app, 'TransactionCategoryStack', {
-  transactionTableArn: transactionsTableStack.transactionsTable,
-  transactionsCategoryTableArn: transactionsCategoryTableStack.transactionsCategoryTable.tableArn,
+  transactionTable: transactionsTableStack.transactionsTable,
+  transactionsCategoryTable: transactionsCategoryTableStack.transactionsCategoryTable,
   environment: {
     NODE_ENV: 'dev',
     LOG_LEVEL: 'debug',
     DYNAMO_TRANSACTION_TABLE: transactionsTableStack.transactionsTable.tableName,
-    DYNAMO_TRANSACTION_CATEGORY_TABLE: transactionsCategoryTableStack.transactionsCategoryTable.tableName,
+    DYNAMO_CATEGORY_RULES_TABLE: transactionsCategoryTableStack.transactionsCategoryTable.tableName,
   },
 });

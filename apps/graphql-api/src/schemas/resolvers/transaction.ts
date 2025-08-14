@@ -4,17 +4,18 @@ import {
   CategoryBreakdownArgs,
   AggregateSummaryArgs,
   FilteredTransactionsArgs,
+  // AddTransactionCategoryArgs,
 } from "../../utils";
 import { IGraphQLContext, EBankName } from "@common";
 import { CustomError } from "@services";
 
 export const transactionResolvers = {
   Query: {
-    async monthlyReview(
+    monthlyReview: async (
       _: unknown,
       args: { month: number; year: number },
       ctx: IGraphQLContext,
-    ) {
+    ) => {
       if (!ctx.userId) throw new CustomError("Unauthorized", "UNAUTHORIZED");
       if (!ctx.tenantId)
         throw new CustomError("Tenant ID is required", "TENANT_ID_REQUIRED");
@@ -33,11 +34,11 @@ export const transactionResolvers = {
       return result;
     },
 
-    async annualReview(
+    annualReview: async (
       _: unknown,
       args: { year: number },
       ctx: IGraphQLContext,
-    ) {
+    ) => {
       if (!ctx.userId) throw new CustomError("Unauthorized", "UNAUTHORIZED");
       if (!ctx.tenantId)
         throw new CustomError("Tenant ID is required", "TENANT_ID_REQUIRED");
@@ -55,11 +56,11 @@ export const transactionResolvers = {
       return result;
     },
 
-    async categoryBreakdown(
+    categoryBreakdown: async (
       _: unknown,
       args: { month: number; year: number },
       ctx: IGraphQLContext,
-    ) {
+    ) => {
       if (!ctx.userId) throw new CustomError("Unauthorized", "UNAUTHORIZED");
       if (!ctx.tenantId)
         throw new CustomError("Tenant ID is required", "TENANT_ID_REQUIRED");
@@ -78,11 +79,11 @@ export const transactionResolvers = {
       return result;
     },
 
-    async aggregateSummary(
+    aggregateSummary: async (
       _: unknown,
       args: { year: number; month?: number },
       ctx: IGraphQLContext,
-    ) {
+    ) => {
       if (!ctx.userId) throw new CustomError("Unauthorized", "UNAUTHORIZED");
       if (!ctx.tenantId)
         throw new CustomError("Tenant ID is required", "TENANT_ID_REQUIRED");
@@ -101,7 +102,7 @@ export const transactionResolvers = {
       return result;
     },
 
-    async filteredTransactions(
+    filteredTransactions: async (
       _: unknown,
       args: {
         year: number;
@@ -110,7 +111,7 @@ export const transactionResolvers = {
         category?: string;
       },
       ctx: IGraphQLContext,
-    ) {
+    ) => {
       if (!ctx.userId) throw new CustomError("Unauthorized", "UNAUTHORIZED");
       if (!ctx.tenantId)
         throw new CustomError("Tenant ID is required", "TENANT_ID_REQUIRED");
@@ -131,6 +132,21 @@ export const transactionResolvers = {
           "NOT_FOUND",
         );
       return result;
+    },
+
+    addTransactionCategory: async (
+      _: unknown,
+      __: unknown,
+      ctx: IGraphQLContext,
+    ) => {
+      if (!ctx.userId) throw new CustomError("Unauthorized", "UNAUTHORIZED");
+      if (!ctx.tenantId)
+        throw new CustomError("Tenant ID is required", "TENANT_ID_REQUIRED");
+      // const { name, keyword } = AddTransactionCategoryArgs.parse(args);
+      await ctx.dataSources.transactionCategoryService.addRulesByTenant(
+        ctx.tenantId,
+      );
+      return true;
     },
   },
 };

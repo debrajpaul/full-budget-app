@@ -17,17 +17,17 @@ export class UploadStatementService implements IUploadStatementService {
 
   public async uploadStatement(request: IUploadRequest): Promise<boolean> {
     try {
-      const { bank, fileName, contentBase64, userId, tenantId } = request;
+      const { bankName, fileName, contentBase64, userId, tenantId } = request;
       this.logger.info(
-        `Uploading statement for bank: ${bank}, fileName: ${fileName}, userId: ${userId}`,
+        `Uploading statement for bank: ${bankName}, fileName: ${fileName}, userId: ${userId}`,
       );
-      this.logger.debug("Parameters", { bank, fileName, userId });
-      if (!bank || !fileName || !contentBase64 || !userId || !tenantId) {
+      this.logger.debug("Parameters", { bankName, fileName, userId });
+      if (!bankName || !fileName || !contentBase64 || !userId || !tenantId) {
         const errorMessage = new Error(
           "Missing required parameters for uploading statement",
         );
         this.logger.error("Missing required parameters", errorMessage, {
-          bank,
+          bankName,
           fileName,
           userId,
           tenantId,
@@ -35,15 +35,15 @@ export class UploadStatementService implements IUploadStatementService {
         throw errorMessage;
       }
       this.logger.debug("All parameters are valid", {
-        bank,
+        bankName,
         fileName,
         userId,
         tenantId,
       });
       const buffer = Buffer.from(contentBase64, "base64");
-      const fileKey = `${bank}/${randomUUID()}-${fileName}`;
+      const fileKey = `${bankName}/${randomUUID()}-${fileName}`;
       const transactionRequest: ITransactionRequest = {
-        bank,
+        bankName,
         fileName,
         fileKey,
         userId,
@@ -52,7 +52,7 @@ export class UploadStatementService implements IUploadStatementService {
       await this.s3Service.putFile(fileKey, buffer);
       await this.sqsService.sendFileMessage(transactionRequest);
       this.logger.info(`Statement uploaded successfully: ${fileKey}`, {
-        bank,
+        bankName,
         fileName,
         userId,
       });

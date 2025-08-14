@@ -13,10 +13,10 @@ import {
 
 export const schema = makeExecutableSchema({
   typeDefs: [
-    authTypeDefs,
-    uploadStatementTypeDefs,
     commonTypeDefs,
+    authTypeDefs,
     transactionTypeDefs,
+    uploadStatementTypeDefs,
   ],
   resolvers: [authResolvers, uploadStatementResolvers, transactionResolvers],
 });

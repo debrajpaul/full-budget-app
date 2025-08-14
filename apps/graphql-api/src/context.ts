@@ -10,7 +10,6 @@ import {
 import { APIGatewayProxyEvent, Context as LambdaCtx } from "aws-lambda";
 import { setupDependency } from "./setup-dependency";
 import { setupServices } from "./setup-services";
-import { convertToTenantId } from "./utils";
 
 type IncomingRequest =
   | ExpressContextFunctionArgument
@@ -21,8 +20,12 @@ type IncomingRequest =
 const { logger, s3Client, sqsClient, dynamoDBDocumentClient } =
   setupDependency();
 
-const { transactionService, authorizationService, uploadStatementService } =
-  setupServices(logger, s3Client, sqsClient, dynamoDBDocumentClient);
+const {
+  transactionService,
+  authorizationService,
+  uploadStatementService,
+  transactionCategoryService,
+} = setupServices(logger, s3Client, sqsClient, dynamoDBDocumentClient);
 
 export const createContext = async (
   ctx: IncomingRequest,
@@ -44,7 +47,7 @@ export const createContext = async (
     response = ctx.res;
   } else {
     // Lambda context
-    authHeader = ctx.event.headers?.authorization;
+    authHeader = ctx.event.headers["Authorization"] as string | undefined;
     request = ctx.event;
     lambdaContext = ctx.context;
   }
@@ -56,17 +59,18 @@ export const createContext = async (
   try {
     const payload = verifyToken(token || "", config.jwtSecret) as {
       userId: string;
-      tenantId: string;
+      tenantId: ETenantType;
       email: string;
     };
     userId = payload.userId;
-    tenantId = convertToTenantId(payload.tenantId);
+    tenantId = payload.tenantId;
     email = payload.email;
   } catch (error) {
     loggerCtx.warn(`JWT verification failed: ${error}`);
   }
 
   return {
+    logger: loggerCtx,
     request,
     response,
     lambdaContext,
@@ -77,6 +81,7 @@ export const createContext = async (
       authorizationService: authorizationService,
       uploadStatementService: uploadStatementService,
       transactionService: transactionService,
+      transactionCategoryService: transactionCategoryService,
     },
   };
 };

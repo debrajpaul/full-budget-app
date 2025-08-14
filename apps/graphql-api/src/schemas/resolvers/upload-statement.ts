@@ -1,4 +1,4 @@
-import { EBankName, IGraphQLContext } from "@common";
+import { IStatementInput, IGraphQLContext } from "@common";
 import { UploadStatementArgs } from "../../utils";
 import { CustomError } from "@services";
 
@@ -6,16 +6,22 @@ export const uploadStatementResolvers = {
   Mutation: {
     uploadStatement: async (
       _: unknown,
-      args: { bank: EBankName; fileName: string; contentBase64: string },
+      args: { input: IStatementInput },
       ctx: IGraphQLContext,
     ) => {
       if (!ctx.userId) throw new CustomError("Unauthorized", "UNAUTHORIZED");
       if (!ctx.tenantId)
         throw new CustomError("Tenant ID is required", "TENANT_ID_REQUIRED");
-      const { bank, fileName, contentBase64 } = UploadStatementArgs.parse(args);
+      ctx.logger.info(
+        `User ${ctx.userId} is uploading a statement for bank ${args.input.bankName}`,
+      );
+      ctx.logger.debug(`File name: ${args.input.fileName}`);
+      const { bankName, fileName, contentBase64 } = UploadStatementArgs.parse(
+        args.input,
+      );
       const result =
         await ctx.dataSources.uploadStatementService.uploadStatement({
-          bank,
+          bankName,
           fileName,
           contentBase64,
           userId: ctx.userId!,
