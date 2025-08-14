@@ -21,7 +21,7 @@ export class TransactionsTableStack extends Stack {
       },
       stream: StreamViewType.NEW_AND_OLD_IMAGES, // Enable streams for change data capture
       billingMode: BillingMode.PAY_PER_REQUEST,
-      removalPolicy: RemovalPolicy.DESTROY, // For dev only
+      removalPolicy: RemovalPolicy.DESTROY, // use RETAIN for production
     });
 
     // Optional: enable TTL for data expiry

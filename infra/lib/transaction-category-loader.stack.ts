@@ -12,8 +12,8 @@ import * as eventSources from 'aws-cdk-lib/aws-lambda-event-sources';
 import { LambdaAlarmsConstruct } from './lambda-alarms-construct';
 
 interface TransactionCategoryStackProps extends StackProps {
-  transactionTableArn: Table;
-  transactionsCategoryTableArn: string;
+  transactionTable: Table;
+  transactionsCategoryTable: Table;
   environment: Record<string, string>;
 }
 
@@ -32,7 +32,7 @@ export class TransactionCategoryStack extends Stack {
 
     // Attach queue trigger
     transactionCategoryLambda.addEventSource(
-      new eventSources.DynamoEventSource(props.transactionTableArn, {
+      new eventSources.DynamoEventSource(props.transactionTable, {
         startingPosition: lambda.StartingPosition.LATEST,
         batchSize: 10,
       })
@@ -41,10 +41,18 @@ export class TransactionCategoryStack extends Stack {
     // DynamoDB access
     transactionCategoryLambda.addToRolePolicy(
       new iam.PolicyStatement({
-        actions: ['dynamodb:PutItem', 'dynamodb:UpdateItem', 'dynamodb:GetItem'],
-        resources: [props.transactionsCategoryTableArn],
+        actions: ['dynamodb:PutItem', 'dynamodb:UpdateItem', 'dynamodb:GetItem', 'dynamodb:Query'],
+        resources: [props.transactionsCategoryTable.tableArn],
       })
     );
+
+    // Grant permissions to the transaction category table
+    props.transactionsCategoryTable.grantReadData(transactionCategoryLambda);
+    props.transactionsCategoryTable.grantWriteData(transactionCategoryLambda);
+
+    // Grant permissions to the transaction table
+    props.transactionTable.grantReadData(transactionCategoryLambda);
+    props.transactionTable.grantWriteData(transactionCategoryLambda);
 
     // Reusable monitoring
     new LambdaAlarmsConstruct(this, 'TransactionCategoryLoaderAlarms', {

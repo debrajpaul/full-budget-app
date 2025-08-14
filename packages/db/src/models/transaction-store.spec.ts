@@ -2,7 +2,7 @@
 import { TransactionStore } from "./transaction-store";
 import { mock } from "jest-mock-extended";
 import { DynamoDBDocumentClient } from "@aws-sdk/lib-dynamodb";
-import { ILogger, ITransaction, ETenantType } from "@common";
+import { ILogger, ITransaction, ETenantType, EBankName } from "@common";
 
 describe("TransactionStore", () => {
   let storeMock: { send: jest.Mock };
@@ -14,7 +14,7 @@ describe("TransactionStore", () => {
     tenantId,
     userId: "user1",
     transactionId: "txn1",
-    bankName: "Bank",
+    bankName: EBankName.hdfc,
     txnDate: "2025-08-07",
     amount: 100,
     description: "desc",

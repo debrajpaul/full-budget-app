@@ -49,8 +49,9 @@
     "clean": "rimraf apps/*/dist && rimraf packages/*/dist",
     "build": "pnpm clean && node esbuild.config.js",
     "dev": "pnpm clean && node esbuild.config.mjs --watch",
+    "synth": "pnpm build && pnpm --filter ./infra cdk:synth",
     "deploy:all": "pnpm build && pnpm --filter ./infra cdk:deploy:all",
-    "synth": "pnpm build && pnpm --filter ./infra cdk:synth"
+    "destroy:all": "pnpm --filter ./infra cdk:destroy:all"
   },
   "lint-staged": {
     "apps/**/*.{ts,tsx,js,jsx}": [

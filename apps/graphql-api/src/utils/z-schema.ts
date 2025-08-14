@@ -28,10 +28,9 @@ export const FilteredTransactionsArgs = z.object({
 });
 
 export const UploadStatementArgs = z.object({
-  bank: z.nativeEnum(EBankName),
+  bankName: z.nativeEnum(EBankName),
   fileName: z.string().min(1, "File name is required"),
-  contentBase64: z.string().min(1, "File content is required"),
-  userId: z.string().min(1, "User ID is required"),
+  contentBase64: z.string().min(1, "Content base64 is required"),
 });
 
 export const RegisterArgs = z.object({
@@ -45,4 +44,9 @@ export const LoginArgs = z.object({
   email: z.string().email("Invalid email address"),
   password: z.string().min(6, "Password must be at least 6 characters"),
   tenantId: z.nativeEnum(ETenantType),
+});
+
+export const AddTransactionCategoryArgs = z.object({
+  name: z.string().min(0, "Name is required"),
+  keyword: z.string().min(0, "At least one keyword is required"),
 });

@@ -48,7 +48,7 @@ export class TransactionService implements ITransactionService {
     this.logger.debug("###Message received from SQS", { messageData });
     if (
       !messageData.fileKey ||
-      !messageData.bank ||
+      !messageData.bankName ||
       !messageData.userId ||
       !messageData.tenantId
     ) {
@@ -56,7 +56,7 @@ export class TransactionService implements ITransactionService {
       return false;
     }
     this.logger.info(
-      `Processing fileKey: ${messageData.fileKey}, bank: ${messageData.bank}, userId: ${messageData.userId}, tenantId: ${messageData.tenantId}`,
+      `Processing fileKey: ${messageData.fileKey}, bank: ${messageData.bankName}, userId: ${messageData.userId}, tenantId: ${messageData.tenantId}`,
     );
     let flag: boolean = await this.process(messageData);
     this.logger.debug(`Flag ${flag}`);
@@ -70,7 +70,7 @@ export class TransactionService implements ITransactionService {
       this.logger.info(`fileBuffer length: ${fileBuffer.length}`);
       const transactions = await this.parseTransactions(
         fileBuffer,
-        request.bank,
+        request.bankName,
         request.userId,
       );
       this.logger.debug(`###transactions. -->`, { data: transactions });

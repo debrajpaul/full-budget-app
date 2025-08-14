@@ -402,6 +402,9 @@ importers:
       '@logger':
         specifier: workspace:*
         version: link:../logger
+      '@nlp-tagger':
+        specifier: workspace:*
+        version: link:../nlp-tagger
       '@parser':
         specifier: workspace:*
         version: link:../parser

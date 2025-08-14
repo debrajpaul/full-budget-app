@@ -4,6 +4,7 @@ import {
   CategoryBreakdownArgs,
   AggregateSummaryArgs,
   FilteredTransactionsArgs,
+  // AddTransactionCategoryArgs,
 } from "../../utils";
 import { IGraphQLContext, EBankName } from "@common";
 import { CustomError } from "@services";
@@ -131,6 +132,25 @@ export const transactionResolvers = {
           "NOT_FOUND",
         );
       return result;
+    },
+
+    Mutation: {
+      async addTransactionCategory(
+        _: unknown,
+        __: unknown,
+        // args: { rules: Record<string, string> },
+        ctx: IGraphQLContext,
+      ) {
+        if (!ctx.userId) throw new CustomError("Unauthorized", "UNAUTHORIZED");
+        if (!ctx.tenantId)
+          throw new CustomError("Tenant ID is required", "TENANT_ID_REQUIRED");
+        // const { name, keyword } = AddTransactionCategoryArgs.parse(args);
+        await ctx.dataSources.transactionCategoryService.addRulesByTenant(
+          ctx.tenantId,
+          {}, // name, keyword
+        );
+        return true;
+      },
     },
   },
 };

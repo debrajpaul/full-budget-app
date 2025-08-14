@@ -20,7 +20,7 @@ export class TransactionsCategoryTableStack extends Stack {
         type: AttributeType.STRING,
       },
       billingMode: BillingMode.PAY_PER_REQUEST,
-      removalPolicy: RemovalPolicy.DESTROY, // For dev only
+      removalPolicy: RemovalPolicy.DESTROY, // use RETAIN for production
     });
 
     // Optional: enable TTL for data expiry

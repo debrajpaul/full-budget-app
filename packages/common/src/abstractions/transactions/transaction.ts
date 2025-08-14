@@ -1,9 +1,10 @@
 import { ETenantType } from "../users";
+import { EBankName } from "../bank-parser";
 export interface ITransaction {
   tenantId: ETenantType;
   userId: string;
   transactionId: string;
-  bankName: string;
+  bankName: EBankName;
   amount: number;
   balance?: number;
   txnDate: string | undefined;

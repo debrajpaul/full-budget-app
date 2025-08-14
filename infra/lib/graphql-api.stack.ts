@@ -7,6 +7,7 @@ interface GraphQLApiStackProps extends StackProps {
   uploadBucketArn: string;
   statementQueueArn: string;
   transactionTableArn: string;
+  categoryTableArn: string;
   userTableArn: string;
   jwtParameter: StringParameter;
   environment: Record<string, string>;
@@ -20,6 +21,7 @@ export class GraphQLApiStack extends Stack {
       uploadBucketArn: props.uploadBucketArn,
       statementQueueArn: props.statementQueueArn,
       transactionTableArn: props.transactionTableArn,
+      categoryTableArn: props.categoryTableArn,
       userTableArn: props.userTableArn,
       jwtParameter: props.jwtParameter,
       environment: props.environment,

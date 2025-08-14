@@ -13,6 +13,7 @@ export interface GraphQLApiConstructProps {
   uploadBucketArn: string;
   statementQueueArn: string;
   transactionTableArn: string;
+  categoryTableArn: string;
   userTableArn: string;
   jwtParameter: StringParameter;
   environment: Record<string, string>;
@@ -43,7 +44,7 @@ export class GraphQLApiConstruct extends Construct {
     graphqlFunction.addToRolePolicy(
       new iam.PolicyStatement({
         actions: ['dynamodb:*'],
-        resources: [props.transactionTableArn, props.userTableArn],
+        resources: [props.transactionTableArn, props.userTableArn, props.categoryTableArn],
       }),
     );
 

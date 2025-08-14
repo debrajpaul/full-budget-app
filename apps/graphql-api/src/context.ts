@@ -20,8 +20,12 @@ type IncomingRequest =
 const { logger, s3Client, sqsClient, dynamoDBDocumentClient } =
   setupDependency();
 
-const { transactionService, authorizationService, uploadStatementService } =
-  setupServices(logger, s3Client, sqsClient, dynamoDBDocumentClient);
+const {
+  transactionService,
+  authorizationService,
+  uploadStatementService,
+  transactionCategoryService,
+} = setupServices(logger, s3Client, sqsClient, dynamoDBDocumentClient);
 
 export const createContext = async (
   ctx: IncomingRequest,
@@ -43,7 +47,7 @@ export const createContext = async (
     response = ctx.res;
   } else {
     // Lambda context
-    authHeader = ctx.event.headers?.authorization;
+    authHeader = ctx.event.headers["Authorization"] as string | undefined;
     request = ctx.event;
     lambdaContext = ctx.context;
   }
@@ -66,6 +70,7 @@ export const createContext = async (
   }
 
   return {
+    logger: loggerCtx,
     request,
     response,
     lambdaContext,
@@ -76,6 +81,7 @@ export const createContext = async (
       authorizationService: authorizationService,
       uploadStatementService: uploadStatementService,
       transactionService: transactionService,
+      transactionCategoryService: transactionCategoryService,
     },
   };
 };
