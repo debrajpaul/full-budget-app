@@ -138,6 +138,9 @@ importers:
       '@logger':
         specifier: workspace:*
         version: link:../../packages/logger
+      '@nlp-tagger':
+        specifier: workspace:*
+        version: link:../../packages/nlp-tagger
       '@services':
         specifier: workspace:*
         version: link:../../packages/services
@@ -196,6 +199,9 @@ importers:
       '@logger':
         specifier: workspace:*
         version: link:../../packages/logger
+      '@nlp-tagger':
+        specifier: workspace:*
+        version: link:../../packages/nlp-tagger
       '@parser':
         specifier: workspace:*
         version: link:../../packages/parser
@@ -239,6 +245,9 @@ importers:
       '@logger':
         specifier: workspace:*
         version: link:../../packages/logger
+      '@nlp-tagger':
+        specifier: workspace:*
+        version: link:../../packages/nlp-tagger
       '@parser':
         specifier: workspace:*
         version: link:../../packages/parser

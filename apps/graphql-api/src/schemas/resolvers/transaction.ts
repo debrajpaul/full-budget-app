@@ -137,7 +137,6 @@ export const transactionResolvers = {
     async addTransactionCategory(
       _: unknown,
       __: unknown,
-      // args: { rules: Record<string, string> },
       ctx: IGraphQLContext,
     ) {
       if (!ctx.userId) throw new CustomError("Unauthorized", "UNAUTHORIZED");
@@ -146,7 +145,6 @@ export const transactionResolvers = {
       // const { name, keyword } = AddTransactionCategoryArgs.parse(args);
       await ctx.dataSources.transactionCategoryService.addRulesByTenant(
         ctx.tenantId,
-        {}, // name, keyword
       );
       return true;
     },

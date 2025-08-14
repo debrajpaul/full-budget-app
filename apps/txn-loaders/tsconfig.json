@@ -16,7 +16,8 @@
       "@db/*": ["packages/db/src/*"],
       "@logger/*": ["packages/logger/src/*"],
       "@parser/*": ["packages/parser/src/*"],
-      "@client/*": ["packages/client/src/*"]
+      "@client/*": ["packages/client/src/*"],
+      "@nlp-tagger/*": ["packages/nlp-tagger/src/*"]
     }
   },
   "include": ["src"],

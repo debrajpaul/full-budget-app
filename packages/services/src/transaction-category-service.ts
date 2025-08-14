@@ -74,10 +74,9 @@ export class TransactionCategoryService implements ITransactionCategoryService {
 
   public async addRulesByTenant(
     tenantId: ETenantType = ETenantType.default,
-    rules: Record<string, string> = keywordCategoryMap,
   ): Promise<void> {
     this.logger.info(`Adding rules for tenant ${tenantId}`);
-    return await this.categoryRulesStore.addRules(tenantId, rules);
+    return await this.categoryRulesStore.addRules(tenantId, keywordCategoryMap);
   }
 
   private categorizeByRules(
