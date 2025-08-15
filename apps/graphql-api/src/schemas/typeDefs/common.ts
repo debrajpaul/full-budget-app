@@ -1,23 +1,23 @@
 export const commonTypeDefs = /* GraphQL */ `
   enum BankName {
-    HDFC
-    SBI
-    # ICICI
-    # AXIS
-    # BOI
-    # KOTAK
-    # IDBI
-    # UBI
-    # YES
-    # CANARA
-    OTHER
+    hdfc
+    sbi
+    # icici
+    # axis
+    # boi
+    # kotak
+    # idbi
+    # ubi
+    # yes
+    # canara
+    other
   }
   enum TenantType {
-    PERSONAL
-    BUSINESS
-    # GOVERNMENT
-    # NGO
-    # EDUCATIONAL
-    DEFAULT
+    personal
+    client
+    # government
+    # ngo
+    # educational
+    default
   }
 `;
