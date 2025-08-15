@@ -32,8 +32,14 @@ export class AuthorizationService implements IAuthorizationService {
       const payload = verifyToken(token, this.jwtSecret);
       this.logger.debug("Token verified successfully", { payload });
       return { email: payload.userId };
-    } catch (error) {
+    } catch (error: any) {
       this.logger.error("Error verifying token", error as Error);
+      if (
+        error?.message === "Token is required" ||
+        error?.message === "JWT secret is not configured"
+      ) {
+        throw error;
+      }
       throw new Error("Invalid or expired token");
     }
   }

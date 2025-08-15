@@ -2,6 +2,7 @@ import { CategoryRulesStore } from "./category-rules-store";
 import { mock } from "jest-mock-extended";
 import type { ILogger, ICategoryRules, ETenantType } from "@common";
 import { DynamoDBDocumentClient } from "@aws-sdk/lib-dynamodb";
+import { PutCommand, DeleteCommand } from "@aws-sdk/lib-dynamodb";
 
 describe("CategoryRulesStore", () => {
   let storeMock: { send: jest.Mock };
@@ -68,34 +69,34 @@ describe("CategoryRulesStore", () => {
   it("should add a single rule", async () => {
     storeMock.send.mockResolvedValue({});
     await rulesStore.addRule(tenantId, "FOOD", "groceries");
-    expect(storeMock.send).toHaveBeenCalledWith(
-      expect.objectContaining({
-        TableName: tableName,
-        Item: expect.objectContaining({
-          ruleId: `${tenantId}#food`,
-          tenantId,
-          keyword: "food",
-          category: "groceries",
-          isActive: true,
-        }),
-        ConditionExpression: "attribute_not_exists(ruleId)",
+    expect(storeMock.send).toHaveBeenCalledWith(expect.any(PutCommand));
+    const calledCommand = storeMock.send.mock.calls[0][0];
+    expect(calledCommand.input).toMatchObject({
+      TableName: tableName,
+      Item: expect.objectContaining({
+        ruleId: `${tenantId}#food`,
+        tenantId,
+        keyword: "food",
+        category: "groceries",
+        isActive: true,
       }),
-    );
+      ConditionExpression: "attribute_not_exists(ruleId)",
+    });
     expect(loggerMock.info).toHaveBeenCalledWith("Saving rule to DynamoDB");
   });
 
   it("should remove a rule", () => {
     storeMock.send.mockResolvedValue({});
     rulesStore.removeRule(tenantId, `${tenantId}#food`);
-    expect(storeMock.send).toHaveBeenCalledWith(
-      expect.objectContaining({
-        TableName: tableName,
-        Key: {
-          tenantId,
-          ruleId: `${tenantId}#food`,
-        },
-      }),
-    );
+    expect(storeMock.send).toHaveBeenCalledWith(expect.any(DeleteCommand));
+    const calledCommand = storeMock.send.mock.calls[0][0];
+    expect(calledCommand.input).toMatchObject({
+      TableName: tableName,
+      Key: {
+        tenantId,
+        ruleId: `${tenantId}#food`,
+      },
+    });
     expect(loggerMock.info).toHaveBeenCalledWith("Rule removed successfully", {
       tenantId,
       ruleId: `${tenantId}#food`,
