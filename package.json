@@ -55,11 +55,11 @@
   },
   "lint-staged": {
     "apps/**/*.{ts,tsx,js,jsx}": [
-      "eslint --fix",
+      "NODE_OPTIONS=--max_old_space_size=8192 eslint --fix",
       "prettier --write"
     ],
     "packages/**/*.{ts,tsx,js,jsx}": [
-      "eslint --fix",
+      "NODE_OPTIONS=--max_old_space_size=8192 eslint --fix",
       "prettier --write"
     ],
     "**/*.{md,json}": [
