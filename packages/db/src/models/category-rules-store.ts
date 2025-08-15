@@ -1,5 +1,4 @@
 import { chunk } from "lodash";
-import { v4 as uuid } from "uuid";
 import {
   ICategoryRules,
   ILogger,
@@ -77,7 +76,7 @@ export class CategoryRulesStore implements ICategoryRulesStore {
     this.logger.info("Saving rule to DynamoDB");
     this.logger.debug("Rule", { tenantId, keyword, category });
     const item: ICategoryRules = {
-      ruleId: `${tenantId}#${uuid()}`,
+      ruleId: `${tenantId}#${keyword.toLowerCase()}`,
       tenantId,
       keyword: keyword.toLowerCase(),
       category,
@@ -88,8 +87,7 @@ export class CategoryRulesStore implements ICategoryRulesStore {
     const command = new PutCommand({
       TableName: this.tableName,
       Item: item,
-      ConditionExpression:
-        "attribute_not_exists(tenantId) AND attribute_not_exists(ruleId)",
+      ConditionExpression: "attribute_not_exists(ruleId)",
     });
     await this.store.send(command);
   }

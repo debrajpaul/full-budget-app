@@ -22,6 +22,7 @@
     "@typescript-eslint/eslint-plugin": "^8.37.0",
     "@typescript-eslint/parser": "^8.37.0",
     "commitlint": "^19.8.1",
+    "cross-env": "^10.0.0",
     "esbuild": "^0.23.1",
     "esbuild-ts-paths": "^1.1.3",
     "eslint": "^9.31.0",
@@ -55,11 +56,11 @@
   },
   "lint-staged": {
     "apps/**/*.{ts,tsx,js,jsx}": [
-      "eslint --fix",
+      "cross-env NODE_OPTIONS=--max_old_space_size=8192 eslint --config .eslintrc.staged.js --fix --cache",
       "prettier --write"
     ],
     "packages/**/*.{ts,tsx,js,jsx}": [
-      "eslint --fix",
+      "cross-env NODE_OPTIONS=--max_old_space_size=8192 eslint --config .eslintrc.staged.js --fix --cache",
       "prettier --write"
     ],
     "**/*.{md,json}": [
