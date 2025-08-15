@@ -56,10 +56,12 @@
   },
   "lint-staged": {
     "apps/**/*.{ts,tsx,js,jsx}": [
-      "cross-env NODE_OPTIONS=--max_old_space_size=8192 eslint --config .eslintrc.staged.js --fix --cache --max-warnings=0"
+      "cross-env NODE_OPTIONS=--max_old_space_size=8192 eslint --config .eslintrc.staged.js --fix --cache",
+      "prettier --write"
     ],
     "packages/**/*.{ts,tsx,js,jsx}": [
-      "cross-env NODE_OPTIONS=--max_old_space_size=8192 eslint --config .eslintrc.staged.js --fix --cache --max-warnings=0"
+      "cross-env NODE_OPTIONS=--max_old_space_size=8192 eslint --config .eslintrc.staged.js --fix --cache",
+      "prettier --write"
     ],
     "**/*.{md,json}": [
       "prettier --write"
