@@ -8,6 +8,7 @@ import globals from "globals";
 export default [
     {
     ignores: [
+      "**/data/**",
       "**/dist/**",
       "**/node_modules/**",
     ],

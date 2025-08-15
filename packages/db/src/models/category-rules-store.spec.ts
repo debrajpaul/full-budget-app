@@ -27,7 +27,7 @@ describe("CategoryRulesStore", () => {
         keyword: "food",
         category: "groceries",
         tenantId,
-        ruleId: "r1",
+        ruleId: `${tenantId}#food`,
         isActive: true,
         createdAt: "2025-08-12T00:00:00.000Z",
       },
@@ -37,7 +37,7 @@ describe("CategoryRulesStore", () => {
         keyword: "fuel",
         category: "transport",
         tenantId: defaultTenant,
-        ruleId: "r2",
+        ruleId: `${defaultTenant}#fuel`,
         isActive: true,
         createdAt: "2025-08-12T00:00:00.000Z",
       },
@@ -45,7 +45,7 @@ describe("CategoryRulesStore", () => {
         keyword: "food",
         category: "dining",
         tenantId: defaultTenant,
-        ruleId: "r3",
+        ruleId: `${defaultTenant}#food`,
         isActive: true,
         createdAt: "2025-08-12T00:00:00.000Z",
       },
@@ -67,18 +67,34 @@ describe("CategoryRulesStore", () => {
 
   it("should add a single rule", async () => {
     storeMock.send.mockResolvedValue({});
-    await rulesStore.addRule(tenantId, "food", "groceries");
-    expect(storeMock.send).toHaveBeenCalled();
+    await rulesStore.addRule(tenantId, "FOOD", "groceries");
+    expect(storeMock.send).toHaveBeenCalledWith(expect.objectContaining({
+      TableName: tableName,
+      Item: expect.objectContaining({
+        ruleId: `${tenantId}#food`,
+        tenantId,
+        keyword: "food",
+        category: "groceries",
+        isActive: true,
+      }),
+      ConditionExpression: "attribute_not_exists(ruleId)",
+    }));
     expect(loggerMock.info).toHaveBeenCalledWith("Saving rule to DynamoDB");
   });
 
   it("should remove a rule", () => {
     storeMock.send.mockResolvedValue({});
-    rulesStore.removeRule(tenantId, "r1");
-    expect(storeMock.send).toHaveBeenCalled();
+    rulesStore.removeRule(tenantId, `${tenantId}#food`);
+    expect(storeMock.send).toHaveBeenCalledWith(expect.objectContaining({
+      TableName: tableName,
+      Key: {
+        tenantId,
+        ruleId: `${tenantId}#food`,
+      },
+    }));
     expect(loggerMock.info).toHaveBeenCalledWith("Rule removed successfully", {
       tenantId,
-      ruleId: "r1",
+      ruleId: `${tenantId}#food`,
     });
   });
 
@@ -88,7 +104,7 @@ describe("CategoryRulesStore", () => {
         keyword: "food",
         category: "groceries",
         tenantId,
-        ruleId: "r1",
+        ruleId: `${tenantId}#food`,
         isActive: true,
         createdAt: "2025-08-12T00:00:00.000Z",
       },
@@ -96,7 +112,7 @@ describe("CategoryRulesStore", () => {
         keyword: "fuel",
         category: "transport",
         tenantId,
-        ruleId: "r2",
+        ruleId: `${tenantId}#fuel`,
         isActive: true,
         createdAt: "2025-08-12T00:00:00.000Z",
       },
