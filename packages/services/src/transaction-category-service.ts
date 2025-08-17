@@ -48,6 +48,8 @@ export class TransactionCategoryService implements ITransactionCategoryService {
 
       // step 2: Match description against rules
       let matchedCategory = this.categorizeByRules(description, rules);
+      let taggedBy = "RULE_ENGINE";
+      let confidence: number | undefined = 1;
       // step 3: Fallback to AI tagging
       if (!matchedCategory) {
         this.logger.info(
@@ -55,12 +57,16 @@ export class TransactionCategoryService implements ITransactionCategoryService {
         );
         // Here you would call your AI tagging service
         matchedCategory = "AI_TAGGED_CATEGORY"; // Placeholder for AI tagging logic
+        taggedBy = "AI_TAGGER";
+        confidence = undefined;
       }
       // step 4: Update transaction with matched category
       await this.transactionStore.updateTransactionCategory(
         tenantId,
         transactionId,
         matchedCategory,
+        taggedBy,
+        confidence,
       );
       this.logger.info(
         `Transaction ${transactionId} categorized as "${matchedCategory}"`,
