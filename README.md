@@ -1,6 +1,6 @@
 # full-budget-app
 
-A modular, scalable microservice architecture with best practices of multi-tenancy SaaS platform for managing transactions, budgets, and reviews. using AWS CDK, Lambda, DynamoDB, SQS, and S3.
+A modular, scalable microservice architecture with best practices of a multi-tenancy SaaS platform for managing transactions, budgets, and reviews using AWS CDK, Lambda, DynamoDB, SQS, and S3.
 
 - **GraphQL Apollo** for the API layer
 - **SQS** for event-driven background processing
