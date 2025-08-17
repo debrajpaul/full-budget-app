@@ -20,5 +20,8 @@ export interface ITransactionStore {
     tenantId: ETenantType,
     transactionId: string,
     matchedCategory: string,
+    taggedBy?: string,
+    confidence?: number,
+    embedding?: number[],
   ): Promise<void>;
 }
