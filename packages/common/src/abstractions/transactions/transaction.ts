@@ -10,7 +10,9 @@ export interface ITransaction {
   txnDate: string | undefined;
   description?: string;
   category?: string;
+  embedding?: number[];
   taggedBy?: string;
+  confidence?: number;
   type?: string;
   createdAt: string;
   updatedAt?: string;
