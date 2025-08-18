@@ -1,5 +1,10 @@
 import { DynamoDBRecord } from "aws-lambda";
-import { ILogger, ITransactionCategoryService } from "@common";
+import {
+  ILogger,
+  ITransactionCategoryService,
+  ITransactionCategoryRequest,
+  ETenantType,
+} from "@common";
 
 export class TransactionCategoryLoader {
   constructor(
@@ -17,7 +22,20 @@ export class TransactionCategoryLoader {
       }
       const newImage = record.dynamodb?.NewImage;
       if (!newImage) continue;
-      await this.transactionCategoryService.process(newImage);
+      const request: ITransactionCategoryRequest = {
+        tenantId: (newImage.tenantId?.S as ETenantType) ?? ETenantType.default,
+        transactionId: newImage.transactionId?.S ?? "",
+        description: newImage.description?.S,
+        category: newImage.category?.S,
+        createdAt: newImage.createdAt?.S ?? new Date().toISOString(),
+        embedding:
+          newImage.embedding?.L?.map((e: any) => Number(e.N)) ?? undefined,
+        taggedBy: newImage.taggedBy?.S,
+        confidence: newImage.confidence?.N
+          ? Number(newImage.confidence.N)
+          : undefined,
+      };
+      await this.transactionCategoryService.process(request);
     }
   }
 }
