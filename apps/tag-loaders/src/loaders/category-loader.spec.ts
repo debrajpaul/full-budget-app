@@ -39,4 +39,40 @@ describe("TransactionCategoryLoader", () => {
       confidence: 0.9,
     });
   });
+
+  it("should default createdAt and omit AI metadata when missing", async () => {
+    const logger = mock<ILogger>();
+    const service = mock<ITransactionCategoryService>();
+    const loader = new TransactionCategoryLoader(logger, service);
+
+    const fixedDate = new Date("2024-02-02T03:04:05.000Z");
+    jest.useFakeTimers().setSystemTime(fixedDate);
+
+    const record = {
+      eventID: "2",
+      eventName: "INSERT",
+      dynamodb: {
+        NewImage: {
+          tenantId: { S: ETenantType.default },
+          transactionId: { S: "t2" },
+          description: { S: "no meta" },
+        },
+      },
+    } as unknown as DynamoDBRecord;
+
+    await loader.handle([record]);
+
+    expect(service.process).toHaveBeenCalledWith({
+      tenantId: ETenantType.default,
+      transactionId: "t2",
+      description: "no meta",
+      category: undefined,
+      createdAt: fixedDate.toISOString(),
+      embedding: undefined,
+      taggedBy: undefined,
+      confidence: undefined,
+    });
+
+    jest.useRealTimers();
+  });
 });
