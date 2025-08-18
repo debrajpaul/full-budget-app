@@ -29,13 +29,13 @@ export class TransactionStore implements ITransactionStore {
     this.logger.info("Saving transactions to DynamoDB");
     this.logger.debug("Transactions", { txns });
 
-    const chunks = chunk(txns, 25);
-    for (const chunk of chunks) {
-      const promises = chunk.map((txn) => this.saveTransaction(tenantId, txn));
+    const batches = chunk(txns, 25);
+    for (const batch of batches) {
+      const promises = batch.map((txn) => this.saveTransaction(tenantId, txn));
       await Promise.all(promises);
     }
 
-    console.log(`Finished processing ${txns.length} transactions.`);
+    this.logger.info(`Finished processing ${txns.length} transactions.`);
   }
 
   async saveTransaction(
@@ -181,6 +181,10 @@ export class TransactionStore implements ITransactionStore {
       expressionAttributeNames["#embedding"] = "embedding";
       expressionAttributeValues[":emb"] = embedding;
     }
+
+    updateExpressions.push("#updatedAt = :updatedAt");
+    expressionAttributeNames["#updatedAt"] = "updatedAt";
+    expressionAttributeValues[":updatedAt"] = new Date().toISOString();
 
     const command = new UpdateCommand({
       TableName: this.tableName,

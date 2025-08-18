@@ -20,6 +20,9 @@ describe("TransactionStore", () => {
     description: "desc",
     balance: 1000,
     category: "cat",
+    embedding: [0.1, 0.2],
+    taggedBy: "AI_TAGGER",
+    confidence: 0.9,
     type: "credit",
     createdAt: "2025-08-07T00:00:00.000Z",
   };
@@ -39,6 +42,10 @@ describe("TransactionStore", () => {
     const { tenantId, ...txnWithoutTenant } = txn;
     await transactionStore.saveTransaction(tenantId, txnWithoutTenant);
     expect(storeMock.send).toHaveBeenCalled();
+    const callArg = storeMock.send.mock.calls[0][0];
+    expect(callArg.input.Item.embedding).toEqual(txn.embedding);
+    expect(callArg.input.Item.taggedBy).toEqual(txn.taggedBy);
+    expect(callArg.input.Item.confidence).toEqual(txn.confidence);
     expect(loggerMock.info).toHaveBeenCalledWith(
       `Saving transaction: ${txn.transactionId}`,
     );
@@ -106,5 +113,53 @@ describe("TransactionStore", () => {
     );
     expect(storeMock.send).toHaveBeenCalled();
     expect(result).toEqual([txn]);
+  });
+
+  it("should update transaction category with metadata", async () => {
+    storeMock.send = jest.fn().mockResolvedValue({});
+    await transactionStore.updateTransactionCategory(
+      tenantId,
+      txn.transactionId,
+      "newCat",
+      "AI_TAGGER",
+      0.95,
+      [0.1, 0.2],
+    );
+    expect(storeMock.send).toHaveBeenCalled();
+    const command = storeMock.send.mock.calls[0][0];
+    expect(command.input.ExpressionAttributeNames).toMatchObject({
+      "#category": "category",
+      "#taggedBy": "taggedBy",
+      "#confidence": "confidence",
+      "#embedding": "embedding",
+      "#updatedAt": "updatedAt",
+    });
+    expect(command.input.ExpressionAttributeValues).toMatchObject({
+      ":cat": "newCat",
+      ":tagger": "AI_TAGGER",
+      ":conf": 0.95,
+      ":emb": [0.1, 0.2],
+    });
+    expect(command.input.ExpressionAttributeValues[":updatedAt"]).toBeDefined();
+  });
+
+  it("should update only category when no metadata provided", async () => {
+    storeMock.send = jest.fn().mockResolvedValue({});
+    await transactionStore.updateTransactionCategory(
+      tenantId,
+      txn.transactionId,
+      "onlyCat",
+    );
+    const command = storeMock.send.mock.calls[0][0];
+    expect(command.input.ExpressionAttributeNames).toMatchObject({
+      "#category": "category",
+      "#updatedAt": "updatedAt",
+    });
+    expect(command.input.ExpressionAttributeValues).toMatchObject({
+      ":cat": "onlyCat",
+    });
+    expect(command.input.UpdateExpression).toBe(
+      "SET #category = :cat, #updatedAt = :updatedAt",
+    );
   });
 });
