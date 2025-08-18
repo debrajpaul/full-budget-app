@@ -9,6 +9,9 @@ export const transactionTypeDefs = /* GraphQL */ `
     txnDate: String!
     description: String
     category: String
+    embedding: [Float!]
+    taggedBy: String
+    confidence: Float
     type: String
   }
 
