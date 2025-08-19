@@ -6,14 +6,20 @@ import globals from "globals";
 
 /** @type {import("eslint").FlatConfig[]} */
 export default [
-    {
+  {
     ignores: [
       "**/data/**",
       "**/dist/**",
       "**/node_modules/**",
+      "infra/**",
     ],
   },
   js.configs.recommended,
+  {
+    languageOptions: {
+      globals: globals.node,
+    },
+  },
   {
     files: ["**/*.ts"],
     languageOptions: {
@@ -48,3 +54,4 @@ export default [
     },
   },
 ];
+

@@ -87,6 +87,6 @@ async function run() {
 }
 
 run().catch(err => {
-  console.error(`Failed to build ${appName}`, err);
+  console.error('Failed to build', err);
   process.exit(1);
 });
