@@ -46,7 +46,10 @@
     "uuid": "^11.1.0"
   },
   "scripts": {
-    "prepare": "husky",
+    "prepare": "husky install",
+    "lint": "cross-env NODE_OPTIONS=--max_old_space_size=8192 eslint .",
+    "test": "jest",
+    "typecheck": "tsc --noEmit",
     "clean": "rimraf apps/*/dist && rimraf packages/*/dist",
     "build": "pnpm clean && node esbuild.config.js",
     "dev": "pnpm clean && node esbuild.config.mjs --watch",
