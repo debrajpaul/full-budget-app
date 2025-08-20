@@ -4,6 +4,7 @@ import {
   ITransactionStore,
   ITransactionCategoryService,
   ICategoryRulesStore,
+  ITransactionCategoryRequest,
 } from "@common";
 import { keywordCategoryMap } from "@nlp-tagger";
 
@@ -22,13 +23,19 @@ export class TransactionCategoryService implements ITransactionCategoryService {
     this.categoryRulesStore = categoryRulesStore;
     this.logger.info("ProcessService initialized");
   }
-  public async process(newImage: any): Promise<boolean> {
+  public async process(request: ITransactionCategoryRequest): Promise<boolean> {
     this.logger.info("process started processing messages");
     try {
-      const tenantId = newImage.tenantId?.S;
-      const transactionId = newImage.transactionId?.S;
-      const description = newImage.description?.S;
-      const category = newImage.category?.S;
+      const {
+        tenantId,
+        transactionId,
+        description,
+        category,
+        embedding,
+        taggedBy,
+        confidence,
+      } = request;
+
       if (!tenantId || !transactionId || !description) {
         this.logger.warn("Skipping record with missing required fields", {
           tenantId,
@@ -48,6 +55,9 @@ export class TransactionCategoryService implements ITransactionCategoryService {
 
       // step 2: Match description against rules
       let matchedCategory = this.categorizeByRules(description, rules);
+      let finalTaggedBy = taggedBy ?? "RULE_ENGINE";
+      let finalConfidence: number | undefined = confidence ?? 1;
+      let finalEmbedding = embedding;
       // step 3: Fallback to AI tagging
       if (!matchedCategory) {
         this.logger.info(
@@ -55,12 +65,18 @@ export class TransactionCategoryService implements ITransactionCategoryService {
         );
         // Here you would call your AI tagging service
         matchedCategory = "AI_TAGGED_CATEGORY"; // Placeholder for AI tagging logic
+        finalTaggedBy = "AI_TAGGER";
+        finalConfidence = undefined;
+        finalEmbedding = embedding;
       }
       // step 4: Update transaction with matched category
       await this.transactionStore.updateTransactionCategory(
         tenantId,
         transactionId,
         matchedCategory,
+        finalTaggedBy,
+        finalConfidence,
+        finalEmbedding,
       );
       this.logger.info(
         `Transaction ${transactionId} categorized as "${matchedCategory}"`,

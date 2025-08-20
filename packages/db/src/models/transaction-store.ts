@@ -29,13 +29,13 @@ export class TransactionStore implements ITransactionStore {
     this.logger.info("Saving transactions to DynamoDB");
     this.logger.debug("Transactions", { txns });
 
-    const chunks = chunk(txns, 25);
-    for (const chunk of chunks) {
-      const promises = chunk.map((txn) => this.saveTransaction(tenantId, txn));
+    const batches = chunk(txns, 25);
+    for (const batch of batches) {
+      const promises = batch.map((txn) => this.saveTransaction(tenantId, txn));
       await Promise.all(promises);
     }
 
-    console.log(`Finished processing ${txns.length} transactions.`);
+    this.logger.info(`Finished processing ${txns.length} transactions.`);
   }
 
   async saveTransaction(
@@ -57,6 +57,9 @@ export class TransactionStore implements ITransactionStore {
         description: txn.description || "NONE",
         balance: txn.balance,
         category: txn.category,
+        embedding: txn.embedding,
+        taggedBy: txn.taggedBy,
+        confidence: txn.confidence,
         type: txn.type,
       };
 
@@ -143,6 +146,9 @@ export class TransactionStore implements ITransactionStore {
     tenantId: ETenantType,
     transactionId: string,
     matchedCategory: string,
+    taggedBy?: string,
+    confidence?: number,
+    embedding?: number[],
   ): Promise<void> {
     this.logger.info(`Updating transaction category`);
     this.logger.debug("Transaction ID & Category", {
@@ -150,21 +156,45 @@ export class TransactionStore implements ITransactionStore {
       matchedCategory,
     });
 
+    const updateExpressions = ["#category = :cat"];
+    const expressionAttributeNames: Record<string, string> = {
+      "#category": "category",
+    };
+    const expressionAttributeValues: Record<string, any> = {
+      ":cat": matchedCategory,
+    };
+
+    if (taggedBy !== undefined) {
+      updateExpressions.push("#taggedBy = :tagger");
+      expressionAttributeNames["#taggedBy"] = "taggedBy";
+      expressionAttributeValues[":tagger"] = taggedBy;
+    }
+
+    if (confidence !== undefined) {
+      updateExpressions.push("#confidence = :conf");
+      expressionAttributeNames["#confidence"] = "confidence";
+      expressionAttributeValues[":conf"] = confidence;
+    }
+
+    if (embedding !== undefined) {
+      updateExpressions.push("#embedding = :emb");
+      expressionAttributeNames["#embedding"] = "embedding";
+      expressionAttributeValues[":emb"] = embedding;
+    }
+
+    updateExpressions.push("#updatedAt = :updatedAt");
+    expressionAttributeNames["#updatedAt"] = "updatedAt";
+    expressionAttributeValues[":updatedAt"] = new Date().toISOString();
+
     const command = new UpdateCommand({
       TableName: this.tableName,
       Key: {
         tenantId,
         transactionId,
       },
-      UpdateExpression: "SET #category = :cat, #taggedBy = :tagger",
-      ExpressionAttributeNames: {
-        "#category": "category",
-        "#taggedBy": "taggedBy",
-      },
-      ExpressionAttributeValues: {
-        ":cat": matchedCategory,
-        ":tagger": matchedCategory ? "RULE_ENGINE" : "AI_TAGGER",
-      },
+      UpdateExpression: `SET ${updateExpressions.join(", ")}`,
+      ExpressionAttributeNames: expressionAttributeNames,
+      ExpressionAttributeValues: expressionAttributeValues,
     });
     await this.store.send(command);
     this.logger.info(`Updated category for transaction: ${transactionId}`);
