@@ -25,7 +25,10 @@ export class S3Service implements IS3Service {
     const res = await this.s3Client.send(
       new GetObjectCommand({ Bucket: this.bucketName, Key: key }),
     );
-    if (res.$metadata.httpStatusCode !== 200) throw new Error(`Failed to get file from S3: ${res.$metadata.httpStatusCode}`);
+    if (res.$metadata.httpStatusCode !== 200)
+      throw new Error(
+        `Failed to get file from S3: ${res.$metadata.httpStatusCode}`,
+      );
     if (!res.Body) throw new Error(`No file body returned from S3: ${key}`);
     const chunks: Buffer[] = [];
     for await (const chunk of res.Body as any) {
