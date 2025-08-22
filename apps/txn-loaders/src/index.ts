@@ -18,7 +18,7 @@ const { transactionLoader } = setupLoaders(logger, transactionService);
 export const handler = async (event: SQSEvent) => {
   logger.info(`#handler`);
   logger.debug(`handler event: ${JSON.stringify(event)}`);
-  const result = await transactionLoader.handle(event.Records);
+  const result = await transactionLoader.loader(event.Records);
   logger.info(`handler result: ${JSON.stringify(result)}`);
   return result;
 };
