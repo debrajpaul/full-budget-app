@@ -1,31 +1,34 @@
-import { setupDependency } from "./setup-dependency";
-import { setupServices } from "./setup-services";
+import { handler } from "./index";
+import { SQSEvent } from "aws-lambda";
+import { ETenantType, EBankName } from "@common";
 
-const { logger, s3Client, sqsClient, dynamoDBDocumentClient } =
-  setupDependency();
+const mockEvent: SQSEvent = {
+  Records: [
+    {
+      messageId: "1",
+      receiptHandle: "mock-handle",
+      body: JSON.stringify({
+        bankName: EBankName.other,
+        fileName: "mock.csv",
+        fileKey: "mock.csv",
+        userId: "user-1",
+        tenantId: ETenantType.default,
+      }),
+      attributes: {
+        ApproximateReceiveCount: "1",
+        SentTimestamp: Date.now().toString(),
+        SenderId: "mock",
+        ApproximateFirstReceiveTimestamp: Date.now().toString(),
+      },
+      messageAttributes: {},
+      md5OfBody: "md5",
+      eventSource: "aws:sqs",
+      eventSourceARN: "arn:aws:sqs:us-east-1:123456789012:Transactions",
+      awsRegion: "us-east-1",
+    },
+  ],
+};
 
-const { transactionService } = setupServices(
-  logger,
-  s3Client,
-  sqsClient,
-  dynamoDBDocumentClient,
-);
-
-async function processMessages() {
-  logger.info("WorkLoader started processing messages");
-  logger.info("Waiting for messages from SQS...");
-  try {
-    while (true) {
-      let flag: boolean = await transactionService.processes();
-      logger.info("Waiting for messages from SQS...");
-      if (!flag) {
-        await new Promise((res) => setTimeout(res, 2000));
-        continue;
-      }
-    }
-  } catch (err) {
-    logger.error("Error processing message", err as Error);
-    await new Promise((res) => setTimeout(res, 2000));
-  }
-}
-processMessages();
+handler(mockEvent)
+  .then((res) => console.log("handler result", res))
+  .catch((err) => console.error(err));
