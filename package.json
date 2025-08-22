@@ -1,7 +1,7 @@
 {
   "name": "full-budget-app",
   "version": "1.0.0",
-  "description": "",
+  "description": "A modular, scalable microservice architecture with best practices of a multi-tenancy SaaS platform for managing transactions, budgets, and reviews using AWS CDK, Lambda, DynamoDB, SQS, and S3.",
   "main": "index.js",
   "keywords": [],
   "author": "",
@@ -9,8 +9,17 @@
   "packageManager": "pnpm@10.11.0",
   "workspaces": [
     "apps/*",
+    "infra/*",
     "packages/*"
-  ],
+  ], 
+  "repository": {
+    "type": "git",
+    "url": "git@github.com:debrajpaul/full-budget-app.git"
+  },
+  "bugs": {
+    "url": "https://github.com/debrajpaul/full-budget-app/issues"
+  },
+  "homepage": "https://github.com/debrajpaul/full-budget-app#readme",
   "devDependencies": {
     "@commitlint/cli": "^19.8.1",
     "@commitlint/config-conventional": "^19.8.1",
