@@ -33,7 +33,10 @@ describe("S3Service", () => {
         for (const chunk of chunks) yield chunk;
       },
     };
-    (s3Client.send as jest.Mock).mockResolvedValue({ Body: asyncIterable });
+    (s3Client.send as jest.Mock).mockResolvedValue({
+      $metadata: { httpStatusCode: 200 },
+      Body: asyncIterable,
+    });
     const result = await service.getFile(key);
     expect(s3Client.send).toHaveBeenCalled();
     expect(loggerMock.info).toHaveBeenCalledWith("###GettingS3");
@@ -42,9 +45,21 @@ describe("S3Service", () => {
   });
 
   it("should throw error if S3 Body is missing", async () => {
-    (s3Client.send as jest.Mock).mockResolvedValue({});
+    (s3Client.send as jest.Mock).mockResolvedValue({
+      $metadata: { httpStatusCode: 200 },
+    });
     await expect(service.getFile(key)).rejects.toThrow(
-      "No file body returned from S3",
+      `No file body returned from S3: ${key}`,
+    );
+  });
+
+  it("should throw error if S3 httpStatusCode is not 200", async () => {
+    (s3Client.send as jest.Mock).mockResolvedValue({
+      $metadata: { httpStatusCode: 404 },
+      Body: {},
+    });
+    await expect(service.getFile(key)).rejects.toThrow(
+      "Failed to get file from S3: 404",
     );
   });
 });

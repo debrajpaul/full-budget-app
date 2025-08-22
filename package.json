@@ -1,7 +1,7 @@
 {
   "name": "full-budget-app",
   "version": "1.0.0",
-  "description": "",
+  "description": "A modular, scalable microservice architecture with best practices of a multi-tenancy SaaS platform for managing transactions, budgets, and reviews using AWS CDK, Lambda, DynamoDB, SQS, and S3.",
   "main": "index.js",
   "keywords": [],
   "author": "",
@@ -9,8 +9,17 @@
   "packageManager": "pnpm@10.11.0",
   "workspaces": [
     "apps/*",
+    "infra/*",
     "packages/*"
-  ],
+  ], 
+  "repository": {
+    "type": "git",
+    "url": "git@github.com:debrajpaul/full-budget-app.git"
+  },
+  "bugs": {
+    "url": "https://github.com/debrajpaul/full-budget-app/issues"
+  },
+  "homepage": "https://github.com/debrajpaul/full-budget-app#readme",
   "devDependencies": {
     "@commitlint/cli": "^19.8.1",
     "@commitlint/config-conventional": "^19.8.1",
@@ -27,6 +36,8 @@
     "esbuild-ts-paths": "^1.1.3",
     "eslint": "^9.31.0",
     "eslint-plugin-jest": "^28.11.0",
+    "eslint-plugin-prettier": "^5.2.1",
+    "eslint-config-prettier": "^9.0.0",
     "fast-glob": "^3.3.3",
     "globals": "^16.1.0",
     "husky": "^9.1.7",
@@ -40,19 +51,16 @@
     "tsconfig-paths": "^4.2.0",
     "typescript": "^5.8.3"
   },
-  "dependencies": {
-    "dotenv": "^16.5.0",
-    "lodash": "^4.17.21",
-    "uuid": "^11.1.0"
-  },
+  "dependencies": {},
   "scripts": {
     "prepare": "husky install",
-    "lint": "cross-env NODE_OPTIONS=--max_old_space_size=8192 eslint .",
-    "test": "jest",
+    "lint": "pnpm -r lint",
+    "format": "pnpm -r format",
+    "test": "pnpm -r test",
     "typecheck": "tsc --noEmit",
     "clean": "rimraf apps/*/dist && rimraf packages/*/dist",
     "build": "pnpm clean && node esbuild.config.js",
-    "dev": "pnpm clean && node esbuild.config.mjs --watch",
+    "dev": "pnpm clean && node esbuild.config.js --watch",
     "synth": "pnpm build && pnpm --filter ./infra cdk:synth",
     "deploy:all": "pnpm build && pnpm --filter ./infra cdk:deploy:all",
     "destroy:all": "pnpm --filter ./infra cdk:destroy:all"

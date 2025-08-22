@@ -3,6 +3,7 @@ import pluginTs from "@typescript-eslint/eslint-plugin";
 import parserTs from "@typescript-eslint/parser";
 import pluginJest from "eslint-plugin-jest";
 import globals from "globals";
+import pluginPrettier from "eslint-plugin-prettier/recommended";
 
 /** @type {import("eslint").FlatConfig[]} */
 export default [
@@ -53,5 +54,5 @@ export default [
       "jest/no-focused-tests": "error",
     },
   },
+  pluginPrettier,
 ];
-

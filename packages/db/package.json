@@ -14,6 +14,6 @@
     "@aws-sdk/lib-dynamodb": "^3.844.0",
     "@common": "workspace:*",
     "@logger": "workspace:*",
-    "uuid": "^11.1.0"
+    "lodash": "^4.17.21"
   }
 }
