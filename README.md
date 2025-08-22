@@ -232,6 +232,19 @@ CLIENT_ID=book-service
 
 ---
 
+## Local development
+
+  Run the build in watch mode and start individual services locally:
+
+  ```bash
+  pnpm dev                                   # rebuild packages on change
+  pnpm --filter @app/graphql-api dev         # run GraphQL API
+  pnpm --filter @app/tag-loaders dev         # run tag-loaders
+  pnpm --filter @app/txn-loaders dev         # run txn-loaders
+  ```
+
+---
+
 ## Suggested Improvements
 
     * Security:- Use KMS encryption and least-privilege IAM roles.
