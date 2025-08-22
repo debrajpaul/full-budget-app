@@ -47,8 +47,9 @@
   },
   "scripts": {
     "prepare": "husky install",
-    "lint": "cross-env NODE_OPTIONS=--max_old_space_size=8192 eslint .",
-    "test": "jest",
+    "lint": "pnpm -r lint",
+    "format": "pnpm -r format",
+    "test": "pnpm -r test",
     "typecheck": "tsc --noEmit",
     "clean": "rimraf apps/*/dist && rimraf packages/*/dist",
     "build": "pnpm clean && node esbuild.config.js",
