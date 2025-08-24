@@ -81,7 +81,7 @@ export class TransactionCategoryService implements ITransactionCategoryService {
           matchedCategory = "AI_TAGGED_CATEGORY";
           finalTaggedBy = "AI_TAGGER";
           finalConfidence = undefined;
-        } 
+        }
         finalEmbedding = embedding;
       }
       // step 4: Update transaction with matched category
