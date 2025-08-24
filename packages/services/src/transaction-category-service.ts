@@ -69,7 +69,8 @@ export class TransactionCategoryService implements ITransactionCategoryService {
         );
         // Here you would call your AI tagging service
         if (this.nlpService) {
-          const analysis = await this.nlpService.analyzeDescription(description);
+          const analysis =
+            await this.nlpService.analyzeDescription(description);
           this.logger.debug("AI tagging result:", analysis);
         }
         matchedCategory = "AI_TAGGED_CATEGORY"; // Placeholder for AI tagging logic
