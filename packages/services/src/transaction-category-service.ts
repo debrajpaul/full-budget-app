@@ -7,20 +7,24 @@ import {
   ITransactionCategoryRequest,
 } from "@common";
 import { keywordCategoryMap } from "@nlp-tagger";
+import { NlpService } from "./nlp-service";
 
 export class TransactionCategoryService implements ITransactionCategoryService {
   private readonly logger: ILogger;
   private readonly transactionStore: ITransactionStore;
   private readonly categoryRulesStore: ICategoryRulesStore;
+  private readonly nlpService?: NlpService;
 
   constructor(
     logger: ILogger,
     transactionStore: ITransactionStore,
     categoryRulesStore: ICategoryRulesStore,
+    nlpService?: NlpService,
   ) {
     this.logger = logger;
     this.transactionStore = transactionStore;
     this.categoryRulesStore = categoryRulesStore;
+    this.nlpService = nlpService;
     this.logger.info("ProcessService initialized");
   }
   public async process(request: ITransactionCategoryRequest): Promise<boolean> {
@@ -64,6 +68,11 @@ export class TransactionCategoryService implements ITransactionCategoryService {
           `No rule matched for transaction ${transactionId}, falling back to AI tagging`,
         );
         // Here you would call your AI tagging service
+        if (this.nlpService) {
+          const analysis =
+            await this.nlpService.analyzeDescription(description);
+          this.logger.debug("AI tagging result:", analysis);
+        }
         matchedCategory = "AI_TAGGED_CATEGORY"; // Placeholder for AI tagging logic
         finalTaggedBy = "AI_TAGGER";
         finalConfidence = undefined;

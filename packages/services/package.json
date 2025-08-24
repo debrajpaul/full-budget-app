@@ -16,6 +16,7 @@
     "@logger": "workspace:*",
     "@client": "workspace:*",
     "@nlp-tagger": "workspace:*",
+    "@aws-sdk/client-comprehend": "^3.873.0",
     "bcryptjs": "^3.0.2"
   },
   "devDependencies": {
