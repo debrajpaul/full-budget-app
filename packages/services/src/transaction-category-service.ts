@@ -131,7 +131,7 @@ export class TransactionCategoryService implements ITransactionCategoryService {
   ): Promise<{ category: string; confidence?: number } | null> {
     if (!this.nlpService) return null;
     const classes = await this.nlpService.classifyDescription(description);
-    const topClass = classes[0];
+    const topClass = classes && classes[0];
     if (!topClass?.Name) return null;
     return { category: topClass.Name, confidence: topClass.Score };
   }
