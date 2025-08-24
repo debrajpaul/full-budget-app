@@ -410,6 +410,9 @@ importers:
       '@auth':
         specifier: workspace:*
         version: link:../auth
+      '@aws-sdk/client-comprehend':
+        specifier: ^3.873.0
+        version: 3.873.0
       '@client':
         specifier: workspace:*
         version: link:../client
