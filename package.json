@@ -51,7 +51,6 @@
     "tsconfig-paths": "^4.2.0",
     "typescript": "^5.8.3"
   },
-  "dependencies": {},
   "scripts": {
     "prepare": "husky install",
     "lint": "pnpm -r lint",
