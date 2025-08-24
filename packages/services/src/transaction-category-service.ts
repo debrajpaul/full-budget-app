@@ -67,15 +67,21 @@ export class TransactionCategoryService implements ITransactionCategoryService {
         this.logger.info(
           `No rule matched for transaction ${transactionId}, falling back to AI tagging`,
         );
-        // Here you would call your AI tagging service
         if (this.nlpService) {
           const analysis =
             await this.nlpService.analyzeDescription(description);
           this.logger.debug("AI tagging result:", analysis);
         }
-        matchedCategory = "AI_TAGGED_CATEGORY"; // Placeholder for AI tagging logic
-        finalTaggedBy = "AI_TAGGER";
-        finalConfidence = undefined;
+        const classification = await this.classifyDescription(description);
+        if (classification) {
+          matchedCategory = classification.category;
+          finalTaggedBy = "AI_TAGGER";
+          finalConfidence = classification.confidence;
+        } else {
+          matchedCategory = "AI_TAGGED_CATEGORY";
+          finalTaggedBy = "AI_TAGGER";
+          finalConfidence = undefined;
+        }
         finalEmbedding = embedding;
       }
       // step 4: Update transaction with matched category
@@ -118,5 +124,15 @@ export class TransactionCategoryService implements ITransactionCategoryService {
       }
     }
     return matchedCategory;
+  }
+
+  public async classifyDescription(
+    description: string,
+  ): Promise<{ category: string; confidence?: number } | null> {
+    if (!this.nlpService) return null;
+    const classes = await this.nlpService.classifyDescription(description);
+    const topClass = classes && classes[0];
+    if (!topClass?.Name) return null;
+    return { category: topClass.Name, confidence: topClass.Score };
   }
 }
