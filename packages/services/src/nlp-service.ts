@@ -63,4 +63,26 @@ export class NlpService {
       classification: classificationResult?.Classes,
     };
   }
+
+  public async classifyDescription(
+    description: string,
+  ): Promise<ClassifyDocumentCommandOutput["Classes"]> {
+    const text = description.trim().slice(0, 5000);
+    if (!this.classifierArn) {
+      this.logger.warn("Classifier ARN not configured");
+      return [];
+    }
+    try {
+      const result = await this.comprehend.send(
+        new ClassifyDocumentCommand({
+          Text: text,
+          EndpointArn: this.classifierArn,
+        }),
+      );
+      return result.Classes ?? [];
+    } catch (err) {
+      this.logger.error("ClassifyDocumentCommand failed", err as Error);
+      return [];
+    }
+  }
 }
