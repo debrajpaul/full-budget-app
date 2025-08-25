@@ -156,34 +156,27 @@ export class TransactionStore implements ITransactionStore {
       matchedCategory,
     });
 
-    const updateExpressions = ["#category = :cat"];
-    const expressionAttributeNames: Record<string, string> = {
-      "#category": "category",
-    };
+    const updateExpressions = ["category = :cat"];
     const expressionAttributeValues: Record<string, any> = {
       ":cat": matchedCategory,
     };
 
     if (taggedBy !== undefined) {
-      updateExpressions.push("#taggedBy = :tagger");
-      expressionAttributeNames["#taggedBy"] = "taggedBy";
+      updateExpressions.push("taggedBy = :tagger");
       expressionAttributeValues[":tagger"] = taggedBy;
     }
 
     if (confidence !== undefined) {
-      updateExpressions.push("#confidence = :conf");
-      expressionAttributeNames["#confidence"] = "confidence";
+      updateExpressions.push("confidence = :conf");
       expressionAttributeValues[":conf"] = confidence;
     }
 
     if (embedding !== undefined) {
-      updateExpressions.push("#embedding = :emb");
-      expressionAttributeNames["#embedding"] = "embedding";
+      updateExpressions.push("embedding = :emb");
       expressionAttributeValues[":emb"] = embedding;
     }
 
-    updateExpressions.push("#updatedAt = :updatedAt");
-    expressionAttributeNames["#updatedAt"] = "updatedAt";
+    updateExpressions.push("updatedAt = :updatedAt");
     expressionAttributeValues[":updatedAt"] = new Date().toISOString();
 
     const command = new UpdateCommand({
@@ -193,7 +186,6 @@ export class TransactionStore implements ITransactionStore {
         transactionId,
       },
       UpdateExpression: `SET ${updateExpressions.join(", ")}`,
-      ExpressionAttributeNames: expressionAttributeNames,
       ExpressionAttributeValues: expressionAttributeValues,
     });
     await this.store.send(command);
