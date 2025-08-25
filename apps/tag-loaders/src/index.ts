@@ -3,10 +3,11 @@ import { setupDependency } from "./setup-dependency";
 import { setupServices } from "./setup-services";
 import { setupLoaders } from "./setup-loaders";
 
-const { logger, dynamoDBDocumentClient } = setupDependency();
+const { logger, dynamoDBDocumentClient, comprehendClient } = setupDependency();
 
 const { transactionCategoryService } = setupServices(
   logger,
+  comprehendClient,
   dynamoDBDocumentClient,
 );
 

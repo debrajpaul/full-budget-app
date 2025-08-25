@@ -17,15 +17,26 @@ type IncomingRequest =
       handlers.RequestHandler<APIGatewayProxyEvent, any>
     >;
 
-const { logger, s3Client, sqsClient, dynamoDBDocumentClient } =
-  setupDependency();
+const {
+  logger,
+  s3Client,
+  sqsClient,
+  dynamoDBDocumentClient,
+  comprehendClient,
+} = setupDependency();
 
 const {
   transactionService,
   authorizationService,
   uploadStatementService,
   transactionCategoryService,
-} = setupServices(logger, s3Client, sqsClient, dynamoDBDocumentClient);
+} = setupServices(
+  logger,
+  s3Client,
+  sqsClient,
+  comprehendClient,
+  dynamoDBDocumentClient,
+);
 
 export const createContext = async (
   ctx: IncomingRequest,

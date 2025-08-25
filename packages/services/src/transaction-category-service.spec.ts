@@ -1,104 +1,116 @@
-import { TransactionService } from "./transaction-service";
 import { mock } from "jest-mock-extended";
 import {
-  ILogger,
-  IS3Service,
-  ISQSService,
-  ITransactionStore,
-  ITransactionRequest,
   ETenantType,
-  EBankName,
+  ILogger,
+  INlpService,
+  ITransactionStore,
+  ICategoryRulesStore,
+  ITransactionCategoryRequest,
 } from "@common";
+import { TransactionCategoryService } from "./transaction-category-service";
 
-describe("TransactionService", () => {
+describe("TransactionCategoryService", () => {
   let logger: ReturnType<typeof mock<ILogger>>;
-  let s3: ReturnType<typeof mock<IS3Service>>;
-  let sqs: ReturnType<typeof mock<ISQSService>>;
-  let store: ReturnType<typeof mock<ITransactionStore>>;
-  let service: TransactionService;
+  let transactionStore: ReturnType<typeof mock<ITransactionStore>>;
+  let rulesStore: ReturnType<typeof mock<ICategoryRulesStore>>;
+  let nlpService: ReturnType<typeof mock<INlpService>>;
+  let service: TransactionCategoryService;
 
   beforeEach(() => {
     logger = mock<ILogger>();
-    s3 = mock<IS3Service>();
-    sqs = mock<ISQSService>();
-    store = mock<ITransactionStore>();
-    service = new TransactionService(logger, s3, sqs, store);
+    transactionStore = mock<ITransactionStore>();
+    rulesStore = mock<ICategoryRulesStore>();
+    nlpService = mock<INlpService>();
+    service = new TransactionCategoryService(
+      logger,
+      transactionStore,
+      rulesStore,
+      nlpService,
+      true,
+    );
   });
 
-  it("should return false if no SQS message", async () => {
-    sqs.receiveFileMessage.mockResolvedValue(undefined);
-    const result = await service.processes();
-    expect(result).toBe(false);
-    expect(logger.warn).toHaveBeenCalledWith("No messages received from SQS");
-  });
-
-  it("should process a valid SQS message", async () => {
-    const msg: ITransactionRequest = {
-      fileKey: "file.pdf",
-      bankName: EBankName.hdfc,
-      userId: "user1",
+  it("categorizes by rules when keyword matches", async () => {
+    rulesStore.getRulesByTenant.mockResolvedValue({ swiggy: "Food & Dining" });
+    const req: ITransactionCategoryRequest = {
       tenantId: ETenantType.default,
-      fileName: "file",
-    };
-    sqs.receiveFileMessage.mockResolvedValue(msg);
-    jest.spyOn(service, "process").mockResolvedValue(true);
-    const result = await service.processes();
-    expect(result).toBe(true);
-    expect(service.process).toHaveBeenCalledWith(msg);
-  });
-
-  it("should return false if SQS message is invalid", async () => {
-    sqs.receiveFileMessage.mockResolvedValue({} as any);
-    const result = await service.processes();
-    expect(result).toBe(false);
-    expect(logger.error).toHaveBeenCalledWith("Invalid message body:");
-  });
-
-  it("should process a file and save transactions", async () => {
-    const req: ITransactionRequest = {
-      fileKey: "file.pdf",
-      bankName: EBankName.hdfc,
-      userId: "user1",
-      tenantId: ETenantType.default,
-      fileName: "file",
-    };
-    const buffer = Buffer.from("test");
-    const txns = [
-      {
-        userId: "user1",
-        transactionId: "t1",
-        bankName: EBankName.hdfc,
-        txnDate: "2025-08-15",
-        amount: 100,
-        description: "desc",
-        balance: 1000,
-        category: "cat",
-        type: "credit",
-      },
-    ];
-    s3.getFile.mockResolvedValue(buffer);
-    jest.spyOn(service as any, "parseTransactions").mockResolvedValue(txns);
-    store.saveTransactions.mockResolvedValue();
-    const result = await service.process(req);
-    expect(result).toBe(true);
-    expect(s3.getFile).toHaveBeenCalledWith("file.pdf");
-    expect(store.saveTransactions).toHaveBeenCalledWith(req.tenantId, txns);
-  });
-
-  it("should return false if process throws", async () => {
-    s3.getFile.mockRejectedValue(new Error("fail"));
-    const req: ITransactionRequest = {
-      fileKey: "file.pdf",
-      bankName: EBankName.hdfc,
-      userId: "user1",
-      tenantId: ETenantType.default,
-      fileName: "file",
+      transactionId: "t1",
+      description: "Swiggy order",
+      createdAt: "2025-01-01",
     };
     const result = await service.process(req);
-    expect(result).toBe(false);
-    expect(logger.error).toHaveBeenCalledWith(
-      "Error processing message",
-      expect.any(Error),
+
+    expect(result).toBe(true);
+    expect(nlpService.classifyDescription).not.toHaveBeenCalled();
+    expect(transactionStore.updateTransactionCategory).toHaveBeenCalledWith(
+      ETenantType.default,
+      "t1",
+      "Food & Dining",
+      "RULE_ENGINE",
+      1,
+      undefined,
+    );
+  });
+
+  it("skips AI tagging when disabled via env var", async () => {
+    rulesStore.getRulesByTenant.mockResolvedValue({});
+    service = new TransactionCategoryService(
+      logger,
+      transactionStore,
+      rulesStore,
+      nlpService,
+      false,
+    );
+    const req: ITransactionCategoryRequest = {
+      tenantId: ETenantType.default,
+      transactionId: "t2",
+      description: "Unknown store",
+      createdAt: "2025-01-01",
+    };
+
+    const result = await service.process(req);
+
+    expect(result).toBe(true);
+    expect(nlpService.classifyDescription).not.toHaveBeenCalled();
+    expect(transactionStore.updateTransactionCategory).toHaveBeenCalledWith(
+      ETenantType.default,
+      "t2",
+      "AI_TAGGED_CATEGORY",
+      "RULE_ENGINE",
+      undefined,
+      undefined,
+    );
+  });
+
+  it("falls back to AI tagging when no rule matches", async () => {
+    rulesStore.getRulesByTenant.mockResolvedValue({});
+    nlpService.analyzeDescription.mockResolvedValue({
+      entities: [],
+      sentiment: "NEUTRAL",
+    });
+    type Classification = { Name?: string; Score?: number };
+    nlpService.classifyDescription.mockResolvedValue([
+      { Name: "Shopping", Score: 0.9 } as Classification,
+    ]);
+    const req: ITransactionCategoryRequest = {
+      tenantId: ETenantType.default,
+      transactionId: "t3",
+      description: "Amazon purchase",
+      createdAt: "2025-01-01",
+    };
+
+    const result = await service.process(req);
+    expect(result).toBe(true);
+    expect(nlpService.analyzeDescription).toHaveBeenCalledWith(
+      "Amazon purchase",
+    );
+    expect(transactionStore.updateTransactionCategory).toHaveBeenCalledWith(
+      ETenantType.default,
+      "t3",
+      "Shopping",
+      "AI_TAGGER",
+      0.9,
+      undefined,
     );
   });
 });
