@@ -343,6 +343,9 @@ importers:
 
   packages/common:
     dependencies:
+      '@aws-sdk/client-comprehend':
+        specifier: ^3.873.0
+        version: 3.873.0
       '@logger':
         specifier: workspace:*
         version: link:../logger

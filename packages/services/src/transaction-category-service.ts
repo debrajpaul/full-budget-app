@@ -1,30 +1,33 @@
 import {
   ILogger,
   ETenantType,
+  INlpService,
   ITransactionStore,
   ITransactionCategoryService,
   ICategoryRulesStore,
   ITransactionCategoryRequest,
 } from "@common";
 import { keywordCategoryMap } from "@nlp-tagger";
-import { NlpService } from "./nlp-service";
 
 export class TransactionCategoryService implements ITransactionCategoryService {
   private readonly logger: ILogger;
   private readonly transactionStore: ITransactionStore;
   private readonly categoryRulesStore: ICategoryRulesStore;
-  private readonly nlpService?: NlpService;
+  private readonly nlpService?: INlpService;
+  private readonly aiTaggingEnabled: boolean;
 
   constructor(
     logger: ILogger,
     transactionStore: ITransactionStore,
     categoryRulesStore: ICategoryRulesStore,
-    nlpService?: NlpService,
+    nlpService?: INlpService,
+    aiTaggingEnabled?: boolean
   ) {
     this.logger = logger;
     this.transactionStore = transactionStore;
     this.categoryRulesStore = categoryRulesStore;
     this.nlpService = nlpService;
+    this.aiTaggingEnabled = aiTaggingEnabled ?? false;
     this.logger.info("ProcessService initialized");
   }
   public async process(request: ITransactionCategoryRequest): Promise<boolean> {
@@ -63,7 +66,14 @@ export class TransactionCategoryService implements ITransactionCategoryService {
       let finalConfidence: number | undefined = confidence ?? 1;
       let finalEmbedding = embedding;
       // step 3: Fallback to AI tagging
-      if (!matchedCategory) {
+      if (!matchedCategory && !this.aiTaggingEnabled) {
+        this.logger.info(
+          `AI tagging disabled for transaction ${transactionId}, skipping classification`,
+        );
+        matchedCategory = "AI_TAGGED_CATEGORY";
+        finalTaggedBy = taggedBy ?? "RULE_ENGINE";
+        finalConfidence = undefined;
+      } else if (!matchedCategory) {
         this.logger.info(
           `No rule matched for transaction ${transactionId}, falling back to AI tagging`,
         );

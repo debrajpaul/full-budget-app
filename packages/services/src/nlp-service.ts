@@ -3,19 +3,11 @@ import {
   DetectEntitiesCommand,
   DetectSentimentCommand,
   ClassifyDocumentCommand,
-  DetectEntitiesCommandOutput,
-  DetectSentimentCommandOutput,
   ClassifyDocumentCommandOutput,
 } from "@aws-sdk/client-comprehend";
-import { ILogger } from "@common";
+import { ILogger, INlpService, INlpAnalysis } from "@common";
 
-export interface INlpAnalysis {
-  entities: DetectEntitiesCommandOutput["Entities"];
-  sentiment: DetectSentimentCommandOutput["Sentiment"];
-  classification?: ClassifyDocumentCommandOutput["Classes"];
-}
-
-export class NlpService {
+export class NlpService implements INlpService {
   private readonly logger: ILogger;
   private readonly comprehend: ComprehendClient;
   private readonly classifierArn?: string;
