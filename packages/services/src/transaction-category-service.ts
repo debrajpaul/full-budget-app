@@ -13,14 +13,14 @@ export class TransactionCategoryService implements ITransactionCategoryService {
   private readonly logger: ILogger;
   private readonly transactionStore: ITransactionStore;
   private readonly categoryRulesStore: ICategoryRulesStore;
-  private readonly nlpService?: INlpService;
+  private readonly nlpService: INlpService;
   private readonly aiTaggingEnabled: boolean;
 
   constructor(
     logger: ILogger,
     transactionStore: ITransactionStore,
     categoryRulesStore: ICategoryRulesStore,
-    nlpService?: INlpService,
+    nlpService: INlpService,
     aiTaggingEnabled?: boolean,
   ) {
     this.logger = logger;

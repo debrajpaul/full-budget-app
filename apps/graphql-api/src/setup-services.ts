@@ -8,14 +8,17 @@ import {
   AuthorizationService,
   UploadStatementService,
   TransactionCategoryService,
+  NlpService,
 } from "@services";
 import { S3Service, SQSService } from "@client";
 import { DynamoDBDocumentClient } from "@aws-sdk/lib-dynamodb";
+import { ComprehendClient } from "@aws-sdk/client-comprehend";
 
 export function setupServices(
   logger: ILogger,
   s3Client: S3,
   sqsClient: SQS,
+  comprehendClient: ComprehendClient,
   dynamoDBDocumentClient: DynamoDBDocumentClient,
 ) {
   const s3Service = new S3Service(
@@ -59,11 +62,16 @@ export function setupServices(
     sqsService,
     transactionStore,
   );
-
+  const nlpService = new NlpService(
+    logger.child("NlpService"),
+    comprehendClient,
+  );
   const transactionCategoryService = new TransactionCategoryService(
     logger.child("TransactionCategoryService"),
     transactionStore,
     categoryRulesStore,
+    nlpService,
+    config.aiTaggingEnabled,
   );
 
   return {
@@ -71,5 +79,6 @@ export function setupServices(
     authorizationService,
     uploadStatementService,
     transactionCategoryService,
+    nlpService,
   };
 }

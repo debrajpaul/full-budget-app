@@ -18,6 +18,7 @@ const {
   DYNAMO_TRANSACTION_TABLE,
   DYNAMO_CATEGORY_RULES_TABLE,
   JWT_SECRET,
+  AI_TAGGING_ENABLED,
 } = process.env;
 
 export const config: IConfig = {
@@ -33,4 +34,5 @@ export const config: IConfig = {
   dynamoTransactionTable: DYNAMO_TRANSACTION_TABLE as string,
   dynamoCategoryRulesTable: DYNAMO_CATEGORY_RULES_TABLE as string,
   jwtSecret: JWT_SECRET as string,
+  aiTaggingEnabled: AI_TAGGING_ENABLED === "true",
 };

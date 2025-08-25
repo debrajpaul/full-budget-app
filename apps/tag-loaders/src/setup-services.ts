@@ -30,6 +30,7 @@ export function setupServices(
     transactionStore,
     categoryRulesStore,
     nlpService,
+    config.aiTaggingEnabled,
   );
 
   return {
