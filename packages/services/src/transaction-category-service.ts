@@ -21,7 +21,7 @@ export class TransactionCategoryService implements ITransactionCategoryService {
     transactionStore: ITransactionStore,
     categoryRulesStore: ICategoryRulesStore,
     nlpService?: INlpService,
-    aiTaggingEnabled?: boolean
+    aiTaggingEnabled?: boolean,
   ) {
     this.logger = logger;
     this.transactionStore = transactionStore;

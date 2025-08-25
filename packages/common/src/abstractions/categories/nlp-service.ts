@@ -12,5 +12,7 @@ export interface INlpAnalysis {
 
 export interface INlpService {
   analyzeDescription(description: string): Promise<INlpAnalysis>;
-  classifyDescription(description: string): Promise<ClassifyDocumentCommandOutput["Classes"]>;
+  classifyDescription(
+    description: string,
+  ): Promise<ClassifyDocumentCommandOutput["Classes"]>;
 }

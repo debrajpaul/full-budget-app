@@ -26,7 +26,7 @@ describe("TransactionCategoryService", () => {
       transactionStore,
       rulesStore,
       nlpService,
-      true
+      true,
     );
   });
 
@@ -59,7 +59,7 @@ describe("TransactionCategoryService", () => {
       transactionStore,
       rulesStore,
       nlpService,
-      false
+      false,
     );
     const req: ITransactionCategoryRequest = {
       tenantId: ETenantType.default,
