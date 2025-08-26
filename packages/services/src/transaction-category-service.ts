@@ -77,12 +77,13 @@ export class TransactionCategoryService implements ITransactionCategoryService {
         this.logger.info(
           `No rule matched for transaction ${transactionId}, falling back to AI tagging`,
         );
-        const analysis =
-          await this.nlpService.analyzeDescription(description);
+        const analysis = await this.nlpService.analyzeDescription(description);
         this.logger.debug("AI tagging result analysis:", { analysis });
 
         const classification = await this.classifyDescription(description);
-        this.logger.debug("AI tagging result classification:", { classification });
+        this.logger.debug("AI tagging result classification:", {
+          classification,
+        });
         if (classification) {
           matchedCategory = classification.category;
           finalTaggedBy = "AI_TAGGER";
