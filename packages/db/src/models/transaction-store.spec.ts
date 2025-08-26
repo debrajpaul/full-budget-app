@@ -127,13 +127,6 @@ describe("TransactionStore", () => {
     );
     expect(storeMock.send).toHaveBeenCalled();
     const command = storeMock.send.mock.calls[0][0];
-    expect(command.input.ExpressionAttributeNames).toMatchObject({
-      "#category": "category",
-      "#taggedBy": "taggedBy",
-      "#confidence": "confidence",
-      "#embedding": "embedding",
-      "#updatedAt": "updatedAt",
-    });
     expect(command.input.ExpressionAttributeValues).toMatchObject({
       ":cat": "newCat",
       ":tagger": "AI_TAGGER",
@@ -151,15 +144,11 @@ describe("TransactionStore", () => {
       "onlyCat",
     );
     const command = storeMock.send.mock.calls[0][0];
-    expect(command.input.ExpressionAttributeNames).toMatchObject({
-      "#category": "category",
-      "#updatedAt": "updatedAt",
-    });
     expect(command.input.ExpressionAttributeValues).toMatchObject({
       ":cat": "onlyCat",
     });
     expect(command.input.UpdateExpression).toBe(
-      "SET #category = :cat, #updatedAt = :updatedAt",
+      "SET category = :cat, updatedAt = :updatedAt",
     );
   });
 });

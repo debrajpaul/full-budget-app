@@ -1,6 +1,7 @@
 import {
   ILogger,
   ETenantType,
+  INlpService,
   ITransactionStore,
   ITransactionCategoryService,
   ICategoryRulesStore,
@@ -12,15 +13,21 @@ export class TransactionCategoryService implements ITransactionCategoryService {
   private readonly logger: ILogger;
   private readonly transactionStore: ITransactionStore;
   private readonly categoryRulesStore: ICategoryRulesStore;
+  private readonly nlpService: INlpService;
+  private readonly aiTaggingEnabled: boolean;
 
   constructor(
     logger: ILogger,
     transactionStore: ITransactionStore,
     categoryRulesStore: ICategoryRulesStore,
+    nlpService: INlpService,
+    aiTaggingEnabled?: boolean,
   ) {
     this.logger = logger;
     this.transactionStore = transactionStore;
     this.categoryRulesStore = categoryRulesStore;
+    this.nlpService = nlpService;
+    this.aiTaggingEnabled = aiTaggingEnabled ?? false;
     this.logger.info("ProcessService initialized");
   }
   public async process(request: ITransactionCategoryRequest): Promise<boolean> {
@@ -59,14 +66,32 @@ export class TransactionCategoryService implements ITransactionCategoryService {
       let finalConfidence: number | undefined = confidence ?? 1;
       let finalEmbedding = embedding;
       // step 3: Fallback to AI tagging
-      if (!matchedCategory) {
+      if (!matchedCategory && !this.aiTaggingEnabled) {
+        this.logger.info(
+          `AI tagging disabled for transaction ${transactionId}, skipping classification`,
+        );
+        matchedCategory = "AI_TAGGED_CATEGORY";
+        finalTaggedBy = taggedBy ?? "RULE_ENGINE";
+        finalConfidence = undefined;
+      } else if (!matchedCategory) {
         this.logger.info(
           `No rule matched for transaction ${transactionId}, falling back to AI tagging`,
         );
-        // Here you would call your AI tagging service
-        matchedCategory = "AI_TAGGED_CATEGORY"; // Placeholder for AI tagging logic
-        finalTaggedBy = "AI_TAGGER";
-        finalConfidence = undefined;
+        if (this.nlpService) {
+          const analysis =
+            await this.nlpService.analyzeDescription(description);
+          this.logger.debug("AI tagging result:", analysis);
+        }
+        const classification = await this.classifyDescription(description);
+        if (classification) {
+          matchedCategory = classification.category;
+          finalTaggedBy = "AI_TAGGER";
+          finalConfidence = classification.confidence;
+        } else {
+          matchedCategory = "AI_TAGGED_CATEGORY";
+          finalTaggedBy = "AI_TAGGER";
+          finalConfidence = undefined;
+        }
         finalEmbedding = embedding;
       }
       // step 4: Update transaction with matched category
@@ -109,5 +134,15 @@ export class TransactionCategoryService implements ITransactionCategoryService {
       }
     }
     return matchedCategory;
+  }
+
+  public async classifyDescription(
+    description: string,
+  ): Promise<{ category: string; confidence?: number } | null> {
+    if (!this.nlpService) return null;
+    const classes = await this.nlpService.classifyDescription(description);
+    const topClass = classes && classes[0];
+    if (!topClass?.Name) return null;
+    return { category: topClass.Name, confidence: topClass.Score };
   }
 }
