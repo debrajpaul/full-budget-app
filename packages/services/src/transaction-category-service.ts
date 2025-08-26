@@ -70,19 +70,19 @@ export class TransactionCategoryService implements ITransactionCategoryService {
         this.logger.info(
           `AI tagging disabled for transaction ${transactionId}, skipping classification`,
         );
-        matchedCategory = "AI_TAGGED_CATEGORY";
-        finalTaggedBy = taggedBy ?? "RULE_ENGINE";
+        matchedCategory = "TEST_TAGGED_CATEGORY";
+        finalTaggedBy = taggedBy ?? "DEFAULT_ENGINE";
         finalConfidence = undefined;
       } else if (!matchedCategory) {
         this.logger.info(
           `No rule matched for transaction ${transactionId}, falling back to AI tagging`,
         );
-        if (this.nlpService) {
-          const analysis =
-            await this.nlpService.analyzeDescription(description);
-          this.logger.debug("AI tagging result:", analysis);
-        }
+        const analysis =
+          await this.nlpService.analyzeDescription(description);
+        this.logger.debug("AI tagging result analysis:", { analysis });
+
         const classification = await this.classifyDescription(description);
+        this.logger.debug("AI tagging result classification:", { classification });
         if (classification) {
           matchedCategory = classification.category;
           finalTaggedBy = "AI_TAGGER";

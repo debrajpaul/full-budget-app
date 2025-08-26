@@ -34,6 +34,7 @@ new GraphQLApiStack(app, 'GraphQLApiStack', {
     DYNAMO_USER_TABLE: usersTableStack.usersTable.tableName,
     SQS_QUEUE_URL: queueStack.statementProcessingQueue.queueUrl,
     AWS_S3_BUCKET: storageStack.uploadBucket.bucketName,
+    AI_TAGGING_ENABLED: 'true',
   },
 });
 
@@ -47,6 +48,7 @@ new TransactionLoaderStack(app, 'TransactionLoaderStack', {
     DYNAMO_TRANSACTION_TABLE: transactionsTableStack.transactionsTable.tableName,
     SQS_QUEUE_URL: queueStack.statementProcessingQueue.queueUrl,
     AWS_S3_BUCKET: storageStack.uploadBucket.bucketName,
+    AI_TAGGING_ENABLED: 'true',
   },
 });
 
@@ -58,5 +60,6 @@ new TransactionCategoryStack(app, 'TransactionCategoryStack', {
     LOG_LEVEL: 'debug',
     DYNAMO_TRANSACTION_TABLE: transactionsTableStack.transactionsTable.tableName,
     DYNAMO_CATEGORY_RULES_TABLE: transactionsCategoryTableStack.transactionsCategoryTable.tableName,
+    AI_TAGGING_ENABLED: 'true',
   },
 });
