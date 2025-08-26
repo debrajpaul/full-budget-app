@@ -18,7 +18,9 @@ describe("NlpService", () => {
     it("should analyze description and return sentiment analysis", async () => {
       const description = "Great transaction with Amazon";
       const mockSentimentResult = { Sentiment: "POSITIVE" };
-      const mockEntitiesResult = { Entities: [{ Text: "Amazon", Type: "ORGANIZATION" }] };
+      const mockEntitiesResult = {
+        Entities: [{ Text: "Amazon", Type: "ORGANIZATION" }],
+      };
 
       mockComprehend.send
         .mockResolvedValueOnce(mockSentimentResult as never)
@@ -50,12 +52,15 @@ describe("NlpService", () => {
     });
 
     it("should use classifier when classifierArn is provided", async () => {
-      const classifierArn = "arn:aws:comprehend:us-east-1:123456789012:document-classifier/test";
+      const classifierArn =
+        "arn:aws:comprehend:us-east-1:123456789012:document-classifier/test";
       nlpService = new NlpService(mockLogger, mockComprehend, classifierArn);
-      
+
       const description = "Food delivery from Swiggy";
       const mockSentimentResult = { Sentiment: "POSITIVE" };
-      const mockClassificationResult = { Classes: [{ Name: "Food", Score: 0.95 }] };
+      const mockClassificationResult = {
+        Classes: [{ Name: "Food", Score: 0.95 }],
+      };
 
       mockComprehend.send
         .mockResolvedValueOnce(mockSentimentResult as never)
@@ -74,40 +79,47 @@ describe("NlpService", () => {
   describe("classifyDescription", () => {
     it("should return empty array when no classifier ARN is configured", async () => {
       const description = "Test transaction";
-      
+
       const result = await nlpService.classifyDescription(description);
-      
+
       expect(result).toEqual([]);
-      expect(mockLogger.warn).toHaveBeenCalledWith("Classifier ARN not configured");
+      expect(mockLogger.warn).toHaveBeenCalledWith(
+        "Classifier ARN not configured",
+      );
     });
 
     it("should classify description when classifier ARN is provided", async () => {
-      const classifierArn = "arn:aws:comprehend:us-east-1:123456789012:document-classifier/test";
+      const classifierArn =
+        "arn:aws:comprehend:us-east-1:123456789012:document-classifier/test";
       nlpService = new NlpService(mockLogger, mockComprehend, classifierArn);
-      
+
       const description = "Shopping at Amazon";
       const mockResult = { Classes: [{ Name: "Shopping", Score: 0.89 }] };
-      
+
       mockComprehend.send.mockResolvedValue(mockResult as never);
-      
+
       const result = await nlpService.classifyDescription(description);
-      
+
       expect(result).toEqual([{ Name: "Shopping", Score: 0.89 }]);
     });
 
     it("should handle classification errors gracefully", async () => {
-      const classifierArn = "arn:aws:comprehend:us-east-1:123456789012:document-classifier/test";
+      const classifierArn =
+        "arn:aws:comprehend:us-east-1:123456789012:document-classifier/test";
       nlpService = new NlpService(mockLogger, mockComprehend, classifierArn);
-      
+
       const description = "Test transaction";
       const error = new Error("Classification failed");
-      
+
       mockComprehend.send.mockRejectedValue(error as never);
-      
+
       const result = await nlpService.classifyDescription(description);
-      
+
       expect(result).toEqual([]);
-      expect(mockLogger.error).toHaveBeenCalledWith("ClassifyDocumentCommand failed", error);
+      expect(mockLogger.error).toHaveBeenCalledWith(
+        "ClassifyDocumentCommand failed",
+        error,
+      );
     });
   });
 });
