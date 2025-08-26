@@ -10,7 +10,6 @@ export function setupServices(
   comprehendClient: ComprehendClient,
   dynamoDBDocumentClient: DynamoDBDocumentClient,
 ) {
-  void comprehendClient;
   const transactionStore = new TransactionStore(
     logger.child("TransactionStore"),
     config.dynamoTransactionTable,
