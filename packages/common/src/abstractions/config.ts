@@ -14,4 +14,5 @@ export interface IConfig {
   dynamoCategoryRulesTable: string;
   jwtSecret: string;
   aiTaggingEnabled: boolean;
+  comprehendClassifierArn?: string;
 }

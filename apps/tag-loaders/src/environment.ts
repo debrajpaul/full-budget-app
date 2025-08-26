@@ -19,6 +19,7 @@ const {
   DYNAMO_CATEGORY_RULES_TABLE,
   JWT_SECRET,
   AI_TAGGING_ENABLED,
+  COMPREHEND_CLASSIFIER_ARN,
 } = process.env;
 
 export const config: IConfig = {
@@ -35,4 +36,5 @@ export const config: IConfig = {
   dynamoCategoryRulesTable: DYNAMO_CATEGORY_RULES_TABLE as string,
   jwtSecret: JWT_SECRET as string,
   aiTaggingEnabled: AI_TAGGING_ENABLED === "true",
+  comprehendClassifierArn: COMPREHEND_CLASSIFIER_ARN as string | undefined,
 };
