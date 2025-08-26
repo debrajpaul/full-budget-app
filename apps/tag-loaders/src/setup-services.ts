@@ -24,6 +24,7 @@ export function setupServices(
   const nlpService = new NlpService(
     logger.child("NlpService"),
     comprehendClient,
+    config.comprehendClassifierArn,
   );
   const transactionCategoryService = new TransactionCategoryService(
     logger.child("TransactionCategoryService"),
