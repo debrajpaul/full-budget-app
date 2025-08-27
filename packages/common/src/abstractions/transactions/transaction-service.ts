@@ -58,4 +58,10 @@ export interface ITransactionService {
     bankName?: EBankName,
     category?: string,
   ): Promise<ITransaction[]>;
+  reclassifyTransaction(
+    tenantId: string,
+    transactionId: string,
+    category: string,
+    taggedBy?: string,
+  ): Promise<{ id: string; category: string; taggedBy?: string }>;
 }

@@ -9,6 +9,7 @@ import {
   UploadStatementService,
   TransactionCategoryService,
   NlpService,
+  SavingsGoalService,
 } from "@services";
 import { S3Service, SQSService } from "@client";
 import { DynamoDBDocumentClient } from "@aws-sdk/lib-dynamodb";
@@ -75,11 +76,16 @@ export function setupServices(
     config.aiTaggingEnabled,
   );
 
+  const savingsGoalService = new SavingsGoalService(
+    logger.child("SavingsGoalService"),
+  );
+  
   return {
     transactionService,
     authorizationService,
     uploadStatementService,
     transactionCategoryService,
+    savingsGoalService,
     nlpService,
   };
 }

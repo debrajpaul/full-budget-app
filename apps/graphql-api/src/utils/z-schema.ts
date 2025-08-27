@@ -2,7 +2,6 @@ import { EBankName, ETenantType } from "@common";
 import { z } from "zod";
 
 export const MonthlyReviewArgs = z.object({
-  tenantId: z.nativeEnum(ETenantType),
   month: z.number().int().min(1).max(12),
   year: z.number().int().min(2000).max(new Date().getFullYear()),
 });
@@ -21,11 +20,21 @@ export const AggregateSummaryArgs = z.object({
   month: z.number().int().min(1).max(12).optional(),
 });
 
-export const FilteredTransactionsArgs = z.object({
+export const TransactionsFilterArgs = z.object({
   year: z.number().int().min(2000).max(new Date().getFullYear()),
   month: z.number().int().min(1).max(12),
   bankName: z.nativeEnum(EBankName).optional(),
   category: z.string().optional(),
+});
+
+export const TransactionsQueryArgs = z.object({
+  filters: TransactionsFilterArgs,
+  cursor: z.string().optional(),
+});
+
+export const ReclassifyTransactionArgs = z.object({
+  id: z.string().min(1),
+  category: z.string().min(1),
 });
 
 export const UploadStatementArgs = z.object({

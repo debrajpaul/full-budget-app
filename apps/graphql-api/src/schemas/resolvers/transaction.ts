@@ -3,8 +3,8 @@ import {
   AnnualReviewArgs,
   CategoryBreakdownArgs,
   AggregateSummaryArgs,
-  FilteredTransactionsArgs,
-  // AddTransactionCategoryArgs,
+  TransactionsQueryArgs,
+  ReclassifyTransactionArgs,
 } from "../../utils";
 import { IGraphQLContext, EBankName } from "@common";
 import { CustomError } from "@services";
@@ -127,22 +127,27 @@ export const transactionResolvers = {
       return result;
     },
 
-    filteredTransactions: async (
+    transactions: async (
       _: unknown,
       args: {
-        year: number;
-        month: number;
-        bankName?: EBankName;
-        category?: string;
+        filters: {
+          year: number;
+          month: number;
+          bankName?: EBankName;
+          category?: string;
+        };
+        cursor?: string;
       },
       ctx: IGraphQLContext,
     ) => {
       if (!ctx.userId) throw new CustomError("Unauthorized", "UNAUTHORIZED");
       if (!ctx.tenantId)
         throw new CustomError("Tenant ID is required", "TENANT_ID_REQUIRED");
-      const { year, month, bankName, category } =
-        FilteredTransactionsArgs.parse(args);
-      const result =
+
+      const { filters, cursor } = TransactionsQueryArgs.parse(args);
+      const { year, month, bankName, category } = filters;
+
+      const txns =
         await ctx.dataSources.transactionService.filteredTransactions(
           ctx.tenantId,
           ctx.userId,
@@ -151,12 +156,28 @@ export const transactionResolvers = {
           bankName,
           category,
         );
-      if (!result)
+      if (!txns)
         throw new CustomError(
           "No filtered transactions found for the selected criteria",
           "NOT_FOUND",
         );
-      return result;
+
+      const PAGE_SIZE = 20;
+      const start = cursor ? parseInt(cursor, 10) : 0;
+      const items = txns.slice(start, start + PAGE_SIZE).map((t) => ({
+        id: t.transactionId,
+        date: t.txnDate,
+        description: t.description,
+        amount: t.amount,
+        currency: "INR",
+        category: t.category,
+        taggedBy: t.taggedBy,
+      }));
+
+      const nextCursor =
+        start + PAGE_SIZE < txns.length ? String(start + PAGE_SIZE) : null;
+
+      return { items, cursor: nextCursor };
     },
 
     addTransactionCategory: async (
@@ -172,6 +193,29 @@ export const transactionResolvers = {
         ctx.tenantId,
       );
       return true;
+    },
+  },
+  Mutation: {
+    reclassifyTransaction: async (
+      _: unknown,
+      args: { id: string; category: string },
+      ctx: IGraphQLContext,
+    ) => {
+      if (!ctx.userId) throw new CustomError("Unauthorized", "UNAUTHORIZED");
+      if (!ctx.tenantId)
+        throw new CustomError("Tenant ID is required", "TENANT_ID_REQUIRED");
+
+      const { id, category } = ReclassifyTransactionArgs.parse(args);
+
+      const taggedBy = ctx.email ?? ctx.userId ?? "USER";
+      const result =
+        await ctx.dataSources.transactionService.reclassifyTransaction(
+          ctx.tenantId,
+          id,
+          category,
+          taggedBy,
+        );
+      return result;
     },
   },
 };

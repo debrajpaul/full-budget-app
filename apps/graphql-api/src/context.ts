@@ -30,6 +30,7 @@ const {
   authorizationService,
   uploadStatementService,
   transactionCategoryService,
+  savingsGoalService,
 } = setupServices(
   logger,
   s3Client,
@@ -93,6 +94,7 @@ export const createContext = async (
       uploadStatementService: uploadStatementService,
       transactionService: transactionService,
       transactionCategoryService: transactionCategoryService,
+      savingsGoalService: savingsGoalService,
     },
   };
 };
