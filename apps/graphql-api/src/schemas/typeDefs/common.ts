@@ -14,7 +14,7 @@ export const commonTypeDefs = /* GraphQL */ `
   }
   enum TenantType {
     PERSONAL
-    BUSINESS
+    CLIENT
     # GOVERNMENT
     # NGO
     # EDUCATIONAL

@@ -3,12 +3,14 @@ import {
   authResolvers,
   uploadStatementResolvers,
   transactionResolvers,
+  tenantResolvers
 } from "./resolvers";
 import {
   authTypeDefs,
   uploadStatementTypeDefs,
   commonTypeDefs,
   transactionTypeDefs,
+  tenantTypeDefs
 } from "./typeDefs";
 
 export const schema = makeExecutableSchema({
@@ -17,6 +19,7 @@ export const schema = makeExecutableSchema({
     authTypeDefs,
     transactionTypeDefs,
     uploadStatementTypeDefs,
+    tenantTypeDefs,
   ],
-  resolvers: [authResolvers, uploadStatementResolvers, transactionResolvers],
+  resolvers: [authResolvers, uploadStatementResolvers, transactionResolvers, tenantResolvers],
 });

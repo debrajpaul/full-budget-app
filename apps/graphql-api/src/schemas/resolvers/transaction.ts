@@ -20,18 +20,43 @@ export const transactionResolvers = {
       if (!ctx.tenantId)
         throw new CustomError("Tenant ID is required", "TENANT_ID_REQUIRED");
       const { month, year } = MonthlyReviewArgs.parse(args);
-      const result = await ctx.dataSources.transactionService.monthlyReview(
+      const review = await ctx.dataSources.transactionService.monthlyReview(
         ctx.tenantId,
         ctx.userId,
         month,
         year,
       );
-      if (!result)
+      if (!review)
         throw new CustomError(
           "No transactions found for the selected period",
           "NOT_FOUND",
         );
-      return result;
+      const categories =
+        await ctx.dataSources.transactionService.categoryBreakDown(
+          ctx.tenantId,
+          ctx.userId,
+          month,
+          year,
+        );
+      const categoryBreakdown = categories.map((c) => ({
+        name: c.category,
+        amount: c.totalAmount,
+      }));
+      const dailyMap: Record<string, number> = {};
+      review.transactions.forEach((txn) => {
+        const date = new Date(txn.txnDate || "").toISOString().split("T")[0];
+        dailyMap[date] = (dailyMap[date] || 0) + Number(txn.amount);
+      });
+      const series = Object.entries(dailyMap)
+        .sort(([a], [b]) => a.localeCompare(b))
+        .map(([date, actual]) => ({ date, budget: 0, actual }));
+      return {
+        totalIncome: review.totalIncome,
+        totalExpenses: review.totalExpense,
+        savings: review.netSavings,
+        categoryBreakdown,
+        series,
+      };
     },
 
     annualReview: async (

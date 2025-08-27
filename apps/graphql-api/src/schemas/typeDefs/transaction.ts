@@ -14,12 +14,22 @@ export const transactionTypeDefs = /* GraphQL */ `
     confidence: Float
     type: String
   }
+ type CategoryAmount {
+    name: String!
+    amount: Float!
+  }
 
+  type ReviewSeriesPoint {
+    date: String!
+    budget: Float!
+    actual: Float!
+  }
   type MonthlyReview {
     totalIncome: Float!
-    totalExpense: Float!
-    netSavings: Float!
-    transactions: [Transaction!]!
+    totalExpenses: Float!
+    savings: Float!
+    categoryBreakdown: [CategoryAmount!]!
+    series: [ReviewSeriesPoint!]!
   }
 
   type AnnualReview {
