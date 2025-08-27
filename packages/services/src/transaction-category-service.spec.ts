@@ -75,8 +75,8 @@ describe("TransactionCategoryService", () => {
     expect(transactionStore.updateTransactionCategory).toHaveBeenCalledWith(
       ETenantType.default,
       "t2",
-      "AI_TAGGED_CATEGORY",
-      "RULE_ENGINE",
+      "TEST_TAGGED_CATEGORY",
+      "DEFAULT_ENGINE",
       undefined,
       undefined,
     );
