@@ -79,7 +79,7 @@ export function setupServices(
   const savingsGoalService = new SavingsGoalService(
     logger.child("SavingsGoalService"),
   );
-  
+
   return {
     transactionService,
     authorizationService,
