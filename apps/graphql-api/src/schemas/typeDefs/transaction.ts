@@ -14,12 +14,50 @@ export const transactionTypeDefs = /* GraphQL */ `
     confidence: Float
     type: String
   }
+  type TransactionItem {
+    id: String!
+    date: String!
+    description: String
+    amount: Float!
+    currency: String!
+    category: String
+    taggedBy: String
+  }
 
+  type TransactionsPage {
+    items: [TransactionItem!]!
+    cursor: String
+  }
+
+  type ReclassifiedTransaction {
+    id: String!
+    category: String!
+    taggedBy: String
+  }
+
+  input TransactionsFilter {
+    year: Int!
+    month: Int!
+    bankName: BankName
+    category: String
+  }
+
+  type CategoryAmount {
+    name: String!
+    amount: Float!
+  }
+
+  type ReviewSeriesPoint {
+    date: String!
+    budget: Float!
+    actual: Float!
+  }
   type MonthlyReview {
     totalIncome: Float!
-    totalExpense: Float!
-    netSavings: Float!
-    transactions: [Transaction!]!
+    totalExpenses: Float!
+    savings: Float!
+    categoryBreakdown: [CategoryAmount!]!
+    series: [ReviewSeriesPoint!]!
   }
 
   type AnnualReview {
@@ -46,12 +84,17 @@ export const transactionTypeDefs = /* GraphQL */ `
     monthlyReview(month: Int!, year: Int!): MonthlyReview!
     aggregateSummary(year: Int!, month: Int): AggregatedSummary!
     categoryBreakdown(month: Int!, year: Int!): [CategoryGroup!]!
-    filteredTransactions(
-      year: Int!
-      month: Int!
-      bankName: BankName
-      category: String
-    ): [Transaction!]!
+    transactions(
+      filters: TransactionsFilter!
+      cursor: String
+    ): TransactionsPage!
     addTransactionCategory: Boolean!
+  }
+
+  type Mutation {
+    reclassifyTransaction(
+      id: String!
+      category: String!
+    ): ReclassifiedTransaction!
   }
 `;

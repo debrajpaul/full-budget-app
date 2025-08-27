@@ -5,6 +5,7 @@ import {
   ITransactionService,
   ITransactionCategoryService,
 } from "./transactions";
+import { ISavingsGoalService } from "./savings-goals";
 import { IUploadStatementService } from "./upload-statement-service";
 import { IAuthorizationService } from "./users/authorization-service";
 import { APIGatewayProxyEvent, Context as LambdaCtx } from "aws-lambda";
@@ -21,5 +22,6 @@ export interface IGraphQLContext {
     uploadStatementService: IUploadStatementService;
     transactionService: ITransactionService;
     transactionCategoryService: ITransactionCategoryService;
+    savingsGoalService: ISavingsGoalService;
   };
 }

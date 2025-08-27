@@ -265,6 +265,21 @@ export class TransactionService implements ITransactionService {
     return txns;
   }
 
+  public async reclassifyTransaction(
+    tenantId: ETenantType,
+    transactionId: string,
+    category: string,
+    taggedBy?: string,
+  ): Promise<{ id: string; category: string; taggedBy?: string }> {
+    await this.transactionStore.updateTransactionCategory(
+      tenantId,
+      transactionId,
+      category,
+      taggedBy,
+    );
+    return { id: transactionId, category, taggedBy };
+  }
+
   private async parseTransactions(
     buffer: Buffer,
     bank: EBankName,
