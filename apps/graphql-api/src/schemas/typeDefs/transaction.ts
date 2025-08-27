@@ -14,7 +14,7 @@ export const transactionTypeDefs = /* GraphQL */ `
     confidence: Float
     type: String
   }
- type CategoryAmount {
+  type CategoryAmount {
     name: String!
     amount: Float!
   }
