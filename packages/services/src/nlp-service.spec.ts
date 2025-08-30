@@ -11,11 +11,16 @@ describe("NlpService", () => {
 
   beforeEach(() => {
     jest.clearAllMocks();
-    nlpService = new NlpService(mockLogger, mockComprehend);
+    nlpService = new NlpService(
+      mockLogger,
+      mockComprehend,
+      "arn:aws:comprehend:us-east-1:123456789012:document-classifier/test",
+    );
   });
 
   describe("analyzeDescription", () => {
-    it("should analyze description and return sentiment analysis", async () => {
+    it("should analyze description and return sentiment analysis (no classifier)", async () => {
+      nlpService = new NlpService(mockLogger, mockComprehend, "");
       const description = "Great transaction with Amazon";
       const mockSentimentResult = { Sentiment: "POSITIVE" };
       const mockEntitiesResult = {
@@ -34,7 +39,8 @@ describe("NlpService", () => {
       });
     });
 
-    it("should handle empty entities result", async () => {
+    it("should handle empty entities result (no classifier)", async () => {
+      nlpService = new NlpService(mockLogger, mockComprehend, "");
       const description = "Simple transaction";
       const mockSentimentResult = { Sentiment: "NEUTRAL" };
       const mockEntitiesResult = { Entities: undefined };
@@ -57,7 +63,7 @@ describe("NlpService", () => {
       nlpService = new NlpService(mockLogger, mockComprehend, classifierArn);
 
       const description = "Food delivery from Swiggy";
-      const mockSentimentResult = { Sentiment: "POSITIVE" };
+      const mockSentimentResult = { Sentiment: "NEUTRAL" };
       const mockClassificationResult = {
         Classes: [{ Name: "Food", Score: 0.95 }],
       };
@@ -70,7 +76,7 @@ describe("NlpService", () => {
 
       expect(result).toEqual({
         entities: [],
-        sentiment: "POSITIVE",
+        sentiment: "NEUTRAL",
         classification: [{ Name: "Food", Score: 0.95 }],
       });
     });
@@ -78,6 +84,7 @@ describe("NlpService", () => {
 
   describe("classifyDescription", () => {
     it("should return empty array when no classifier ARN is configured", async () => {
+      nlpService = new NlpService(mockLogger, mockComprehend, "");
       const description = "Test transaction";
 
       const result = await nlpService.classifyDescription(description);
@@ -96,7 +103,7 @@ describe("NlpService", () => {
       const description = "Shopping at Amazon";
       const mockResult = { Classes: [{ Name: "Shopping", Score: 0.89 }] };
 
-      mockComprehend.send.mockResolvedValue(mockResult as never);
+      mockComprehend.send.mockResolvedValueOnce(mockResult as never);
 
       const result = await nlpService.classifyDescription(description);
 
@@ -111,14 +118,14 @@ describe("NlpService", () => {
       const description = "Test transaction";
       const error = new Error("Classification failed");
 
-      mockComprehend.send.mockRejectedValue(error as never);
+      mockComprehend.send.mockRejectedValueOnce(error as never);
 
       const result = await nlpService.classifyDescription(description);
 
       expect(result).toEqual([]);
       expect(mockLogger.error).toHaveBeenCalledWith(
         "ClassifyDocumentCommand failed",
-        error,
+        error
       );
     });
   });

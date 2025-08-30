@@ -7,7 +7,10 @@ describe("TransactionCategoryLoader", () => {
   it("should map record to request with createdAt and AI metadata", async () => {
     const logger = mock<ILogger>();
     const service = mock<ITransactionCategoryService>();
-    const loader = new TransactionCategoryLoader(logger, service);
+    const transactionCategoryLoader = new TransactionCategoryLoader(
+      logger,
+      service,
+    );
 
     const record = {
       eventID: "1",
@@ -26,7 +29,7 @@ describe("TransactionCategoryLoader", () => {
       },
     } as unknown as DynamoDBRecord;
 
-    await loader.handle([record]);
+    await transactionCategoryLoader.loader([record]);
 
     expect(service.process).toHaveBeenCalledWith({
       tenantId: ETenantType.default,
@@ -43,7 +46,10 @@ describe("TransactionCategoryLoader", () => {
   it("should default createdAt and omit AI metadata when missing", async () => {
     const logger = mock<ILogger>();
     const service = mock<ITransactionCategoryService>();
-    const loader = new TransactionCategoryLoader(logger, service);
+    const transactionCategoryLoader = new TransactionCategoryLoader(
+      logger,
+      service,
+    );
 
     const fixedDate = new Date("2024-02-02T03:04:05.000Z");
     jest.useFakeTimers().setSystemTime(fixedDate);
@@ -60,7 +66,7 @@ describe("TransactionCategoryLoader", () => {
       },
     } as unknown as DynamoDBRecord;
 
-    await loader.handle([record]);
+    await transactionCategoryLoader.loader([record]);
 
     expect(service.process).toHaveBeenCalledWith({
       tenantId: ETenantType.default,

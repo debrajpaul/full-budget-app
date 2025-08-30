@@ -10,12 +10,12 @@ import { ILogger, INlpService, INlpAnalysis } from "@common";
 export class NlpService implements INlpService {
   private readonly logger: ILogger;
   private readonly comprehend: ComprehendClient;
-  private readonly classifierArn?: string;
+  private readonly classifierArn: string;
 
   constructor(
     logger: ILogger,
     comprehend: ComprehendClient,
-    classifierArn?: string,
+    classifierArn: string,
   ) {
     this.logger = logger;
     this.comprehend = comprehend;
