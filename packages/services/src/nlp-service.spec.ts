@@ -125,7 +125,7 @@ describe("NlpService", () => {
       expect(result).toEqual([]);
       expect(mockLogger.error).toHaveBeenCalledWith(
         "ClassifyDocumentCommand failed",
-        error
+        error,
       );
     });
   });
