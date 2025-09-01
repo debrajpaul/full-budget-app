@@ -1,6 +1,9 @@
 import { ITransaction } from "../transactions";
 import { ETenantType } from "../users";
-import { ERecurringFrequency, IRecurringTransaction } from "./recurring-transaction";
+import {
+  ERecurringFrequency,
+  IRecurringTransaction,
+} from "./recurring-transaction";
 
 export interface IRecurringTransactionService {
   create(
@@ -19,10 +22,7 @@ export interface IRecurringTransactionService {
     },
   ): Promise<IRecurringTransaction>;
 
-  list(
-    tenantId: ETenantType,
-    userId: string,
-  ): Promise<IRecurringTransaction[]>;
+  list(tenantId: ETenantType, userId: string): Promise<IRecurringTransaction[]>;
 
   materializeForMonth(
     tenantId: ETenantType,
@@ -31,4 +31,3 @@ export interface IRecurringTransactionService {
     year: number,
   ): Promise<ITransaction[]>;
 }
-

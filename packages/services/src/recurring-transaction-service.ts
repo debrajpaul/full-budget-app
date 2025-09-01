@@ -145,7 +145,9 @@ export class RecurringTransactionService
         const d = new Date(year, month - 1, 1);
         while (d.getMonth() === month - 1) {
           if (d.getDay() === dayOfWeek) {
-            dates.push(toIsoDate(d.getFullYear(), d.getMonth() + 1, d.getDate()));
+            dates.push(
+              toIsoDate(d.getFullYear(), d.getMonth() + 1, d.getDate()),
+            );
           }
           d.setDate(d.getDate() + 1);
         }

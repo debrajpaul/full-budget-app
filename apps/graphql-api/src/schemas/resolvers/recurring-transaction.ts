@@ -2,7 +2,11 @@ import { IGraphQLContext, ERecurringFrequency } from "@common";
 
 export const recurringTransactionResolvers = {
   Query: {
-    recurringTransactions: async (_: unknown, __: unknown, ctx: IGraphQLContext) => {
+    recurringTransactions: async (
+      _: unknown,
+      __: unknown,
+      ctx: IGraphQLContext,
+    ) => {
       if (!ctx.userId) throw new Error("Unauthorized");
       if (!ctx.tenantId) throw new Error("Tenant ID is required");
       const items = await ctx.dataSources.recurringTransactionService.list(
@@ -70,14 +74,14 @@ export const recurringTransactionResolvers = {
     ) => {
       if (!ctx.userId) throw new Error("Unauthorized");
       if (!ctx.tenantId) throw new Error("Tenant ID is required");
-      const txns = await ctx.dataSources.recurringTransactionService.materializeForMonth(
-        ctx.tenantId,
-        ctx.userId,
-        args.month,
-        args.year,
-      );
+      const txns =
+        await ctx.dataSources.recurringTransactionService.materializeForMonth(
+          ctx.tenantId,
+          ctx.userId,
+          args.month,
+          args.year,
+        );
       return txns.length;
     },
   },
 };
-

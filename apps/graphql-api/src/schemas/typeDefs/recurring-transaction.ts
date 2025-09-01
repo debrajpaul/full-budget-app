@@ -36,8 +36,9 @@ export const recurringTransactionTypeDefs = /* GraphQL */ `
   }
 
   extend type Mutation {
-    createRecurringTransaction(input: CreateRecurringTransactionInput!): RecurringTransaction!
+    createRecurringTransaction(
+      input: CreateRecurringTransactionInput!
+    ): RecurringTransaction!
     generateRecurringTransactions(month: Int!, year: Int!): Int!
   }
 `;
-

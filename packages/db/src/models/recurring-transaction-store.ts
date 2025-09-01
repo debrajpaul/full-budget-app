@@ -1,5 +1,14 @@
-import { ILogger, IRecurringTransaction, IRecurringTransactionStore, ETenantType } from "@common";
-import { PutCommand, QueryCommand, DynamoDBDocumentClient } from "@aws-sdk/lib-dynamodb";
+import {
+  ILogger,
+  IRecurringTransaction,
+  IRecurringTransactionStore,
+  ETenantType,
+} from "@common";
+import {
+  PutCommand,
+  QueryCommand,
+  DynamoDBDocumentClient,
+} from "@aws-sdk/lib-dynamodb";
 
 export class RecurringTransactionStore implements IRecurringTransactionStore {
   private readonly logger: ILogger;
@@ -54,4 +63,3 @@ export class RecurringTransactionStore implements IRecurringTransactionStore {
     return (result.Items as IRecurringTransaction[]) || [];
   }
 }
-

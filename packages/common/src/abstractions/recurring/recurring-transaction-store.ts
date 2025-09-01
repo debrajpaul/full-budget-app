@@ -11,4 +11,3 @@ export interface IRecurringTransactionStore {
     userId: string,
   ): Promise<IRecurringTransaction[]>;
 }
-

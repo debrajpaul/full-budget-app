@@ -2,7 +2,12 @@ import { ILogger } from "@common";
 import { config } from "./environment";
 import { S3 } from "@aws-sdk/client-s3";
 import { SQS } from "@aws-sdk/client-sqs";
-import { TransactionStore, UserStore, CategoryRulesStore, RecurringTransactionStore } from "@db";
+import {
+  TransactionStore,
+  UserStore,
+  CategoryRulesStore,
+  RecurringTransactionStore,
+} from "@db";
 import {
   TransactionService,
   AuthorizationService,
