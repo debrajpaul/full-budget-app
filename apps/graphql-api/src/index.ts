@@ -1,3 +1,8 @@
+import type {
+  APIGatewayProxyEvent,
+  Context,
+  APIGatewayProxyResult,
+} from "aws-lambda";
 import { ApolloServer } from "@apollo/server";
 import {
   startServerAndCreateLambdaHandler,
@@ -14,7 +19,7 @@ const server = new ApolloServer<IGraphQLContext>({
   introspection: config.nodeEnv !== "prod",
 });
 
-export const handler = startServerAndCreateLambdaHandler(
+const baseHandler = startServerAndCreateLambdaHandler(
   server,
   handlers.createAPIGatewayProxyEventRequestHandler(),
   {
@@ -26,3 +31,25 @@ export const handler = startServerAndCreateLambdaHandler(
     },
   },
 );
+
+export const handler = async (
+  event: APIGatewayProxyEvent,
+  context: Context,
+): Promise<APIGatewayProxyResult> => {
+  const resp: APIGatewayProxyResult = await new Promise((resolve, reject) => {
+    // Satisfy the callback-style signature expected by baseHandler
+    (baseHandler as any)(event, context, (err: any, result: any) => {
+      if (err) reject(err);
+      else resolve(result as APIGatewayProxyResult);
+    });
+  });
+  const corsHeaders = {
+    "Access-Control-Allow-Origin": "*",
+    "Access-Control-Allow-Headers": "Content-Type,Authorization",
+    "Access-Control-Allow-Methods": "POST,OPTIONS",
+  } as const;
+  return {
+    ...resp,
+    headers: { ...(resp?.headers || {}), ...corsHeaders },
+  };
+};
