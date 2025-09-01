@@ -1,41 +1,55 @@
 import { categorizeByRules } from "./ruleEngine";
+import { keywordBaseCategoryMap } from "./rules";
+import { EBaseCategories } from "@common";
 
 describe("categorizeByRules", () => {
-  const rules = {
-    swiggy: "Food & Dining",
-    amazon: "Shopping",
-    ola: "Transport",
-    "hdfc loan": "Loan Payment",
-  };
+  const rules = keywordBaseCategoryMap;
 
-  it("should return the correct category if keyword is present in description", () => {
-    expect(categorizeByRules("Paid to Swiggy order", rules)).toBe(
-      "Food & Dining",
+  it("returns correct base category for known keywords in map", () => {
+    expect(categorizeByRules("Salary credited via RTGS", rules)).toBe(
+      EBaseCategories.income,
     );
-    expect(categorizeByRules("Amazon purchase", rules)).toBe("Shopping");
-    expect(categorizeByRules("Ola cab ride", rules)).toBe("Transport");
-    expect(categorizeByRules("HDFC Loan EMI", rules)).toBe("Loan Payment");
-  });
-
-  it("should be case-insensitive for description", () => {
-    expect(categorizeByRules("Paid to SWIGGY order", rules)).toBe(
-      "Food & Dining",
+    expect(categorizeByRules("Paid using UPI at store", rules)).toBe(
+      EBaseCategories.expenses,
     );
-    expect(categorizeByRules("amazon Purchase", rules)).toBe("Shopping");
+    expect(
+      categorizeByRules(
+        "BY TRANSFER-NEFT*YESB0000001*YESB40930207163*ZERODHA BROKING L--",
+        rules,
+      ),
+    ).toBe(EBaseCategories.savings);
   });
 
-  it("should return null if no keyword matches", () => {
-    expect(categorizeByRules("Starbucks coffee", rules)).toBeNull();
-    expect(categorizeByRules("Flipkart order", rules)).toBeNull();
+  it("matches case-insensitively on description", () => {
+    expect(categorizeByRules("RTGS credit received", rules)).toBe(
+      EBaseCategories.income,
+    );
+    expect(categorizeByRules("paid via UPI", rules)).toBe(
+      EBaseCategories.expenses,
+    );
+    expect(categorizeByRules("ZERODHA investment", rules)).toBe(
+      EBaseCategories.savings,
+    );
   });
 
-  it("should match partial keywords in description", () => {
-    expect(categorizeByRules("Paid to swiggy", rules)).toBe("Food & Dining");
-    expect(categorizeByRules("EMI for hdfc loan", rules)).toBe("Loan Payment");
+  it("returns default when no keyword matches", () => {
+    expect(categorizeByRules("No rule applies here", rules)).toBe(
+      EBaseCategories.default,
+    );
   });
 
-  it("should return the first matching category if multiple keywords match", () => {
-    const multiRules = { swiggy: "Food", amazon: "Shopping" };
-    expect(categorizeByRules("swiggy amazon", multiRules)).toBe("Food");
+  it("picks the earliest match when multiple keywords appear", () => {
+    expect(categorizeByRules("rtgs and upi in one line", rules)).toBe(
+      EBaseCategories.income,
+    );
+    expect(categorizeByRules("upi then rtgs in one line", rules)).toBe(
+      EBaseCategories.expenses,
+    );
+  });
+
+  it("handles Zerodha transfers as savings via explicit regex", () => {
+    const desc =
+      "BY TRANSFER-NEFT***ZERODHA BROKING L--";
+    expect(categorizeByRules(desc, rules)).toBe(EBaseCategories.savings);
   });
 });

@@ -22,11 +22,11 @@ describe("CategoryRulesStore", () => {
     );
   });
 
-  it("should get rules by tenant including global defaults", async () => {
+  it("should get rules by tenant including global defaults and respect overrides", async () => {
     const tenantRules: ICategoryRules[] = [
       {
         keyword: "food",
-        category: EBaseCategories.expenses,
+        category: EBaseCategories.income,
         tenantId,
         ruleId: `${tenantId}#food`,
         isActive: true,
@@ -56,13 +56,14 @@ describe("CategoryRulesStore", () => {
       .mockResolvedValueOnce({ Items: globalRules });
     const result = await rulesStore.getRulesByTenant(tenantId);
     expect(result).toEqual({
-      food: EBaseCategories.expenses,
+      // tenant override should win over global
+      food: EBaseCategories.income,
       fuel: EBaseCategories.expenses,
     });
   });
 
   it("should add multiple rules in chunks", async () => {
-    const rules = { food: "groceries", fuel: "transport", rent: "housing" };
+    const rules = { saving: EBaseCategories.savings, expenses: EBaseCategories.expenses, income: EBaseCategories.income };
     const addRuleSpy = jest.spyOn(rulesStore, "addRule").mockResolvedValue();
     await rulesStore.addRules(tenantId, rules);
     expect(addRuleSpy).toHaveBeenCalledTimes(3);

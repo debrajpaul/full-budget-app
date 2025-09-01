@@ -30,8 +30,8 @@ export class CategoryRulesStore implements ICategoryRulesStore {
 
   public async getRulesByTenant(
     tenantId: ETenantType,
-  ): Promise<Record<string, string>> {
-    const rules: Record<string, string> = {};
+  ): Promise<Record<string, EBaseCategories>> {
+    const rules: Record<string, EBaseCategories> = {};
 
     // Load tenant-specific rules
     const tenantRules: ICategoryRules[] = await this.loadRules(tenantId);
@@ -55,7 +55,7 @@ export class CategoryRulesStore implements ICategoryRulesStore {
 
   public async addRules(
     tenantId: ETenantType,
-    rules: Record<string, string>,
+    rules: Record<string, EBaseCategories>,
   ): Promise<void> {
     this.logger.info("Saving rules to DynamoDB");
     this.logger.debug("Rules", { rules });
@@ -63,7 +63,7 @@ export class CategoryRulesStore implements ICategoryRulesStore {
     const chunks = chunk(Object.entries(rules), 25);
     for (const chunk of chunks) {
       const promises = chunk.map(([keyword, category]) =>
-        this.addRule(tenantId, keyword, category as EBaseCategories),
+        this.addRule(tenantId, keyword, category),
       );
       await Promise.all(promises);
     }

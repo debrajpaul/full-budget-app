@@ -1,24 +1,20 @@
-import { keywordCategoryMap } from "./rules";
+import { keywordBaseCategoryMap } from "./rules";
+import { EBaseCategories } from "@common";
 
-describe("keywordCategoryMap", () => {
-  it("should map known keywords to their categories", () => {
-    expect(keywordCategoryMap["swiggy"]).toBe("Food & Dining");
-    expect(keywordCategoryMap["zomato"]).toBe("Food & Dining");
-    expect(keywordCategoryMap["bigbasket"]).toBe("Groceries");
-    expect(keywordCategoryMap["amazon"]).toBe("Shopping");
-    expect(keywordCategoryMap["flipkart"]).toBe("Shopping");
-    expect(keywordCategoryMap["ola"]).toBe("Transport");
-    expect(keywordCategoryMap["uber"]).toBe("Transport");
-    expect(keywordCategoryMap["hdfc loan"]).toBe("Loan Payment");
+describe("keywordBaseCategoryMap", () => {
+  it("maps base keywords to base categories", () => {
+    expect(keywordBaseCategoryMap["zerodha"]).toBe(EBaseCategories.savings);
+    expect(keywordBaseCategoryMap["upi"]).toBe(EBaseCategories.expenses);
+    expect(keywordBaseCategoryMap["rtgs"]).toBe(EBaseCategories.income);
   });
 
-  it("should return undefined for unknown keywords", () => {
-    expect(keywordCategoryMap["unknown"]).toBeUndefined();
-    expect(keywordCategoryMap["pizza"]).toBeUndefined();
+  it("returns undefined for unknown keywords", () => {
+    expect(keywordBaseCategoryMap["unknown"]).toBeUndefined();
+    expect(keywordBaseCategoryMap["swiggy"]).toBeUndefined();
   });
 
-  it("should be case sensitive", () => {
-    expect(keywordCategoryMap["Swiggy"]).toBeUndefined();
-    expect(keywordCategoryMap["SWIGGY"]).toBeUndefined();
+  it("is case sensitive", () => {
+    expect(keywordBaseCategoryMap["Zerodha"]).toBeUndefined();
+    expect(keywordBaseCategoryMap["ZERODHA"]).toBeUndefined();
   });
 });
