@@ -77,7 +77,9 @@ export class TransactionCategoryService implements ITransactionCategoryService {
         this.logger.debug("AI tagging result analysis:", { analysis });
 
         const classification = await this.classifyDescription(description);
-        this.logger.debug("AI tagging result classification:", { classification });
+        this.logger.debug("AI tagging result classification:", {
+          classification,
+        });
         if (classification) {
           matchedCategory = classification.category as EBaseCategories;
           finalTaggedBy = "AI_TAGGER";
@@ -108,7 +110,10 @@ export class TransactionCategoryService implements ITransactionCategoryService {
     tenantId: ETenantType = ETenantType.default,
   ): Promise<void> {
     this.logger.info(`Adding rules for tenant ${tenantId}`);
-    return await this.categoryRulesStore.addRules(tenantId, keywordBaseCategoryMap);
+    return await this.categoryRulesStore.addRules(
+      tenantId,
+      keywordBaseCategoryMap,
+    );
   }
 
   public async classifyDescription(

@@ -1,12 +1,12 @@
 import { EBaseCategories } from "@common";
 
 function escapeRegExp(input: string): string {
-  return input.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+  return input.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 }
 
 export function categorizeByRules(
   description: string,
-  rules: Record<string, EBaseCategories>
+  rules: Record<string, EBaseCategories>,
 ): EBaseCategories {
   const lowerDesc = description.toLowerCase();
 
@@ -19,7 +19,7 @@ export function categorizeByRules(
   if (lowerDesc.length === 0 || keywords.length === 0) {
     return EBaseCategories.default;
   }
-  const pattern = new RegExp(`(${keywords.map(escapeRegExp).join('|')})`, 'i');
+  const pattern = new RegExp(`(${keywords.map(escapeRegExp).join("|")})`, "i");
   const match = lowerDesc.match(pattern);
   if (match && match[1]) {
     const found = match[1].toLowerCase();

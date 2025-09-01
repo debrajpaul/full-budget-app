@@ -48,8 +48,7 @@ describe("categorizeByRules", () => {
   });
 
   it("handles Zerodha transfers as savings via explicit regex", () => {
-    const desc =
-      "BY TRANSFER-NEFT***ZERODHA BROKING L--";
+    const desc = "BY TRANSFER-NEFT***ZERODHA BROKING L--";
     expect(categorizeByRules(desc, rules)).toBe(EBaseCategories.savings);
   });
 });

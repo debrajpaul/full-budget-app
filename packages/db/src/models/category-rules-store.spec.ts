@@ -63,7 +63,11 @@ describe("CategoryRulesStore", () => {
   });
 
   it("should add multiple rules in chunks", async () => {
-    const rules = { saving: EBaseCategories.savings, expenses: EBaseCategories.expenses, income: EBaseCategories.income };
+    const rules = {
+      saving: EBaseCategories.savings,
+      expenses: EBaseCategories.expenses,
+      income: EBaseCategories.income,
+    };
     const addRuleSpy = jest.spyOn(rulesStore, "addRule").mockResolvedValue();
     await rulesStore.addRules(tenantId, rules);
     expect(addRuleSpy).toHaveBeenCalledTimes(3);
