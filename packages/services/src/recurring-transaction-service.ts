@@ -175,7 +175,13 @@ export class RecurringTransactionService
         current.setDate(current.getDate() + adjust);
         // Collect every 14 days within this month
         while (current <= endOfMonth) {
-          dates.push(toIsoDate(current.getFullYear(), current.getMonth() + 1, current.getDate()));
+          dates.push(
+            toIsoDate(
+              current.getFullYear(),
+              current.getMonth() + 1,
+              current.getDate(),
+            ),
+          );
           current.setDate(current.getDate() + 14);
         }
         return dates;

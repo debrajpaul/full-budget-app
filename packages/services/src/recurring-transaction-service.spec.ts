@@ -231,11 +231,19 @@ describe("RecurringTransactionService", () => {
     recurringStore.listByUser.mockResolvedValue([recurring]);
     transactionStore.saveTransactions.mockResolvedValue();
 
-    const month = 8, year = 2025; // Mondays: 4, 11, 18, 25
-    const created = await service.materializeForMonth(tenantId, userId, month, year);
+    const month = 8,
+      year = 2025; // Mondays: 4, 11, 18, 25
+    const created = await service.materializeForMonth(
+      tenantId,
+      userId,
+      month,
+      year,
+    );
 
     // Expect only 4 and 18 to be included (week offsets 0 and 2)
-    const calls = transactionStore.saveTransactions.mock.calls.map((c) => (c[1] as any)[0].txnDate);
+    const calls = transactionStore.saveTransactions.mock.calls.map(
+      (c) => (c[1] as any)[0].txnDate,
+    );
     expect(calls).toEqual(["2025-08-04", "2025-08-18"]);
     expect(created.map((t) => t.txnDate)).toEqual(["2025-08-04", "2025-08-18"]);
   });
