@@ -2,6 +2,7 @@ export const recurringTransactionTypeDefs = /* GraphQL */ `
   enum RecurringFrequency {
     monthly
     weekly
+    biweekly
     yearly
   }
 

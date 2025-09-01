@@ -215,6 +215,31 @@ describe("RecurringTransactionService", () => {
     expect(created).toHaveLength(1);
   });
 
+  it("materializes biweekly anchored from startDate parity", async () => {
+    const recurring: IRecurringTransaction = {
+      tenantId,
+      userId,
+      recurringId: "user1#rec#biweekly",
+      description: "Biweekly Class",
+      amount: -200,
+      category: "education",
+      frequency: ERecurringFrequency.biweekly,
+      dayOfWeek: 1, // Monday
+      startDate: "2025-08-04", // Monday, acts as anchor week 0
+      createdAt: "2025-07-01T00:00:00.000Z",
+    } as any;
+    recurringStore.listByUser.mockResolvedValue([recurring]);
+    transactionStore.saveTransactions.mockResolvedValue();
+
+    const month = 8, year = 2025; // Mondays: 4, 11, 18, 25
+    const created = await service.materializeForMonth(tenantId, userId, month, year);
+
+    // Expect only 4 and 18 to be included (week offsets 0 and 2)
+    const calls = transactionStore.saveTransactions.mock.calls.map((c) => (c[1] as any)[0].txnDate);
+    expect(calls).toEqual(["2025-08-04", "2025-08-18"]);
+    expect(created.map((t) => t.txnDate)).toEqual(["2025-08-04", "2025-08-18"]);
+  });
+
   it("continues on save error and returns created subset", async () => {
     const recurring: IRecurringTransaction = {
       tenantId,

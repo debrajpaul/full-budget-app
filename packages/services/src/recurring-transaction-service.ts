@@ -153,6 +153,33 @@ export class RecurringTransactionService
         }
         return dates;
       }
+      case ERecurringFrequency.biweekly: {
+        // Anchor to the first occurrence on/after startDate, then include every 2 weeks
+        const start = new Date(r.startDate);
+        const targetDOW = r.dayOfWeek ?? start.getDay();
+        // Align anchor to first targetDOW on/after start
+        const anchor = new Date(start);
+        const delta = (targetDOW - anchor.getDay() + 7) % 7;
+        anchor.setDate(anchor.getDate() + delta);
+
+        const dates: string[] = [];
+        const firstOfMonth = new Date(year, month - 1, 1);
+        const endOfMonth = new Date(year, month, 0);
+        // Advance current to the first occurrence on/after start and on/after firstOfMonth
+        let current = new Date(anchor);
+        while (current < firstOfMonth) {
+          current.setDate(current.getDate() + 14);
+        }
+        // Ensure current is the target weekday
+        const adjust = (targetDOW - current.getDay() + 7) % 7;
+        current.setDate(current.getDate() + adjust);
+        // Collect every 14 days within this month
+        while (current <= endOfMonth) {
+          dates.push(toIsoDate(current.getFullYear(), current.getMonth() + 1, current.getDate()));
+          current.setDate(current.getDate() + 14);
+        }
+        return dates;
+      }
       case ERecurringFrequency.yearly: {
         const matchedMonth = r.monthOfYear ?? 1;
         if (matchedMonth !== month) return [];

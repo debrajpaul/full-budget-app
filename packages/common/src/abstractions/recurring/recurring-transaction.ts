@@ -3,6 +3,7 @@ import { ETenantType } from "../users";
 export enum ERecurringFrequency {
   monthly = "monthly",
   weekly = "weekly",
+  biweekly = "biweekly",
   yearly = "yearly",
 }
 
