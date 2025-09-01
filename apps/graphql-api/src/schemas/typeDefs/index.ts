@@ -4,3 +4,4 @@ export * from "./transaction";
 export * from "./upload-statement";
 export * from "./tenant";
 export * from "./savings-goal";
+export * from "./recurring-transaction";

@@ -36,13 +36,12 @@ export const handler = async (
   event: APIGatewayProxyEvent,
   context: Context,
 ): Promise<APIGatewayProxyResult> => {
-  const resp: APIGatewayProxyResult = await new Promise((resolve, reject) => {
-    // Satisfy the callback-style signature expected by baseHandler
-    (baseHandler as any)(event, context, (err: any, result: any) => {
-      if (err) reject(err);
-      else resolve(result as APIGatewayProxyResult);
-    });
-  });
+  // Prefer promise form if available to avoid unresolved callbacks
+  const promiseHandler = baseHandler as unknown as (
+    e: APIGatewayProxyEvent,
+    c: Context,
+  ) => Promise<APIGatewayProxyResult>;
+  const resp = await promiseHandler(event, context);
   const corsHeaders = {
     "Access-Control-Allow-Origin": "*",
     "Access-Control-Allow-Headers": "Content-Type,Authorization",

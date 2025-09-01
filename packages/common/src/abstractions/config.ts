@@ -12,6 +12,7 @@ export interface IConfig {
   dynamoUserTable: string;
   dynamoTransactionTable: string;
   dynamoCategoryRulesTable: string;
+  dynamoRecurringTable: string;
   jwtSecret: string;
   aiTaggingEnabled: boolean;
   comprehendClassifierArn?: string;

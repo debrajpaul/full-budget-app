@@ -2,7 +2,7 @@ import { ILogger } from "@common";
 import { config } from "./environment";
 import { S3 } from "@aws-sdk/client-s3";
 import { SQS } from "@aws-sdk/client-sqs";
-import { TransactionStore, UserStore, CategoryRulesStore } from "@db";
+import { TransactionStore, UserStore, CategoryRulesStore, RecurringTransactionStore } from "@db";
 import {
   TransactionService,
   AuthorizationService,
@@ -10,6 +10,7 @@ import {
   TransactionCategoryService,
   NlpService,
   SavingsGoalService,
+  RecurringTransactionService,
 } from "@services";
 import { S3Service, SQSService } from "@client";
 import { DynamoDBDocumentClient } from "@aws-sdk/lib-dynamodb";
@@ -47,6 +48,11 @@ export function setupServices(
     config.dynamoCategoryRulesTable,
     dynamoDBDocumentClient,
   );
+  const recurringStore = new RecurringTransactionStore(
+    logger.child("RecurringTransactionStore"),
+    config.dynamoRecurringTable,
+    dynamoDBDocumentClient,
+  );
   const authorizationService = new AuthorizationService(
     logger.child("AuthorizationService"),
     config.jwtSecret,
@@ -79,6 +85,11 @@ export function setupServices(
   const savingsGoalService = new SavingsGoalService(
     logger.child("SavingsGoalService"),
   );
+  const recurringTransactionService = new RecurringTransactionService(
+    logger.child("RecurringTransactionService"),
+    recurringStore,
+    transactionStore,
+  );
 
   return {
     transactionService,
@@ -87,5 +98,6 @@ export function setupServices(
     transactionCategoryService,
     savingsGoalService,
     nlpService,
+    recurringTransactionService,
   };
 }

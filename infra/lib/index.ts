@@ -9,3 +9,4 @@ export * from "./transaction-loader.stack";
 export * from "./ssm-param.stack";
 export * from "./transaction-category-loader.stack";
 export * from "./transaction-category-table.stack";
+export * from "./recurring-transactions-table.stack";
