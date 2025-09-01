@@ -1,9 +1,7 @@
 import { Request, Response } from "express";
 import { ETenantType } from "./users";
 import { ILogger } from "./logger";
-import {
-  ITransactionService
-} from "./transactions";
+import { ITransactionService } from "./transactions";
 import { ITransactionCategoryService } from "./categories";
 import { ISavingsGoalService } from "./savings-goals";
 import { IUploadStatementService } from "./upload-statement-service";
