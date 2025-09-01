@@ -51,4 +51,19 @@ describe("categorizeByRules", () => {
     const desc = "BY TRANSFER-NEFT***ZERODHA BROKING L--";
     expect(categorizeByRules(desc, rules)).toBe(EBaseCategories.savings);
   });
+
+  it("uses fallback heuristics for common patterns when no explicit rule matches", () => {
+    expect(categorizeByRules("Cashback credited", rules)).toBe(
+      EBaseCategories.income,
+    );
+    expect(categorizeByRules("EMI charge applied", rules)).toBe(
+      EBaseCategories.expenses,
+    );
+    expect(categorizeByRules("SIP investment to MF", rules)).toBe(
+      EBaseCategories.savings,
+    );
+    expect(categorizeByRules("Amazon purchase #1234", rules)).toBe(
+      EBaseCategories.expenses,
+    );
+  });
 });
