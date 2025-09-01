@@ -1,6 +1,6 @@
 import { CategoryRulesStore } from "./category-rules-store";
 import { mock } from "jest-mock-extended";
-import type { ILogger, ICategoryRules, ETenantType } from "@common";
+import { ILogger, ICategoryRules, ETenantType, EBaseCategories } from "@common";
 import { DynamoDBDocumentClient } from "@aws-sdk/lib-dynamodb";
 import { PutCommand, DeleteCommand } from "@aws-sdk/lib-dynamodb";
 
@@ -9,8 +9,8 @@ describe("CategoryRulesStore", () => {
   let loggerMock: ReturnType<typeof mock<ILogger>>;
   let rulesStore: CategoryRulesStore;
   const tableName = "categoryRules";
-  const tenantId = "TENANT1" as ETenantType;
-  const defaultTenant = "default" as ETenantType;
+  const tenantId = ETenantType.personal;
+  const defaultTenant = ETenantType.default;
 
   beforeEach(() => {
     loggerMock = mock<ILogger>();
@@ -26,7 +26,7 @@ describe("CategoryRulesStore", () => {
     const tenantRules: ICategoryRules[] = [
       {
         keyword: "food",
-        category: "groceries",
+        category: EBaseCategories.expenses,
         tenantId,
         ruleId: `${tenantId}#food`,
         isActive: true,
@@ -36,7 +36,7 @@ describe("CategoryRulesStore", () => {
     const globalRules: ICategoryRules[] = [
       {
         keyword: "fuel",
-        category: "transport",
+        category: EBaseCategories.expenses,
         tenantId: defaultTenant,
         ruleId: `${defaultTenant}#fuel`,
         isActive: true,
@@ -44,7 +44,7 @@ describe("CategoryRulesStore", () => {
       },
       {
         keyword: "food",
-        category: "dining",
+        category: EBaseCategories.expenses,
         tenantId: defaultTenant,
         ruleId: `${defaultTenant}#food`,
         isActive: true,
@@ -55,7 +55,10 @@ describe("CategoryRulesStore", () => {
       .mockResolvedValueOnce({ Items: tenantRules })
       .mockResolvedValueOnce({ Items: globalRules });
     const result = await rulesStore.getRulesByTenant(tenantId);
-    expect(result).toEqual({ food: "groceries", fuel: "transport" });
+    expect(result).toEqual({
+      food: EBaseCategories.expenses,
+      fuel: EBaseCategories.expenses,
+    });
   });
 
   it("should add multiple rules in chunks", async () => {
@@ -68,7 +71,7 @@ describe("CategoryRulesStore", () => {
 
   it("should add a single rule", async () => {
     storeMock.send.mockResolvedValue({});
-    await rulesStore.addRule(tenantId, "FOOD", "groceries");
+    await rulesStore.addRule(tenantId, "FOOD", EBaseCategories.expenses);
     expect(storeMock.send).toHaveBeenCalledWith(expect.any(PutCommand));
     const calledCommand = storeMock.send.mock.calls[0][0];
     expect(calledCommand.input).toMatchObject({
@@ -77,7 +80,7 @@ describe("CategoryRulesStore", () => {
         ruleId: `${tenantId}#food`,
         tenantId,
         keyword: "food",
-        category: "groceries",
+        category: EBaseCategories.expenses,
         isActive: true,
       }),
       ConditionExpression: "attribute_not_exists(ruleId)",
@@ -107,7 +110,7 @@ describe("CategoryRulesStore", () => {
     const rules: ICategoryRules[] = [
       {
         keyword: "food",
-        category: "groceries",
+        category: EBaseCategories.expenses,
         tenantId,
         ruleId: `${tenantId}#food`,
         isActive: true,
@@ -115,7 +118,7 @@ describe("CategoryRulesStore", () => {
       },
       {
         keyword: "fuel",
-        category: "transport",
+        category: EBaseCategories.expenses,
         tenantId,
         ruleId: `${tenantId}#fuel`,
         isActive: true,
