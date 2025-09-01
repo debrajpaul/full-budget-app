@@ -195,7 +195,7 @@ export const transactionResolvers = {
       );
       return true;
     },
-    
+
     reclassifyTransaction: async (
       _: unknown,
       args: { id: string; category: string },
