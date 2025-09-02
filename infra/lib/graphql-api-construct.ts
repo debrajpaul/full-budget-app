@@ -15,6 +15,7 @@ export interface GraphQLApiConstructProps {
   transactionTableArn: string;
   categoryTableArn: string;
   userTableArn: string;
+  recurringTableArn: string;
   jwtParameter: StringParameter;
   environment: Record<string, string>;
 }
@@ -44,7 +45,7 @@ export class GraphQLApiConstruct extends Construct {
     graphqlFunction.addToRolePolicy(
       new iam.PolicyStatement({
         actions: ['dynamodb:*'],
-        resources: [props.transactionTableArn, props.userTableArn, props.categoryTableArn],
+        resources: [props.transactionTableArn, props.userTableArn, props.categoryTableArn, props.recurringTableArn],
       }),
     );
 

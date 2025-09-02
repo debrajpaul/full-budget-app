@@ -6,8 +6,9 @@ import {
   ITransactionCategoryService,
   ICategoryRulesStore,
   ITransactionCategoryRequest,
+  EBaseCategories,
 } from "@common";
-import { keywordCategoryMap } from "@nlp-tagger";
+import { keywordBaseCategoryMap, categorizeByRules } from "@nlp-tagger";
 
 export class TransactionCategoryService implements ITransactionCategoryService {
   private readonly logger: ILogger;
@@ -61,19 +62,14 @@ export class TransactionCategoryService implements ITransactionCategoryService {
       const rules = await this.categoryRulesStore.getRulesByTenant(tenantId);
 
       // step 2: Match description against rules
-      let matchedCategory = this.categorizeByRules(description, rules);
+      let matchedCategory = categorizeByRules(description, rules);
       let finalTaggedBy = taggedBy ?? "RULE_ENGINE";
       let finalConfidence: number | undefined = confidence ?? 1;
       let finalEmbedding = embedding;
-      // step 3: Fallback to AI tagging
-      if (!matchedCategory && !this.aiTaggingEnabled) {
-        this.logger.info(
-          `AI tagging disabled for transaction ${transactionId}, skipping classification`,
-        );
-        matchedCategory = "TEST_TAGGED_CATEGORY";
-        finalTaggedBy = taggedBy ?? "DEFAULT_ENGINE";
-        finalConfidence = undefined;
-      } else if (!matchedCategory) {
+
+      // step 3: Fallback to AI tagging only if no rule matched and AI enabled
+      const ruleMatched = matchedCategory !== EBaseCategories.default;
+      if (!ruleMatched && this.aiTaggingEnabled) {
         this.logger.info(
           `No rule matched for transaction ${transactionId}, falling back to AI tagging`,
         );
@@ -85,13 +81,9 @@ export class TransactionCategoryService implements ITransactionCategoryService {
           classification,
         });
         if (classification) {
-          matchedCategory = classification.category;
+          matchedCategory = classification.category as EBaseCategories;
           finalTaggedBy = "AI_TAGGER";
           finalConfidence = classification.confidence;
-        } else {
-          matchedCategory = "AI_TAGGED_CATEGORY";
-          finalTaggedBy = "AI_TAGGER";
-          finalConfidence = undefined;
         }
         finalEmbedding = embedding;
       }
@@ -118,23 +110,10 @@ export class TransactionCategoryService implements ITransactionCategoryService {
     tenantId: ETenantType = ETenantType.default,
   ): Promise<void> {
     this.logger.info(`Adding rules for tenant ${tenantId}`);
-    return await this.categoryRulesStore.addRules(tenantId, keywordCategoryMap);
-  }
-
-  private categorizeByRules(
-    description: string,
-    rules: Record<string, string>,
-  ): string | null {
-    let matchedCategory = null;
-    const normalizedDescription = description.toLowerCase();
-    for (const keyword in rules) {
-      if (normalizedDescription.includes(keyword)) {
-        matchedCategory = rules[keyword];
-        this.logger.info(`Matched category "${matchedCategory}"`);
-        break;
-      }
-    }
-    return matchedCategory;
+    return await this.categoryRulesStore.addRules(
+      tenantId,
+      keywordBaseCategoryMap,
+    );
   }
 
   public async classifyDescription(

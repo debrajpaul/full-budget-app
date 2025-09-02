@@ -393,7 +393,14 @@ importers:
         specifier: ^3.17.0
         version: 3.17.0
 
-  packages/nlp-tagger: {}
+  packages/nlp-tagger:
+    dependencies:
+      '@common':
+        specifier: workspace:*
+        version: link:../common
+      '@logger':
+        specifier: workspace:*
+        version: link:../logger
 
   packages/parser:
     dependencies:

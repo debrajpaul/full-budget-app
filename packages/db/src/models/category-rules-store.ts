@@ -4,6 +4,7 @@ import {
   ILogger,
   ICategoryRulesStore,
   ETenantType,
+  EBaseCategories,
 } from "@common";
 import {
   PutCommand,
@@ -29,8 +30,8 @@ export class CategoryRulesStore implements ICategoryRulesStore {
 
   public async getRulesByTenant(
     tenantId: ETenantType,
-  ): Promise<Record<string, string>> {
-    const rules: Record<string, string> = {};
+  ): Promise<Record<string, EBaseCategories>> {
+    const rules: Record<string, EBaseCategories> = {};
 
     // Load tenant-specific rules
     const tenantRules: ICategoryRules[] = await this.loadRules(tenantId);
@@ -54,7 +55,7 @@ export class CategoryRulesStore implements ICategoryRulesStore {
 
   public async addRules(
     tenantId: ETenantType,
-    rules: Record<string, string>,
+    rules: Record<string, EBaseCategories>,
   ): Promise<void> {
     this.logger.info("Saving rules to DynamoDB");
     this.logger.debug("Rules", { rules });
@@ -71,7 +72,7 @@ export class CategoryRulesStore implements ICategoryRulesStore {
   public async addRule(
     tenantId: ETenantType,
     keyword: string,
-    category: string,
+    category: EBaseCategories,
   ): Promise<void> {
     this.logger.info("Saving rule to DynamoDB");
     this.logger.debug("Rule", { tenantId, keyword, category });

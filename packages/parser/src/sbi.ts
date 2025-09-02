@@ -82,7 +82,7 @@ export class SbiBankParser implements IBankParser {
 
       txns.push({
         userId,
-        transactionId: `${userId}-${txnDate.replace(/-/g, "")}-${txns.length}`,
+        transactionId: `${userId}#${txnDate.replace(/-/g, "")}#${txns.length}`,
         bankName: EBankName.sbi,
         amount,
         txnDate,

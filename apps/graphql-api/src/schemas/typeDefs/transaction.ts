@@ -88,10 +88,10 @@ export const transactionTypeDefs = /* GraphQL */ `
       filters: TransactionsFilter!
       cursor: String
     ): TransactionsPage!
-    addTransactionCategory: Boolean!
   }
 
   type Mutation {
+    addTransactionCategory: Boolean!
     reclassifyTransaction(
       id: String!
       category: String!

@@ -6,6 +6,7 @@ import {
   ITransactionStore,
   ICategoryRulesStore,
   ITransactionCategoryRequest,
+  EBaseCategories,
 } from "@common";
 import { TransactionCategoryService } from "./transaction-category-service";
 
@@ -31,11 +32,13 @@ describe("TransactionCategoryService", () => {
   });
 
   it("categorizes by rules when keyword matches", async () => {
-    rulesStore.getRulesByTenant.mockResolvedValue({ swiggy: "Food & Dining" });
+    rulesStore.getRulesByTenant.mockResolvedValue({
+      zerodha: EBaseCategories.savings,
+    });
     const req: ITransactionCategoryRequest = {
       tenantId: ETenantType.default,
       transactionId: "t1",
-      description: "Swiggy order",
+      description: "BY TRANSFER-NEFT***ZERODHA BROKING L--",
       createdAt: "2025-01-01",
     };
     const result = await service.process(req);
@@ -45,7 +48,7 @@ describe("TransactionCategoryService", () => {
     expect(transactionStore.updateTransactionCategory).toHaveBeenCalledWith(
       ETenantType.default,
       "t1",
-      "Food & Dining",
+      EBaseCategories.savings,
       "RULE_ENGINE",
       1,
       undefined,
@@ -75,9 +78,9 @@ describe("TransactionCategoryService", () => {
     expect(transactionStore.updateTransactionCategory).toHaveBeenCalledWith(
       ETenantType.default,
       "t2",
-      "TEST_TAGGED_CATEGORY",
-      "DEFAULT_ENGINE",
-      undefined,
+      EBaseCategories.default,
+      "RULE_ENGINE",
+      1,
       undefined,
     );
   });

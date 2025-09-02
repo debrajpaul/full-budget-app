@@ -179,7 +179,8 @@ export const transactionResolvers = {
 
       return { items, cursor: nextCursor };
     },
-
+  },
+  Mutation: {
     addTransactionCategory: async (
       _: unknown,
       __: unknown,
@@ -194,8 +195,7 @@ export const transactionResolvers = {
       );
       return true;
     },
-  },
-  Mutation: {
+
     reclassifyTransaction: async (
       _: unknown,
       args: { id: string; category: string },

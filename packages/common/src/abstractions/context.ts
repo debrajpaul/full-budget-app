@@ -1,14 +1,15 @@
 import { Request, Response } from "express";
 import { ETenantType } from "./users";
 import { ILogger } from "./logger";
-import {
-  ITransactionService,
-  ITransactionCategoryService,
-} from "./transactions";
+import { ITransactionService } from "./transactions";
+import { ITransactionCategoryService } from "./categories";
 import { ISavingsGoalService } from "./savings-goals";
+import { ISinkingFundService } from "./sinking-funds";
 import { IUploadStatementService } from "./upload-statement-service";
 import { IAuthorizationService } from "./users/authorization-service";
 import { APIGatewayProxyEvent, Context as LambdaCtx } from "aws-lambda";
+import { IRecurringTransactionService } from "./recurring";
+import { IForecastService } from "./forecast";
 export interface IGraphQLContext {
   logger: ILogger;
   request: Request | APIGatewayProxyEvent; // Optional for Express or Lambda event
@@ -23,5 +24,8 @@ export interface IGraphQLContext {
     transactionService: ITransactionService;
     transactionCategoryService: ITransactionCategoryService;
     savingsGoalService: ISavingsGoalService;
+    sinkingFundService: ISinkingFundService;
+    recurringTransactionService: IRecurringTransactionService;
+    forecastService: IForecastService;
   };
 }

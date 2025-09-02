@@ -5,6 +5,9 @@ import {
   transactionResolvers,
   tenantResolvers,
   savingsGoalResolvers,
+  sinkingFundResolvers,
+  forecastResolvers,
+  recurringTransactionResolvers,
 } from "./resolvers";
 import {
   authTypeDefs,
@@ -13,6 +16,9 @@ import {
   transactionTypeDefs,
   tenantTypeDefs,
   savingsGoalTypeDefs,
+  sinkingFundTypeDefs,
+  forecastTypeDefs,
+  recurringTransactionTypeDefs,
 } from "./typeDefs";
 
 export const schema = makeExecutableSchema({
@@ -23,6 +29,9 @@ export const schema = makeExecutableSchema({
     uploadStatementTypeDefs,
     tenantTypeDefs,
     savingsGoalTypeDefs,
+    sinkingFundTypeDefs,
+    forecastTypeDefs,
+    recurringTransactionTypeDefs,
   ],
   resolvers: [
     authResolvers,
@@ -30,5 +39,8 @@ export const schema = makeExecutableSchema({
     transactionResolvers,
     tenantResolvers,
     savingsGoalResolvers,
+    sinkingFundResolvers,
+    forecastResolvers,
+    recurringTransactionResolvers,
   ],
 });

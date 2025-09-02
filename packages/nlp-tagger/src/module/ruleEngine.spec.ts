@@ -1,41 +1,91 @@
 import { categorizeByRules } from "./ruleEngine";
+import { keywordBaseCategoryMap } from "./rules";
+import { EBaseCategories } from "@common";
 
 describe("categorizeByRules", () => {
-  const rules = {
-    swiggy: "Food & Dining",
-    amazon: "Shopping",
-    ola: "Transport",
-    "hdfc loan": "Loan Payment",
-  };
+  const rules = keywordBaseCategoryMap;
 
-  it("should return the correct category if keyword is present in description", () => {
-    expect(categorizeByRules("Paid to Swiggy order", rules)).toBe(
-      "Food & Dining",
+  it("returns correct base category for known keywords in map", () => {
+    expect(categorizeByRules("Salary credited via RTGS", rules)).toBe(
+      EBaseCategories.income,
     );
-    expect(categorizeByRules("Amazon purchase", rules)).toBe("Shopping");
-    expect(categorizeByRules("Ola cab ride", rules)).toBe("Transport");
-    expect(categorizeByRules("HDFC Loan EMI", rules)).toBe("Loan Payment");
-  });
-
-  it("should be case-insensitive for description", () => {
-    expect(categorizeByRules("Paid to SWIGGY order", rules)).toBe(
-      "Food & Dining",
+    expect(categorizeByRules("Paid using UPI at store", rules)).toBe(
+      EBaseCategories.expenses,
     );
-    expect(categorizeByRules("amazon Purchase", rules)).toBe("Shopping");
+    expect(
+      categorizeByRules(
+        "BY TRANSFER-NEFT*YESB0000001*YESB40930207163*ZERODHA BROKING L--",
+        rules,
+      ),
+    ).toBe(EBaseCategories.savings);
   });
 
-  it("should return null if no keyword matches", () => {
-    expect(categorizeByRules("Starbucks coffee", rules)).toBeNull();
-    expect(categorizeByRules("Flipkart order", rules)).toBeNull();
+  it("matches case-insensitively on description", () => {
+    expect(categorizeByRules("RTGS credit received", rules)).toBe(
+      EBaseCategories.income,
+    );
+    expect(categorizeByRules("paid via UPI", rules)).toBe(
+      EBaseCategories.expenses,
+    );
+    expect(categorizeByRules("ZERODHA investment", rules)).toBe(
+      EBaseCategories.savings,
+    );
   });
 
-  it("should match partial keywords in description", () => {
-    expect(categorizeByRules("Paid to swiggy", rules)).toBe("Food & Dining");
-    expect(categorizeByRules("EMI for hdfc loan", rules)).toBe("Loan Payment");
+  it("returns default when no keyword matches", () => {
+    expect(categorizeByRules("No rule applies here", rules)).toBe(
+      EBaseCategories.default,
+    );
   });
 
-  it("should return the first matching category if multiple keywords match", () => {
-    const multiRules = { swiggy: "Food", amazon: "Shopping" };
-    expect(categorizeByRules("swiggy amazon", multiRules)).toBe("Food");
+  it("picks the earliest match when multiple keywords appear", () => {
+    expect(categorizeByRules("rtgs and upi in one line", rules)).toBe(
+      EBaseCategories.income,
+    );
+    expect(categorizeByRules("upi then rtgs in one line", rules)).toBe(
+      EBaseCategories.expenses,
+    );
+  });
+
+  it("handles Zerodha transfers as savings via explicit regex", () => {
+    const desc = "BY TRANSFER-NEFT***ZERODHA BROKING L--";
+    expect(categorizeByRules(desc, rules)).toBe(EBaseCategories.savings);
+  });
+
+  it("uses fallback heuristics for common patterns when no explicit rule matches", () => {
+    expect(categorizeByRules("Cashback credited", rules)).toBe(
+      EBaseCategories.income,
+    );
+    expect(categorizeByRules("EMI charge applied", rules)).toBe(
+      EBaseCategories.expenses,
+    );
+    expect(categorizeByRules("SIP investment to MF", rules)).toBe(
+      EBaseCategories.savings,
+    );
+    expect(categorizeByRules("Amazon purchase #1234", rules)).toBe(
+      EBaseCategories.expenses,
+    );
+  });
+
+  it("classifies UPI split/settle links as expenses by default", () => {
+    const descs = [
+      "Splitwise settle up via upi://pay?pa=alice@okicici&am=500",
+      "Paid for split using UPI link upi://pay?pa=bob@oksbi",
+      "UPI split bill to charlie@okaxis",
+    ];
+    for (const d of descs) {
+      expect(categorizeByRules(d, rules)).toBe(EBaseCategories.expenses);
+    }
+  });
+
+  it("classifies UPI split/settle as income when received/credit indicated", () => {
+    const descs = [
+      "UPI settlement received from Dave upi://pay?pa=dave@okhdfcbank",
+      "Splitwise settle CR via UPI from erin@okicici",
+      "UPI split received to account from frank@oksbi",
+    ];
+    for (const d of descs) {
+      expect(categorizeByRules(d, rules)).toBe(EBaseCategories.income);
+    }
   });
 });
