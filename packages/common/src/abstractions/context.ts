@@ -9,6 +9,7 @@ import { IUploadStatementService } from "./upload-statement-service";
 import { IAuthorizationService } from "./users/authorization-service";
 import { APIGatewayProxyEvent, Context as LambdaCtx } from "aws-lambda";
 import { IRecurringTransactionService } from "./recurring";
+import { IForecastService } from "./forecast";
 export interface IGraphQLContext {
   logger: ILogger;
   request: Request | APIGatewayProxyEvent; // Optional for Express or Lambda event
@@ -25,5 +26,6 @@ export interface IGraphQLContext {
     savingsGoalService: ISavingsGoalService;
     sinkingFundService: ISinkingFundService;
     recurringTransactionService: IRecurringTransactionService;
+    forecastService: IForecastService;
   };
 }

@@ -5,3 +5,4 @@ export * from "./tenant";
 export * from "./savings-goal";
 export * from "./recurring-transaction";
 export * from "./sinking-fund";
+export * from "./forecast";

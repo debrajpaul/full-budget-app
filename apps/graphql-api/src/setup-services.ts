@@ -16,6 +16,7 @@ import {
   NlpService,
   SavingsGoalService,
   SinkingFundService,
+  ForecastService,
   RecurringTransactionService,
 } from "@services";
 import { S3Service, SQSService } from "@client";
@@ -99,6 +100,10 @@ export function setupServices(
     recurringStore,
     transactionStore,
   );
+  const forecastService = new ForecastService(
+    logger.child("ForecastService"),
+    recurringStore,
+  );
 
   return {
     transactionService,
@@ -107,6 +112,7 @@ export function setupServices(
     transactionCategoryService,
     savingsGoalService,
     sinkingFundService,
+    forecastService,
     nlpService,
     recurringTransactionService,
   };

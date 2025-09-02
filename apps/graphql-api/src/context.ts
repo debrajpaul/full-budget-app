@@ -32,6 +32,7 @@ const {
   transactionCategoryService,
   savingsGoalService,
   sinkingFundService,
+  forecastService,
   recurringTransactionService,
 } = setupServices(
   logger,
@@ -98,6 +99,7 @@ export const createContext = async (
       transactionCategoryService: transactionCategoryService,
       savingsGoalService: savingsGoalService,
       sinkingFundService: sinkingFundService,
+      forecastService: forecastService,
       recurringTransactionService: recurringTransactionService,
     },
   };
