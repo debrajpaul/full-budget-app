@@ -25,7 +25,11 @@ function clampDayOfMonth(year: number, month: number, day: number): number {
   return Math.min(day, last);
 }
 
-function computeOccurrences(r: IRecurringTransaction, month: number, year: number): string[] {
+function computeOccurrences(
+  r: IRecurringTransaction,
+  month: number,
+  year: number,
+): string[] {
   switch (r.frequency) {
     case ERecurringFrequency.monthly: {
       const day = clampDayOfMonth(year, month, r.dayOfMonth || 1);
@@ -58,7 +62,9 @@ function computeOccurrences(r: IRecurringTransaction, month: number, year: numbe
       current.setDate(current.getDate() + adjust);
       const dates: string[] = [];
       while (current <= last) {
-        dates.push(iso(current.getFullYear(), current.getMonth() + 1, current.getDate()));
+        dates.push(
+          iso(current.getFullYear(), current.getMonth() + 1, current.getDate()),
+        );
         current.setDate(current.getDate() + 14);
       }
       return dates;
@@ -88,7 +94,11 @@ export class ForecastService implements IForecastService {
     userId: string,
     year: number,
     month: number,
-    options?: { startingBalance?: number; lowBalanceThreshold?: number; largeExpenseThreshold?: number },
+    options?: {
+      startingBalance?: number;
+      lowBalanceThreshold?: number;
+      largeExpenseThreshold?: number;
+    },
   ): Promise<IForecastResult> {
     const startBal = options?.startingBalance ?? 0;
     const lowThreshold = options?.lowBalanceThreshold ?? 0;
@@ -157,4 +167,3 @@ export class ForecastService implements IForecastService {
     return result;
   }
 }
-

@@ -32,7 +32,10 @@ export interface IForecastService {
     userId: string,
     year: number,
     month: number,
-    options?: { startingBalance?: number; lowBalanceThreshold?: number; largeExpenseThreshold?: number },
+    options?: {
+      startingBalance?: number;
+      lowBalanceThreshold?: number;
+      largeExpenseThreshold?: number;
+    },
   ): Promise<IForecastResult>;
 }
-

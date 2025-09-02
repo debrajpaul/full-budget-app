@@ -5,7 +5,15 @@ export const forecastResolvers = {
   Query: {
     forecastMonth: async (
       _: unknown,
-      args: { year: number; month: number; options?: { startingBalance?: number; lowBalanceThreshold?: number; largeExpenseThreshold?: number } },
+      args: {
+        year: number;
+        month: number;
+        options?: {
+          startingBalance?: number;
+          lowBalanceThreshold?: number;
+          largeExpenseThreshold?: number;
+        };
+      },
       ctx: IGraphQLContext,
     ) => {
       if (!ctx.userId) throw new CustomError("Unauthorized", "UNAUTHORIZED");
@@ -21,4 +29,3 @@ export const forecastResolvers = {
     },
   },
 };
-

@@ -7,7 +7,11 @@ export const forecastTypeDefs = /* GraphQL */ `
     runningBalance: Float
   }
 
-  enum AlertSeverity { info warning critical }
+  enum AlertSeverity {
+    info
+    warning
+    critical
+  }
 
   type ForecastAlert {
     date: String!
@@ -32,7 +36,10 @@ export const forecastTypeDefs = /* GraphQL */ `
   }
 
   type Query {
-    forecastMonth(year: Int!, month: Int!, options: ForecastOptionsInput): ForecastResult!
+    forecastMonth(
+      year: Int!
+      month: Int!
+      options: ForecastOptionsInput
+    ): ForecastResult!
   }
 `;
-

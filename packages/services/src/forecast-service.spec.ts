@@ -13,16 +13,13 @@ describe("ForecastService", () => {
   const userId = "user-1";
 
   function makeRecurring(
-    partial: Partial<IRecurringTransaction> & Required<
-      Pick<
-        IRecurringTransaction,
-        | "recurringId"
-        | "description"
-        | "amount"
-        | "frequency"
-        | "startDate"
-      >
-    >,
+    partial: Partial<IRecurringTransaction> &
+      Required<
+        Pick<
+          IRecurringTransaction,
+          "recurringId" | "description" | "amount" | "frequency" | "startDate"
+        >
+      >,
   ): IRecurringTransaction {
     return {
       tenantId,
