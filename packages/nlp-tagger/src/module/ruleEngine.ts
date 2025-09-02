@@ -15,6 +15,24 @@ export function categorizeByRules(
     return EBaseCategories.savings;
   }
 
+  // Early override: UPI split/settle with credit indicators => income
+  // Must precede generic keyword matching (which maps "upi" to expenses).
+  const upiMentioned = /(\bupi\b|upi:\/\/)/i.test(lowerDesc);
+  if (upiMentioned) {
+    const splitOrSettle =
+      /(splitwise|\bsplit\b|settle|settled|settlement|settling)/i.test(
+        lowerDesc,
+      );
+    if (splitOrSettle) {
+      const creditSignals = /(\b(received|credit|cr)\b|\bto\s+account\b)/i.test(
+        lowerDesc,
+      );
+      if (creditSignals) {
+        return EBaseCategories.income;
+      }
+    }
+  }
+
   const keywords = Object.keys(rules);
   if (lowerDesc.length === 0 || keywords.length === 0) {
     return EBaseCategories.default;
@@ -26,6 +44,8 @@ export function categorizeByRules(
     const category = rules[found];
     if (category) return category;
   }
+  // Note: default UPI split/settle without credit signals will fall through
+  // to the keyword map (which typically marks UPI as expenses) or other fallbacks.
   // Fallback heuristics when explicit rules don't match
   // Income-oriented signals
   const incomeFallbacks = [

@@ -15,6 +15,7 @@ import {
   TransactionCategoryService,
   NlpService,
   SavingsGoalService,
+  SinkingFundService,
   RecurringTransactionService,
 } from "@services";
 import { S3Service, SQSService } from "@client";
@@ -90,6 +91,9 @@ export function setupServices(
   const savingsGoalService = new SavingsGoalService(
     logger.child("SavingsGoalService"),
   );
+  const sinkingFundService = new SinkingFundService(
+    logger.child("SinkingFundService"),
+  );
   const recurringTransactionService = new RecurringTransactionService(
     logger.child("RecurringTransactionService"),
     recurringStore,
@@ -102,6 +106,7 @@ export function setupServices(
     uploadStatementService,
     transactionCategoryService,
     savingsGoalService,
+    sinkingFundService,
     nlpService,
     recurringTransactionService,
   };

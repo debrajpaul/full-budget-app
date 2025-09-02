@@ -66,4 +66,26 @@ describe("categorizeByRules", () => {
       EBaseCategories.expenses,
     );
   });
+
+  it("classifies UPI split/settle links as expenses by default", () => {
+    const descs = [
+      "Splitwise settle up via upi://pay?pa=alice@okicici&am=500",
+      "Paid for split using UPI link upi://pay?pa=bob@oksbi",
+      "UPI split bill to charlie@okaxis",
+    ];
+    for (const d of descs) {
+      expect(categorizeByRules(d, rules)).toBe(EBaseCategories.expenses);
+    }
+  });
+
+  it("classifies UPI split/settle as income when received/credit indicated", () => {
+    const descs = [
+      "UPI settlement received from Dave upi://pay?pa=dave@okhdfcbank",
+      "Splitwise settle CR via UPI from erin@okicici",
+      "UPI split received to account from frank@oksbi",
+    ];
+    for (const d of descs) {
+      expect(categorizeByRules(d, rules)).toBe(EBaseCategories.income);
+    }
+  });
 });

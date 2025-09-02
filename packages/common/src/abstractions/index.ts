@@ -9,4 +9,5 @@ export * from "./sqs-service";
 export * from "./transactions";
 export * from "./upload-statement-service";
 export * from "./savings-goals";
+export * from "./sinking-funds";
 export * from "./recurring";
