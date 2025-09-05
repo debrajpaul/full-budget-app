@@ -162,12 +162,15 @@ export class TransactionStore implements ITransactionStore {
       startDate,
       endDate,
     );
-    return items.reduce((acc, txn) => {
-      const cat = txn.category || EBaseCategories.default;
-      const amount = Number(txn.amount) || 0;
-      acc[cat] = (acc[cat] || 0) + amount;
-      return acc;
-    }, {} as Record<string, number>);
+    return items.reduce(
+      (acc, txn) => {
+        const cat = txn.category || EBaseCategories.default;
+        const amount = Number(txn.amount) || 0;
+        acc[cat] = (acc[cat] || 0) + amount;
+        return acc;
+      },
+      {} as Record<string, number>,
+    );
   }
 
   public async updateTransactionCategory(

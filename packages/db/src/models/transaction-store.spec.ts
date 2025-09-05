@@ -161,9 +161,24 @@ describe("TransactionStore", () => {
   it("should aggregate spend by category for given month and year", async () => {
     const userId = txn.userId;
     const items: ITransaction[] = [
-      { ...txn, transactionId: "txnA", amount: -50, category: EBaseCategories.expenses },
-      { ...txn, transactionId: "txnB", amount: -100, category: EBaseCategories.expenses },
-      { ...txn, transactionId: "txnC", amount: 200, category: EBaseCategories.income },
+      {
+        ...txn,
+        transactionId: "txnA",
+        amount: -50,
+        category: EBaseCategories.expenses,
+      },
+      {
+        ...txn,
+        transactionId: "txnB",
+        amount: -100,
+        category: EBaseCategories.expenses,
+      },
+      {
+        ...txn,
+        transactionId: "txnC",
+        amount: 200,
+        category: EBaseCategories.income,
+      },
     ];
 
     jest
@@ -177,7 +192,9 @@ describe("TransactionStore", () => {
       2025,
     );
 
-    expect(transactionStore.getTransactionsByDateRange).toHaveBeenCalledTimes(1);
+    expect(transactionStore.getTransactionsByDateRange).toHaveBeenCalledTimes(
+      1,
+    );
     expect(result).toEqual({
       [EBaseCategories.expenses]: -150,
       [EBaseCategories.income]: 200,
