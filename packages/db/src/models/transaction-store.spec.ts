@@ -157,4 +157,30 @@ describe("TransactionStore", () => {
       "SET category = :cat, updatedAt = :updatedAt",
     );
   });
+
+  it("should aggregate spend by category for given month and year", async () => {
+    const userId = txn.userId;
+    const items: ITransaction[] = [
+      { ...txn, transactionId: "txnA", amount: -50, category: EBaseCategories.expenses },
+      { ...txn, transactionId: "txnB", amount: -100, category: EBaseCategories.expenses },
+      { ...txn, transactionId: "txnC", amount: 200, category: EBaseCategories.income },
+    ];
+
+    jest
+      .spyOn(transactionStore, "getTransactionsByDateRange")
+      .mockResolvedValue(items);
+
+    const result = await transactionStore.aggregateSpendByCategory(
+      tenantId,
+      userId,
+      8,
+      2025,
+    );
+
+    expect(transactionStore.getTransactionsByDateRange).toHaveBeenCalledTimes(1);
+    expect(result).toEqual({
+      [EBaseCategories.expenses]: -150,
+      [EBaseCategories.income]: 200,
+    });
+  });
 });

@@ -17,6 +17,12 @@ export interface ITransactionStore {
     startDate: string,
     endDate: string,
   ): Promise<ITransaction[]>;
+  aggregateSpendByCategory(
+    tenantId: ETenantType,
+    userId: string,
+    month: number,
+    year: number,
+  ): Promise<Record<string, number>>;
   updateTransactionCategory(
     tenantId: ETenantType,
     transactionId: string,
