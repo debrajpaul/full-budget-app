@@ -1,6 +1,6 @@
 import { ETenantType } from "../users";
 import { EBankName } from "../bank-parser";
-import { 
+import {
   EBaseCategories,
   ESubSavingCategories,
   ESubExpenseCategories,
@@ -18,7 +18,12 @@ export interface ITransaction {
   txnDate: string | undefined;
   description?: string;
   category: EBaseCategories;
-  subCategory?: ESubSavingCategories | ESubExpenseCategories | ESubIncomeCategories | ESubInvestmentCategories | ESubLoanCategories;
+  subCategory?:
+    | ESubSavingCategories
+    | ESubExpenseCategories
+    | ESubIncomeCategories
+    | ESubInvestmentCategories
+    | ESubLoanCategories;
   embedding?: number[];
   taggedBy?: string;
   confidence?: number;

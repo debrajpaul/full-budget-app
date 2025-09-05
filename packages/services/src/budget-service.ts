@@ -22,7 +22,14 @@ export class BudgetService implements IBudgetService {
     input: ISetBudgetInput,
   ): Promise<IBudget> {
     const { month, year, category, amount } = input;
-    this.logger.info("Setting budget", { tenantId, userId, month, year, category, amount });
+    this.logger.info("Setting budget", {
+      tenantId,
+      userId,
+      month,
+      year,
+      category,
+      amount,
+    });
 
     if (!Number.isInteger(month) || month < 1 || month > 12) {
       throw new Error("month must be an integer between 1 and 12");
@@ -47,4 +54,3 @@ export class BudgetService implements IBudgetService {
     );
   }
 }
-

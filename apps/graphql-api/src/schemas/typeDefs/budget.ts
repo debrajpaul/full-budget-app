@@ -16,4 +16,3 @@ export const budgetTypeDefs = /* GraphQL */ `
     setBudget(period: PeriodInput!, category: String!, amount: Float!): Budget!
   }
 `;
-

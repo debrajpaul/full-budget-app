@@ -11,4 +11,3 @@ export interface IBudgetStore {
     amount: number,
   ): Promise<IBudget>;
 }
-

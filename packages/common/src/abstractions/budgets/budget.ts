@@ -1,5 +1,5 @@
 import { ETenantType } from "../users";
-import { 
+import {
   EBaseCategories,
   ESubSavingCategories,
   ESubExpenseCategories,
@@ -15,7 +15,12 @@ export interface IBudget {
   year: number;
   month: number;
   category: EBaseCategories;
-  subCategory?: ESubSavingCategories | ESubExpenseCategories | ESubIncomeCategories | ESubInvestmentCategories | ESubLoanCategories;
+  subCategory?:
+    | ESubSavingCategories
+    | ESubExpenseCategories
+    | ESubIncomeCategories
+    | ESubInvestmentCategories
+    | ESubLoanCategories;
   amount: number;
   createdAt: string;
   updatedAt?: string;
@@ -27,4 +32,3 @@ export interface ISetBudgetInput {
   category: string;
   amount: number;
 }
-

@@ -101,9 +101,9 @@ export const createContext = async (
       savingsGoalService: savingsGoalService,
       sinkingFundService: sinkingFundService,
       forecastService: forecastService,
-    recurringTransactionService: recurringTransactionService,
-    budgetService: budgetService,
-  },
+      recurringTransactionService: recurringTransactionService,
+      budgetService: budgetService,
+    },
   };
 };
 

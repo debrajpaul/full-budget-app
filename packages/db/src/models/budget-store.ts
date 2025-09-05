@@ -47,4 +47,3 @@ export class BudgetStore implements IBudgetStore {
     return item;
   }
 }
-

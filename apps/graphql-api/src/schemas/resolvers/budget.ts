@@ -4,7 +4,11 @@ export const budgetResolvers = {
   Mutation: {
     setBudget: async (
       _: unknown,
-      args: { period: { month: number; year: number }; category: string; amount: number },
+      args: {
+        period: { month: number; year: number };
+        category: string;
+        amount: number;
+      },
       ctx: IGraphQLContext,
     ) => {
       if (!ctx.userId) throw new Error("Unauthorized");
@@ -30,4 +34,3 @@ export const budgetResolvers = {
     },
   },
 };
-

@@ -8,4 +8,3 @@ export interface IBudgetService {
     input: ISetBudgetInput,
   ): Promise<IBudget>;
 }
-

@@ -1,5 +1,5 @@
 import { ETenantType } from "../users";
-import { 
+import {
   EBaseCategories,
   ESubSavingCategories,
   ESubExpenseCategories,
@@ -13,7 +13,12 @@ export interface ITransactionCategoryRequest {
   transactionId: string;
   description?: string;
   category?: EBaseCategories;
-  subCategory?: ESubSavingCategories | ESubExpenseCategories | ESubIncomeCategories | ESubInvestmentCategories | ESubLoanCategories;
+  subCategory?:
+    | ESubSavingCategories
+    | ESubExpenseCategories
+    | ESubIncomeCategories
+    | ESubInvestmentCategories
+    | ESubLoanCategories;
   createdAt: string;
   embedding?: number[];
   taggedBy?: string;
