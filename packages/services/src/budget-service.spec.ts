@@ -93,4 +93,3 @@ describe("BudgetService - default recommended budgets", () => {
     expect(deviations.length).toBe(0);
   });
 });
-
