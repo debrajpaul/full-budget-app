@@ -90,6 +90,20 @@ export class BudgetService implements IBudgetService {
       ),
     ]);
 
+    // Provide default recommended budgets for users without any saved budgets.
+    // Uses a simplified 50/30/20 principle adapted to available base categories:
+    // - 80% of income for EXPENSES (needs + wants combined)
+    // - 20% of income for SAVINGS
+    // Income budget is not set by default.
+    if (Object.keys(budgets).length === 0) {
+      const income = Number(actuals[EBaseCategories.income] || 0);
+      if (income > 0) {
+        const round2 = (n: number) => Number(n.toFixed(2));
+        budgets[EBaseCategories.expenses] = -round2(income * 0.8);
+        budgets[EBaseCategories.savings] = -round2(income * 0.2);
+      }
+    }
+
     const categories = new Set<EBaseCategories>(
       [...Object.keys(budgets), ...Object.keys(actuals)].map(
         (c) => c as EBaseCategories,
