@@ -8,19 +8,23 @@ import {
   ESubLoanCategories,
 } from "../categories";
 
-export interface ITransactionCategoryRequest {
+export interface IBudget {
   tenantId: ETenantType;
-  transactionId: string;
-  description?: string;
-  category?: EBaseCategories;
+  budgetId: string;
+  userId: string;
+  year: number;
+  month: number;
+  category: EBaseCategories;
   subCategory?: ESubSavingCategories | ESubExpenseCategories | ESubIncomeCategories | ESubInvestmentCategories | ESubLoanCategories;
+  amount: number;
   createdAt: string;
-  embedding?: number[];
-  taggedBy?: string;
-  confidence?: number;
+  updatedAt?: string;
 }
 
-export interface ITransactionCategoryService {
-  process(request: ITransactionCategoryRequest): Promise<boolean>;
-  addRulesByTenant(tenantId: ETenantType): Promise<void>;
+export interface ISetBudgetInput {
+  month: number;
+  year: number;
+  category: string;
+  amount: number;
 }
+

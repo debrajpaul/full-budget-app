@@ -1,5 +1,5 @@
 import { chunk } from "lodash";
-import { ITransaction, ILogger, ITransactionStore, ETenantType } from "@common";
+import { ITransaction, ILogger, ITransactionStore, ETenantType, EBaseCategories } from "@common";
 import {
   PutCommand,
   QueryCommand,
@@ -145,7 +145,7 @@ export class TransactionStore implements ITransactionStore {
   public async updateTransactionCategory(
     tenantId: ETenantType,
     transactionId: string,
-    matchedCategory: string,
+    matchedCategory:  EBaseCategories,
     taggedBy?: string,
     confidence?: number,
     embedding?: number[],

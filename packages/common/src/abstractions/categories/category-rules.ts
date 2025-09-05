@@ -54,11 +54,7 @@ export interface ICategoryRules {
   tenantId: ETenantType;
   keyword: string;
   category: EBaseCategories;
-  subSavingCategory?: ESubSavingCategories;
-  subExpenseCategory?: ESubExpenseCategories;
-  subIncomeCategory?: ESubIncomeCategories;
-  subInvestmentCategory?: ESubInvestmentCategories;
-  subLoanCategory?: ESubLoanCategories;
+  subCategory?: ESubSavingCategories | ESubExpenseCategories | ESubIncomeCategories | ESubInvestmentCategories | ESubLoanCategories;
   isActive: boolean;
   createdAt: string;
   updatedAt?: string;

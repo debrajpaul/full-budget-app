@@ -34,6 +34,7 @@ const {
   sinkingFundService,
   forecastService,
   recurringTransactionService,
+  budgetService,
 } = setupServices(
   logger,
   s3Client,
@@ -100,8 +101,9 @@ export const createContext = async (
       savingsGoalService: savingsGoalService,
       sinkingFundService: sinkingFundService,
       forecastService: forecastService,
-      recurringTransactionService: recurringTransactionService,
-    },
+    recurringTransactionService: recurringTransactionService,
+    budgetService: budgetService,
+  },
   };
 };
 

@@ -10,6 +10,7 @@ import {
   TransactionCategoryStack,
   TransactionsCategoryTableStack,
   RecurringTransactionsTableStack,
+  BudgetsTableStack,
 } from '../lib';
 
 const app = new App();
@@ -19,6 +20,7 @@ const queueStack = new QueueStack(app, 'QueueStack');
 const transactionsTableStack = new TransactionsTableStack(app, 'TransactionsTableStack');
 const transactionsCategoryTableStack = new TransactionsCategoryTableStack(app, 'TransactionsCategoryTableStack');
 const recurringTransactionsTableStack = new RecurringTransactionsTableStack(app, 'RecurringTransactionsTableStack');
+const budgetsTableStack = new BudgetsTableStack(app, 'BudgetsTableStack');
 const usersTableStack = new UsersTableStack(app, 'UsersTableStack');
 
 new GraphQLApiStack(app, 'GraphQLApiStack', {
@@ -27,6 +29,7 @@ new GraphQLApiStack(app, 'GraphQLApiStack', {
   transactionTableArn: transactionsTableStack.transactionsTable.tableArn,
   categoryTableArn: transactionsCategoryTableStack.transactionsCategoryTable.tableArn,
   recurringTableArn: recurringTransactionsTableStack.recurringTransactionsTable.tableArn,
+  budgetTableArn: budgetsTableStack.budgetsTable.tableArn,
   userTableArn: usersTableStack.usersTable.tableArn,
   jwtParameter: ssmParamStack.parameter,
   environment: {
@@ -35,6 +38,7 @@ new GraphQLApiStack(app, 'GraphQLApiStack', {
     DYNAMO_CATEGORY_RULES_TABLE: transactionsCategoryTableStack.transactionsCategoryTable.tableName,
     DYNAMO_TRANSACTION_TABLE: transactionsTableStack.transactionsTable.tableName,
     DYNAMO_RECURRING_TABLE: recurringTransactionsTableStack.recurringTransactionsTable.tableName,
+    DYNAMO_BUDGET_TABLE: budgetsTableStack.budgetsTable.tableName,
     DYNAMO_USER_TABLE: usersTableStack.usersTable.tableName,
     SQS_QUEUE_URL: queueStack.statementProcessingQueue.queueUrl,
     AWS_S3_BUCKET: storageStack.uploadBucket.bucketName,

@@ -1,5 +1,6 @@
 import { ITransaction } from "./transaction";
 import { ETenantType } from "../users";
+import { EBaseCategories } from "../categories";
 
 export interface ITransactionStore {
   saveTransactions(
@@ -19,7 +20,7 @@ export interface ITransactionStore {
   updateTransactionCategory(
     tenantId: ETenantType,
     transactionId: string,
-    matchedCategory: string,
+    matchedCategory: EBaseCategories,
     taggedBy?: string,
     confidence?: number,
     embedding?: number[],

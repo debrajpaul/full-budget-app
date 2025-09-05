@@ -52,7 +52,7 @@ export class TransactionCategoryService implements ITransactionCategoryService {
         return false;
       }
       // Skip if category already set
-      if (category && category.trim() !== "") {
+      if (category && category !== EBaseCategories.default) {
         this.logger.info(
           `Skipping transaction ${transactionId} — already categorized`,
         );

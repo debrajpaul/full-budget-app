@@ -12,3 +12,4 @@ export * from "./savings-goals";
 export * from "./sinking-funds";
 export * from "./recurring";
 export * from "./forecast";
+export * from "./budgets";
