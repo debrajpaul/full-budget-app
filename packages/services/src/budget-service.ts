@@ -4,16 +4,25 @@ import {
   IBudget,
   ILogger,
   ETenantType,
+  ITransactionStore,
+  ICategoryDeviation,
+  EBaseCategories,
 } from "@common";
 import { BudgetStore } from "@db";
 
 export class BudgetService implements IBudgetService {
   private readonly logger: ILogger;
   private readonly budgetStore: BudgetStore;
+  private readonly transactionStore: ITransactionStore;
 
-  constructor(logger: ILogger, budgetStore: BudgetStore) {
+  constructor(
+    logger: ILogger,
+    budgetStore: BudgetStore,
+    transactionStore: ITransactionStore,
+  ) {
     this.logger = logger;
     this.budgetStore = budgetStore;
+    this.transactionStore = transactionStore;
   }
 
   public async setBudget(
@@ -21,7 +30,7 @@ export class BudgetService implements IBudgetService {
     userId: string,
     input: ISetBudgetInput,
   ): Promise<IBudget> {
-    const { month, year, category, amount } = input;
+    const { month, year, category, amount, subCategory } = input;
     this.logger.info("Setting budget", {
       tenantId,
       userId,
@@ -29,6 +38,7 @@ export class BudgetService implements IBudgetService {
       year,
       category,
       amount,
+      subCategory,
     });
 
     if (!Number.isInteger(month) || month < 1 || month > 12) {
@@ -40,6 +50,9 @@ export class BudgetService implements IBudgetService {
     if (!category || !category.trim()) {
       throw new Error("category is required");
     }
+    // if (!subCategory || !subCategory.trim()) {
+    //    throw new Error("subCategory is required");
+    // }
     if (typeof amount !== "number") {
       throw new Error("amount must be a number");
     }
@@ -52,5 +65,51 @@ export class BudgetService implements IBudgetService {
       category,
       amount,
     );
+  }
+
+  public async analyzeSpend(
+    tenantId: ETenantType,
+    userId: string,
+    month: number,
+    year: number,
+  ): Promise<ICategoryDeviation[]> {
+    this.logger.info("Analyzing spend vs. budget", {
+      tenantId,
+      userId,
+      month,
+      year,
+    });
+
+    const [budgets, actuals] = await Promise.all([
+      this.budgetStore.getBudgetsByPeriod(tenantId, userId, month, year),
+      this.transactionStore.aggregateSpendByCategory(
+        tenantId,
+        userId,
+        month,
+        year,
+      ),
+    ]);
+
+    const categories = new Set<EBaseCategories>(
+      [...Object.keys(budgets), ...Object.keys(actuals)].map(
+        (c) => c as EBaseCategories,
+      ),
+    );
+    const deviations: ICategoryDeviation[] = [];
+
+    for (const cat of categories) {
+      const recommended = budgets[cat] || 0;
+      const actual = actuals[cat] || 0;
+      const difference = actual - recommended;
+      const percentage = recommended ? (difference / recommended) * 100 : 0;
+      deviations.push({
+        category: cat as EBaseCategories,
+        recommended,
+        actual,
+        difference,
+        percentage,
+      });
+    }
+    return deviations;
   }
 }

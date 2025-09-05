@@ -114,6 +114,7 @@ export function setupServices(
   const budgetService = new BudgetService(
     logger.child("BudgetService"),
     budgetStore,
+    transactionStore,
   );
 
   return {

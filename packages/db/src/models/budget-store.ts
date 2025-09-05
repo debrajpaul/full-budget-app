@@ -1,5 +1,20 @@
-import { ILogger, IBudget, IBudgetStore, ETenantType } from "@common";
-import { PutCommand, DynamoDBDocumentClient } from "@aws-sdk/lib-dynamodb";
+import {
+  ILogger,
+  IBudget,
+  IBudgetStore,
+  ETenantType,
+  EBaseCategories,
+  ESubLoanCategories,
+  ESubExpenseCategories,
+  ESubIncomeCategories,
+  ESubSavingCategories,
+  ESubInvestmentCategories,
+} from "@common";
+import {
+  PutCommand,
+  QueryCommand,
+  DynamoDBDocumentClient,
+} from "@aws-sdk/lib-dynamodb";
 
 export class BudgetStore implements IBudgetStore {
   private readonly logger: ILogger;
@@ -21,12 +36,17 @@ export class BudgetStore implements IBudgetStore {
     userId: string,
     year: number,
     month: number,
-    category: string,
+    category: EBaseCategories,
     amount: number,
+    subCategory?:
+      | ESubSavingCategories
+      | ESubExpenseCategories
+      | ESubIncomeCategories
+      | ESubInvestmentCategories
+      | ESubLoanCategories,
   ): Promise<IBudget> {
-    const cat = category.trim();
     const keyMonth = String(month).padStart(2, "0");
-    const budgetId = `${userId}#${year}-${keyMonth}#${cat.toLowerCase()}`;
+    const budgetId = `${userId}#${year}-${keyMonth}#${category}`;
     const now = new Date().toISOString();
 
     const item: IBudget = {
@@ -35,7 +55,8 @@ export class BudgetStore implements IBudgetStore {
       userId,
       year,
       month,
-      category: cat,
+      category,
+      subCategory,
       amount,
       createdAt: now,
       updatedAt: now,
@@ -45,5 +66,39 @@ export class BudgetStore implements IBudgetStore {
     const command = new PutCommand({ TableName: this.tableName, Item: item });
     await this.store.send(command);
     return item;
+  }
+
+  public async getBudgetsByPeriod(
+    tenantId: ETenantType,
+    userId: string,
+    month: number,
+    year: number,
+  ): Promise<Record<string, number>> {
+    const keyMonth = String(month).padStart(2, "0");
+    const prefix = `${userId}#${year}-${keyMonth}#`;
+    this.logger.info("Fetching budgets by period", {
+      tenantId,
+      userId,
+      month,
+      year,
+    });
+
+    const command = new QueryCommand({
+      TableName: this.tableName,
+      KeyConditionExpression:
+        "tenantId = :tenantId AND begins_with(budgetId, :prefix)",
+      ExpressionAttributeValues: {
+        ":tenantId": tenantId,
+        ":prefix": prefix,
+      },
+    });
+
+    const result = await this.store.send(command);
+    const items = (result.Items as IBudget[]) || [];
+    const map: Record<string, number> = {};
+    for (const b of items) {
+      map[b.category] = (map[b.category] || 0) + Number(b.amount || 0);
+    }
+    return map;
   }
 }

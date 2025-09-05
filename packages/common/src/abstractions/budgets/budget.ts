@@ -29,6 +29,12 @@ export interface IBudget {
 export interface ISetBudgetInput {
   month: number;
   year: number;
-  category: string;
+  category: EBaseCategories;
+  subCategory?:
+    | ESubSavingCategories
+    | ESubExpenseCategories
+    | ESubIncomeCategories
+    | ESubInvestmentCategories
+    | ESubLoanCategories;
   amount: number;
 }
