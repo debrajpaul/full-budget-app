@@ -1,28 +1,18 @@
 import { ETenantType } from "../users";
 import { IBudget } from "./budget";
 import {
-  EBaseCategories,
-  ESubSavingCategories,
-  ESubExpenseCategories,
-  ESubIncomeCategories,
-  ESubInvestmentCategories,
-  ESubLoanCategories,
+  EBaseCategories
 } from "../categories";
 
 export interface IBudgetStore {
   setBudget(
     tenantId: ETenantType,
-    userId: string,
+    userId: string, 
     year: number,
     month: number,
     category: EBaseCategories,
     amount: number,
-    subCategory?:
-      | ESubSavingCategories
-      | ESubExpenseCategories
-      | ESubIncomeCategories
-      | ESubInvestmentCategories
-      | ESubLoanCategories,
+    subCategory?: string, // Optional detailed sub-category
   ): Promise<IBudget>;
 
   // Returns a map of category -> recommended amount for the given user/month/year

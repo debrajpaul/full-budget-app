@@ -2,21 +2,11 @@ import { ETenantType } from "../users";
 import { IBudget, ISetBudgetInput } from "./budget";
 import {
   EBaseCategories,
-  ESubSavingCategories,
-  ESubExpenseCategories,
-  ESubIncomeCategories,
-  ESubInvestmentCategories,
-  ESubLoanCategories,
 } from "../categories";
 
 export interface ICategoryDeviation {
   category: EBaseCategories;
-  subCategory?:
-    | ESubSavingCategories
-    | ESubExpenseCategories
-    | ESubIncomeCategories
-    | ESubInvestmentCategories
-    | ESubLoanCategories;
+  subCategory?: string; // Optional detailed sub-category
   recommended: number;
   actual: number;
   difference: number; // positive = overspend, negative = underspend

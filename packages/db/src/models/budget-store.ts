@@ -4,11 +4,6 @@ import {
   IBudgetStore,
   ETenantType,
   EBaseCategories,
-  ESubLoanCategories,
-  ESubExpenseCategories,
-  ESubIncomeCategories,
-  ESubSavingCategories,
-  ESubInvestmentCategories,
 } from "@common";
 import {
   PutCommand,
@@ -38,12 +33,7 @@ export class BudgetStore implements IBudgetStore {
     month: number,
     category: EBaseCategories,
     amount: number,
-    subCategory?:
-      | ESubSavingCategories
-      | ESubExpenseCategories
-      | ESubIncomeCategories
-      | ESubInvestmentCategories
-      | ESubLoanCategories,
+    subCategory?: string,
   ): Promise<IBudget> {
     const keyMonth = String(month).padStart(2, "0");
     const budgetId = `${userId}#${year}-${keyMonth}#${category}`;

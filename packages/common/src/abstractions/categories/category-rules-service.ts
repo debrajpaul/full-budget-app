@@ -1,11 +1,6 @@
 import { ETenantType } from "../users";
 import {
   EBaseCategories,
-  ESubSavingCategories,
-  ESubExpenseCategories,
-  ESubIncomeCategories,
-  ESubInvestmentCategories,
-  ESubLoanCategories,
 } from "../categories";
 
 export interface ITransactionCategoryRequest {
@@ -13,12 +8,7 @@ export interface ITransactionCategoryRequest {
   transactionId: string;
   description?: string;
   category?: EBaseCategories;
-  subCategory?:
-    | ESubSavingCategories
-    | ESubExpenseCategories
-    | ESubIncomeCategories
-    | ESubInvestmentCategories
-    | ESubLoanCategories;
+  subCategory?: string; // Optional detailed sub-category
   createdAt: string;
   embedding?: number[];
   taggedBy?: string;
@@ -28,4 +18,7 @@ export interface ITransactionCategoryRequest {
 export interface ITransactionCategoryService {
   process(request: ITransactionCategoryRequest): Promise<boolean>;
   addRulesByTenant(tenantId: ETenantType): Promise<void>;
+  getCategoriesByTenant(
+    tenantId: ETenantType,
+  ): Promise<Record<string, string[]>>;
 }

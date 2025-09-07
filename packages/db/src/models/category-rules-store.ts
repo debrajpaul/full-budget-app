@@ -53,6 +53,35 @@ export class CategoryRulesStore implements ICategoryRulesStore {
     return rules;
   }
 
+  public async listCategoriesByBase(
+    tenantId: ETenantType,
+  ): Promise<Record<EBaseCategories, string[]>> {
+    const grouped: Record<EBaseCategories, Set<string>> = {
+      [EBaseCategories.savings]: new Set<string>(),
+      [EBaseCategories.expenses]: new Set<string>(),
+      [EBaseCategories.income]: new Set<string>(),
+      [EBaseCategories.default]: new Set<string>(),
+    };
+
+    // Load tenant-specific rules
+    const tenantRules: ICategoryRules[] = await this.loadRules(tenantId);
+    tenantRules.forEach((r) => grouped[r.category]?.add(r.keyword));
+
+    // Load global defaults and only add if not already present
+    const globalRules: ICategoryRules[] = await this.loadRules(
+      ETenantType.default,
+    );
+    globalRules.forEach((r) => {
+      if (!grouped[r.category]?.has(r.keyword)) {
+        grouped[r.category]?.add(r.keyword);
+      }
+    });
+
+    return Object.fromEntries(
+      Object.entries(grouped).map(([k, set]) => [k, Array.from(set).sort()]),
+    ) as Record<EBaseCategories, string[]>;
+  }
+
   public async addRules(
     tenantId: ETenantType,
     rules: Record<string, EBaseCategories>,

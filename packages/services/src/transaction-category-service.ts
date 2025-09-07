@@ -125,4 +125,14 @@ export class TransactionCategoryService implements ITransactionCategoryService {
     if (!topClass?.Name) return null;
     return { category: topClass.Name, confidence: topClass.Score };
   }
+
+  public async getCategoriesByTenant(
+    tenantId: ETenantType,
+  ): Promise<Record<string, string[]>> {
+    const grouped = await this.categoryRulesStore.listCategoriesByBase(tenantId);
+    // Return as Record<string, string[]> to keep GraphQL layer simple
+    return Object.fromEntries(
+      Object.entries(grouped).map(([k, v]) => [k, v as string[]]),
+    );
+  }
 }

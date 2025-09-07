@@ -179,6 +179,22 @@ export const transactionResolvers = {
 
       return { items, cursor: nextCursor };
     },
+
+    categoriesByBase: async (_: unknown, __: unknown, ctx: IGraphQLContext) => {
+      if (!ctx.userId) throw new CustomError("Unauthorized", "UNAUTHORIZED");
+      if (!ctx.tenantId)
+        throw new CustomError("Tenant ID is required", "TENANT_ID_REQUIRED");
+
+      const grouped =
+        await ctx.dataSources.transactionCategoryService.getCategoriesByTenant(
+          ctx.tenantId,
+        );
+      // Transform to array with enum-compatible keys
+      return Object.entries(grouped).map(([base, categories]) => ({
+        base,
+        categories,
+      }));
+    },
   },
   Mutation: {
     addTransactionCategory: async (
