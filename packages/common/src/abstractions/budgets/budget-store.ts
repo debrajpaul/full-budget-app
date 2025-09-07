@@ -1,13 +1,11 @@
 import { ETenantType } from "../users";
 import { IBudget } from "./budget";
-import {
-  EBaseCategories
-} from "../categories";
+import { EBaseCategories } from "../categories";
 
 export interface IBudgetStore {
   setBudget(
     tenantId: ETenantType,
-    userId: string, 
+    userId: string,
     year: number,
     month: number,
     category: EBaseCategories,

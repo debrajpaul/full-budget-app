@@ -16,14 +16,14 @@ export enum EBaseCategories {
 //   default = "DEFAULT",
 // }
 
-// export enum ESubExpenseCategories {
-//   housing = "HOUSING",
-//   transportation = "TRANSPORTATION",
-//   food = "FOOD",
-//   utilities = "UTILITIES",
-//   healthcare = "HEALTHCARE",
-//   default = "DEFAULT",
-// }
+export enum ESubExpenseCategories {
+  housing = "HOUSING",
+  transportation = "TRANSPORTATION",
+  food = "FOOD",
+  utilities = "UTILITIES",
+  healthcare = "HEALTHCARE",
+  default = "DEFAULT",
+}
 
 // export enum ESubIncomeCategories {
 //   salary = "SALARY",

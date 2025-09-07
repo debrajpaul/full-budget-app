@@ -1,8 +1,6 @@
 import { ETenantType } from "../users";
 import { EBankName } from "../bank-parser";
-import {
-  EBaseCategories,
-} from "../categories";
+import { EBaseCategories } from "../categories";
 export interface ITransaction {
   tenantId: ETenantType;
   userId: string;

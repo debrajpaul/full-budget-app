@@ -1,7 +1,5 @@
 import { ETenantType } from "../users";
-import {
-  EBaseCategories,
-} from "../categories";
+import { EBaseCategories } from "../categories";
 
 export interface IBudget {
   tenantId: ETenantType;

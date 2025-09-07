@@ -129,7 +129,8 @@ export class TransactionCategoryService implements ITransactionCategoryService {
   public async getCategoriesByTenant(
     tenantId: ETenantType,
   ): Promise<Record<string, string[]>> {
-    const grouped = await this.categoryRulesStore.listCategoriesByBase(tenantId);
+    const grouped =
+      await this.categoryRulesStore.listCategoriesByBase(tenantId);
     // Return as Record<string, string[]> to keep GraphQL layer simple
     return Object.fromEntries(
       Object.entries(grouped).map(([k, v]) => [k, v as string[]]),

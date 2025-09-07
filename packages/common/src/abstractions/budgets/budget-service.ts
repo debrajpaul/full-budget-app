@@ -1,8 +1,6 @@
 import { ETenantType } from "../users";
 import { IBudget, ISetBudgetInput } from "./budget";
-import {
-  EBaseCategories,
-} from "../categories";
+import { EBaseCategories } from "../categories";
 
 export interface ICategoryDeviation {
   category: EBaseCategories;

@@ -1,4 +1,4 @@
-import { IGraphQLContext } from "@common";
+import { IGraphQLContext, EBaseCategories } from "@common";
 
 export const budgetResolvers = {
   Mutation: {
@@ -20,7 +20,7 @@ export const budgetResolvers = {
         {
           month,
           year,
-          category: args.category,
+          category: args.category as EBaseCategories,
           amount: args.amount,
         },
       );
