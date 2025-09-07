@@ -143,9 +143,15 @@ describe("BudgetService - annual analyzeAnnualSpend", () => {
     (budgetStore.getBudgetsByPeriod as jest.Mock).mockImplementation(
       async (_tenant: any, _user: any, month: number) => {
         if (month === 1)
-          return { [EBaseCategories.expenses]: -1000, [EBaseCategories.savings]: -200 };
+          return {
+            [EBaseCategories.expenses]: -1000,
+            [EBaseCategories.savings]: -200,
+          };
         if (month === 2)
-          return { [EBaseCategories.expenses]: -1500, [EBaseCategories.savings]: -300 };
+          return {
+            [EBaseCategories.expenses]: -1500,
+            [EBaseCategories.savings]: -300,
+          };
         return {};
       },
     );

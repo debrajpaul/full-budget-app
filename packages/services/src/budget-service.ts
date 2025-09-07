@@ -158,19 +158,25 @@ export class BudgetService implements IBudgetService {
       ),
     ]);
 
-    const annualBudgets = budgetsByMonth.reduce((acc, map) => {
-      for (const [k, v] of Object.entries(map)) {
-        acc[k] = (acc[k] || 0) + Number(v || 0);
-      }
-      return acc;
-    }, {} as Record<string, number>);
+    const annualBudgets = budgetsByMonth.reduce(
+      (acc, map) => {
+        for (const [k, v] of Object.entries(map)) {
+          acc[k] = (acc[k] || 0) + Number(v || 0);
+        }
+        return acc;
+      },
+      {} as Record<string, number>,
+    );
 
-    const annualActuals = actualsByMonth.reduce((acc, map) => {
-      for (const [k, v] of Object.entries(map)) {
-        acc[k] = (acc[k] || 0) + Number(v || 0);
-      }
-      return acc;
-    }, {} as Record<string, number>);
+    const annualActuals = actualsByMonth.reduce(
+      (acc, map) => {
+        for (const [k, v] of Object.entries(map)) {
+          acc[k] = (acc[k] || 0) + Number(v || 0);
+        }
+        return acc;
+      },
+      {} as Record<string, number>,
+    );
 
     // Provide default recommended budgets if NO budgets exist for the whole year.
     if (Object.keys(annualBudgets).length === 0) {
