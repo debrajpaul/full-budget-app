@@ -36,4 +36,11 @@ export interface IBudgetService {
     month: number,
     year: number,
   ): Promise<ICategoryDeviation[]>;
+
+  // Aggregate budgets and actuals for the full year
+  analyzeAnnualSpend(
+    tenantId: ETenantType,
+    userId: string,
+    year: number,
+  ): Promise<ICategoryDeviation[]>;
 }

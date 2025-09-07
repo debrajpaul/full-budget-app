@@ -126,4 +126,83 @@ export class BudgetService implements IBudgetService {
     }
     return deviations;
   }
+
+  public async analyzeAnnualSpend(
+    tenantId: ETenantType,
+    userId: string,
+    year: number,
+  ): Promise<ICategoryDeviation[]> {
+    this.logger.info("Analyzing annual spend vs. budget", {
+      tenantId,
+      userId,
+      year,
+    });
+
+    // Aggregate budgets and actuals across all 12 months
+    const months = Array.from({ length: 12 }, (_, i) => i + 1);
+    const [budgetsByMonth, actualsByMonth] = await Promise.all([
+      Promise.all(
+        months.map((m) =>
+          this.budgetStore.getBudgetsByPeriod(tenantId, userId, m, year),
+        ),
+      ),
+      Promise.all(
+        months.map((m) =>
+          this.transactionStore.aggregateSpendByCategory(
+            tenantId,
+            userId,
+            m,
+            year,
+          ),
+        ),
+      ),
+    ]);
+
+    const annualBudgets = budgetsByMonth.reduce((acc, map) => {
+      for (const [k, v] of Object.entries(map)) {
+        acc[k] = (acc[k] || 0) + Number(v || 0);
+      }
+      return acc;
+    }, {} as Record<string, number>);
+
+    const annualActuals = actualsByMonth.reduce((acc, map) => {
+      for (const [k, v] of Object.entries(map)) {
+        acc[k] = (acc[k] || 0) + Number(v || 0);
+      }
+      return acc;
+    }, {} as Record<string, number>);
+
+    // Provide default recommended budgets if NO budgets exist for the whole year.
+    if (Object.keys(annualBudgets).length === 0) {
+      const income = Number(annualActuals[EBaseCategories.income] || 0);
+      if (income > 0) {
+        const round2 = (n: number) => Number(n.toFixed(2));
+        annualBudgets[EBaseCategories.expenses] = -round2(income * 0.8);
+        annualBudgets[EBaseCategories.savings] = -round2(income * 0.2);
+      }
+    }
+
+    const categories = new Set<EBaseCategories>(
+      [...Object.keys(annualBudgets), ...Object.keys(annualActuals)].map(
+        (c) => c as EBaseCategories,
+      ),
+    );
+
+    const deviations: ICategoryDeviation[] = [];
+    for (const cat of categories) {
+      const recommended = annualBudgets[cat] || 0;
+      const actual = annualActuals[cat] || 0;
+      const difference = actual - recommended;
+      const percentage = recommended ? (difference / recommended) * 100 : 0;
+      deviations.push({
+        category: cat as EBaseCategories,
+        recommended,
+        actual,
+        difference,
+        percentage,
+      });
+    }
+
+    return deviations;
+  }
 }
