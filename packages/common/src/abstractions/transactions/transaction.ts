@@ -17,7 +17,7 @@ export interface ITransaction {
   balance?: number;
   txnDate: string | undefined;
   description?: string;
-  category: EBaseCategories;
+  category?: EBaseCategories;
   subCategory?:
     | ESubSavingCategories
     | ESubExpenseCategories
