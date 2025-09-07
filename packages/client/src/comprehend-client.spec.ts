@@ -1,6 +1,9 @@
 import { mock } from "jest-mock-extended";
 import { ILogger } from "@common";
-import { ComprehendClient, ComprehendClientConfig } from "@aws-sdk/client-comprehend";
+import {
+  ComprehendClient,
+  ComprehendClientConfig,
+} from "@aws-sdk/client-comprehend";
 import { ComprehendClientFactory } from "./comprehend-client";
 
 describe("ComprehendClientFactory", () => {
@@ -9,13 +12,18 @@ describe("ComprehendClientFactory", () => {
 
   beforeEach(() => {
     mockLogger = mock<ILogger>();
-    factory = new ComprehendClientFactory(mockLogger, {} as ComprehendClientConfig);
+    factory = new ComprehendClientFactory(
+      mockLogger,
+      {} as ComprehendClientConfig,
+    );
   });
 
   it("should create a Comprehend client", async () => {
     const client = await factory.createClient();
     expect(client).toBeInstanceOf(ComprehendClient);
-    expect(mockLogger.info).toHaveBeenCalledWith("Creating Comprehend client", { region: undefined });
+    expect(mockLogger.info).toHaveBeenCalledWith("Creating Comprehend client", {
+      region: undefined,
+    });
   });
 
   it("should create a Comprehend client with region", async () => {
@@ -23,6 +31,8 @@ describe("ComprehendClientFactory", () => {
     factory = new ComprehendClientFactory(mockLogger, config);
     const client = await factory.createClient();
     expect(client).toBeInstanceOf(ComprehendClient);
-    expect(mockLogger.info).toHaveBeenCalledWith("Creating Comprehend client", { region: "us-east-1" });
+    expect(mockLogger.info).toHaveBeenCalledWith("Creating Comprehend client", {
+      region: "us-east-1",
+    });
   });
 });

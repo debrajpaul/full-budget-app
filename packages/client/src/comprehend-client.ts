@@ -1,4 +1,7 @@
-import { ComprehendClient, ComprehendClientConfig } from "@aws-sdk/client-comprehend";
+import {
+  ComprehendClient,
+  ComprehendClientConfig,
+} from "@aws-sdk/client-comprehend";
 import { ILogger } from "@common";
 
 export class ComprehendClientFactory {

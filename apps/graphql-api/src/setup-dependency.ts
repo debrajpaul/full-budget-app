@@ -17,7 +17,10 @@ export function setupDependency() {
   const sqsClient = new SQS({
     region: config.awsRegion,
   });
-  const comprehendClientFactory = new ComprehendClientFactory(logger.child("ComprehendClient"),{ region: config.awsRegion } as ComprehendClientConfig);
+  const comprehendClientFactory = new ComprehendClientFactory(
+    logger.child("ComprehendClient"),
+    { region: config.awsRegion } as ComprehendClientConfig,
+  );
   return {
     logger,
     s3Client,
