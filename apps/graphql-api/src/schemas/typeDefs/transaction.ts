@@ -1,5 +1,7 @@
 export const transactionTypeDefs = /* GraphQL */ `
-  """Normalized bank transaction record as imported and processed."""
+  """
+  Normalized bank transaction record as imported and processed.
+  """
   type Transaction {
     tenantId: TenantType!
     userId: String!
@@ -15,7 +17,9 @@ export const transactionTypeDefs = /* GraphQL */ `
     confidence: Float
     type: String
   }
-  """Simplified transaction representation used for listings."""
+  """
+  Simplified transaction representation used for listings.
+  """
   type TransactionItem {
     id: String!
     date: String!
@@ -26,20 +30,26 @@ export const transactionTypeDefs = /* GraphQL */ `
     taggedBy: String
   }
 
-  """Cursor-paginated list of transaction items."""
+  """
+  Cursor-paginated list of transaction items.
+  """
   type TransactionsPage {
     items: [TransactionItem!]!
     cursor: String
   }
 
-  """Subset of fields returned after reclassifying a transaction."""
+  """
+  Subset of fields returned after reclassifying a transaction.
+  """
   type ReclassifiedTransaction {
     id: String!
     category: String!
     taggedBy: String
   }
 
-  """Filters to list transactions for a given period and category."""
+  """
+  Filters to list transactions for a given period and category.
+  """
   input TransactionsFilter {
     year: Int!
     month: Int!
@@ -47,19 +57,25 @@ export const transactionTypeDefs = /* GraphQL */ `
     category: String
   }
 
-  """Category with its aggregated amount."""
+  """
+  Category with its aggregated amount.
+  """
   type CategoryAmount {
     name: String!
     amount: Float!
   }
 
-  """Budget vs actual values for a specific date."""
+  """
+  Budget vs actual values for a specific date.
+  """
   type ReviewSeriesPoint {
     date: String!
     budget: Float!
     actual: Float!
   }
-  """Monthly aggregates, category breakdown, and time series."""
+  """
+  Monthly aggregates, category breakdown, and time series.
+  """
   type MonthlyReview {
     totalIncome: Float!
     totalExpenses: Float!
@@ -68,7 +84,9 @@ export const transactionTypeDefs = /* GraphQL */ `
     series: [ReviewSeriesPoint!]!
   }
 
-  """Yearly aggregates and the list of transactions."""
+  """
+  Yearly aggregates and the list of transactions.
+  """
   type AnnualReview {
     totalIncome: Float!
     totalExpense: Float!
@@ -76,14 +94,18 @@ export const transactionTypeDefs = /* GraphQL */ `
     transactions: [Transaction!]!
   }
 
-  """Transactions grouped by category with total amount."""
+  """
+  Transactions grouped by category with total amount.
+  """
   type CategoryGroup {
     category: String!
     totalAmount: Float!
     transactions: [Transaction!]!
   }
 
-  """Top-level budget category buckets used for grouping."""
+  """
+  Top-level budget category buckets used for grouping.
+  """
   enum BaseCategory {
     SAVINGS
     EXPENSES
@@ -91,20 +113,26 @@ export const transactionTypeDefs = /* GraphQL */ `
     DEFAULT
   }
 
-  """Categories grouped by their base category bucket."""
+  """
+  Categories grouped by their base category bucket.
+  """
   type CategoriesByBase {
     base: BaseCategory!
     categories: [String!]!
   }
 
-  """Aggregated totals for income, expenses, and net savings."""
+  """
+  Aggregated totals for income, expenses, and net savings.
+  """
   type AggregatedSummary {
     totalIncome: Float!
     totalExpense: Float!
     netSavings: Float!
   }
 
-  """Root query operations for the Finance Budget API."""
+  """
+  Root query operations for the Finance Budget API.
+  """
   type Query {
     """
     Returns yearly income, expenses, net savings, and transactions.
@@ -135,7 +163,9 @@ export const transactionTypeDefs = /* GraphQL */ `
     categoriesByBase: [CategoriesByBase!]!
   }
 
-  """Root mutation operations for the Finance Budget API."""
+  """
+  Root mutation operations for the Finance Budget API.
+  """
   type Mutation {
     """
     Adds or syncs transaction category rules for the current tenant.

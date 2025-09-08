@@ -1,5 +1,7 @@
 export const commonTypeDefs = /* GraphQL */ `
-  """Supported banks for statement import and transaction parsing."""
+  """
+  Supported banks for statement import and transaction parsing.
+  """
   enum BankName {
     HDFC
     SBI
@@ -13,7 +15,9 @@ export const commonTypeDefs = /* GraphQL */ `
     # CANARA
     OTHER
   }
-  """Tenant scope used for data segregation across users/clients."""
+  """
+  Tenant scope used for data segregation across users/clients.
+  """
   enum TenantType {
     PERSONAL
     CLIENT

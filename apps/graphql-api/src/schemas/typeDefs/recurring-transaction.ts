@@ -1,5 +1,7 @@
 export const recurringTransactionTypeDefs = /* GraphQL */ `
-  """Supported schedules for recurring transactions."""
+  """
+  Supported schedules for recurring transactions.
+  """
   enum RecurringFrequency {
     monthly
     weekly
@@ -7,7 +9,9 @@ export const recurringTransactionTypeDefs = /* GraphQL */ `
     yearly
   }
 
-  """Definition and schedule of a recurring transaction."""
+  """
+  Definition and schedule of a recurring transaction.
+  """
   type RecurringTransaction {
     id: String!
     description: String!
@@ -22,7 +26,9 @@ export const recurringTransactionTypeDefs = /* GraphQL */ `
     nextRunDate: String
   }
 
-  """Input to create a recurring transaction rule."""
+  """
+  Input to create a recurring transaction rule.
+  """
   input CreateRecurringTransactionInput {
     description: String!
     amount: Float!
