@@ -93,7 +93,7 @@ describe("TransactionCategoryService", () => {
     });
     type Classification = { Name?: string; Score?: number };
     nlpService.classifyDescription.mockResolvedValue([
-      { Name: "Shopping", Score: 0.9 } as Classification,
+      { Name: "FOOD", Score: 0.9 } as Classification,
     ]);
     const req: ITransactionCategoryRequest = {
       tenantId: ETenantType.default,
@@ -110,7 +110,7 @@ describe("TransactionCategoryService", () => {
     expect(transactionStore.updateTransactionCategory).toHaveBeenCalledWith(
       ETenantType.default,
       "t3",
-      "Shopping",
+      EBaseCategories.expenses,
       "AI_TAGGER",
       0.9,
       undefined,

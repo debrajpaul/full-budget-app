@@ -1,5 +1,5 @@
 import { ETenantType } from "../users";
-import { EBaseCategories } from "./category-rules";
+import { EBaseCategories, EAllSubCategories } from "./category-rules";
 export interface ICategoryRulesStore {
   getRulesByTenant(
     tenantId: ETenantType,
@@ -18,4 +18,8 @@ export interface ICategoryRulesStore {
     category: EBaseCategories,
   ): Promise<void>;
   removeRule(tenantId: ETenantType, ruleId: string): void;
+  mapClassificationToEnums(label: string): {
+    category: EBaseCategories;
+    subCategory?: EAllSubCategories;
+  };
 }
