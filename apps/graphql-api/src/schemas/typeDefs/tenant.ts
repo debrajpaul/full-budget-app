@@ -5,7 +5,9 @@ export const tenantTypeDefs = /* GraphQL */ `
   }
 
   type Query {
-    """Lists supported tenant types available in the system."""
+    """
+    Lists supported tenant types available in the system.
+    """
     tenants: [Tenant!]!
   }
 `;

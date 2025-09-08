@@ -36,7 +36,9 @@ export const forecastTypeDefs = /* GraphQL */ `
   }
 
   type Query {
-    """Forecasts daily cash flow for the specified month with optional rules."""
+    """
+    Forecasts daily cash flow for the specified month with optional rules.
+    """
     forecastMonth(
       year: Int!
       month: Int!

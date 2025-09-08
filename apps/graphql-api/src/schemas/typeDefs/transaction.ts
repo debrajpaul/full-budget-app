@@ -92,27 +92,43 @@ export const transactionTypeDefs = /* GraphQL */ `
   }
 
   type Query {
-    """Returns yearly income, expenses, net savings, and transactions."""
+    """
+    Returns yearly income, expenses, net savings, and transactions.
+    """
     annualReview(year: Int!): AnnualReview!
-    """Returns monthly income, expenses, savings, category breakdown, and series."""
+    """
+    Returns monthly income, expenses, savings, category breakdown, and series.
+    """
     monthlyReview(month: Int!, year: Int!): MonthlyReview!
-    """Returns income, expense, and net savings for the given period."""
+    """
+    Returns income, expense, and net savings for the given period.
+    """
     aggregateSummary(year: Int!, month: Int): AggregatedSummary!
-    """Groups transactions by category with totals for the month."""
+    """
+    Groups transactions by category with totals for the month.
+    """
     categoryBreakdown(month: Int!, year: Int!): [CategoryGroup!]!
-    """Lists transactions filtered by month/year (paged by cursor)."""
+    """
+    Lists transactions filtered by month/year (paged by cursor).
+    """
     transactions(
       filters: TransactionsFilter!
       cursor: String
     ): TransactionsPage!
-    """Lists categories grouped by base type (INCOME/EXPENSES/SAVINGS)."""
+    """
+    Lists categories grouped by base type (INCOME/EXPENSES/SAVINGS).
+    """
     categoriesByBase: [CategoriesByBase!]!
   }
 
   type Mutation {
-    """Adds or syncs transaction category rules for the current tenant."""
+    """
+    Adds or syncs transaction category rules for the current tenant.
+    """
     addTransactionCategory: Boolean!
-    """Reclassifies a transaction to a new category and returns the updated item."""
+    """
+    Reclassifies a transaction to a new category and returns the updated item.
+    """
     reclassifyTransaction(
       id: String!
       category: String!

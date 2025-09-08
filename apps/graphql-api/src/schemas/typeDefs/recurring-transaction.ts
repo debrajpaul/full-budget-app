@@ -33,16 +33,22 @@ export const recurringTransactionTypeDefs = /* GraphQL */ `
   }
 
   extend type Query {
-    """Lists all recurring transactions for the current tenant/user."""
+    """
+    Lists all recurring transactions for the current tenant/user.
+    """
     recurringTransactions: [RecurringTransaction!]!
   }
 
   extend type Mutation {
-    """Creates a recurring transaction definition."""
+    """
+    Creates a recurring transaction definition.
+    """
     createRecurringTransaction(
       input: CreateRecurringTransactionInput!
     ): RecurringTransaction!
-    """Materializes recurring transactions for the given month and returns the count."""
+    """
+    Materializes recurring transactions for the given month and returns the count.
+    """
     generateRecurringTransactions(month: Int!, year: Int!): Int!
   }
 `;
