@@ -160,7 +160,6 @@ export class CategoryRulesStore implements ICategoryRulesStore {
       case EBaseCategories.expenses:
         return { category: EBaseCategories.expenses };
       case EBaseCategories.savings:
-        return { category: EBaseCategories.savings };
       case EBaseCategories.default:
         return { category: EBaseCategories.default };
     }

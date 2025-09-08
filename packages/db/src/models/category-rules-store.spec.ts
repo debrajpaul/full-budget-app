@@ -1,6 +1,13 @@
 import { CategoryRulesStore } from "./category-rules-store";
 import { mock } from "jest-mock-extended";
-import { ILogger, ICategoryRules, ETenantType, EBaseCategories } from "@common";
+import {
+  ILogger,
+  ICategoryRules,
+  ETenantType,
+  EBaseCategories,
+  ESubInvestmentCategories,
+  ESubExpenseCategories,
+} from "@common";
 import { DynamoDBDocumentClient } from "@aws-sdk/lib-dynamodb";
 import { PutCommand, DeleteCommand } from "@aws-sdk/lib-dynamodb";
 
@@ -134,5 +141,79 @@ describe("CategoryRulesStore", () => {
     const result = await rulesStore["loadRules"](tenantId);
     expect(result).toEqual(rules);
     expect(storeMock.send).toHaveBeenCalled();
+  });
+
+  it("should list categories grouped by base with tenant overrides", async () => {
+    const tenantRules: ICategoryRules[] = [
+      {
+        keyword: "food",
+        category: EBaseCategories.expenses,
+        tenantId,
+        ruleId: `${tenantId}#food`,
+        isActive: true,
+        createdAt: "2025-08-12T00:00:00.000Z",
+      },
+      {
+        keyword: "salary",
+        category: EBaseCategories.income,
+        tenantId,
+        ruleId: `${tenantId}#salary`,
+        isActive: true,
+        createdAt: "2025-08-12T00:00:00.000Z",
+      },
+    ];
+    const globalRules: ICategoryRules[] = [
+      {
+        keyword: "fuel",
+        category: EBaseCategories.expenses,
+        tenantId: defaultTenant,
+        ruleId: `${defaultTenant}#fuel`,
+        isActive: true,
+        createdAt: "2025-08-12T00:00:00.000Z",
+      },
+      {
+        // Should not duplicate because tenant already has "food"
+        keyword: "food",
+        category: EBaseCategories.expenses,
+        tenantId: defaultTenant,
+        ruleId: `${defaultTenant}#food`,
+        isActive: true,
+        createdAt: "2025-08-12T00:00:00.000Z",
+      },
+    ];
+
+    storeMock.send
+      .mockResolvedValueOnce({ Items: tenantRules })
+      .mockResolvedValueOnce({ Items: globalRules });
+
+    const result = await rulesStore.listCategoriesByBase(tenantId);
+    expect(result[EBaseCategories.expenses]).toEqual(["food", "fuel"]);
+    expect(result[EBaseCategories.income]).toEqual(["salary"]);
+  });
+
+  it("maps NLP classification labels to enums with synonyms", () => {
+    // Direct base category
+    expect(rulesStore.mapClassificationToEnums("INCOME")).toEqual({
+      category: EBaseCategories.income,
+    });
+    // Direct sub-category
+    expect(rulesStore.mapClassificationToEnums("FOOD")).toEqual({
+      category: EBaseCategories.expenses,
+      subCategory: ESubExpenseCategories.food,
+    });
+    // Synonyms for investment categories map under savings umbrella
+    expect(rulesStore.mapClassificationToEnums("REAL ESTATE")).toEqual({
+      category: EBaseCategories.savings,
+      subCategory: ESubInvestmentCategories.realEstate,
+    });
+    expect(rulesStore.mapClassificationToEnums("MUTUAL-FUNDS")).toEqual({
+      category: EBaseCategories.savings,
+      subCategory: ESubInvestmentCategories.mutualFunds,
+    });
+
+    // Unknown -> default
+    expect(rulesStore.mapClassificationToEnums("UNKNOWN_LABEL")).toEqual({
+      category: EBaseCategories.default,
+    });
   });
 });

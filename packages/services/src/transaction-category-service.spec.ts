@@ -87,6 +87,10 @@ describe("TransactionCategoryService", () => {
 
   it("falls back to AI tagging when no rule matches", async () => {
     rulesStore.getRulesByTenant.mockResolvedValue({});
+    // Align mock with implementation: map NLP class to enums
+    rulesStore.mapClassificationToEnums.mockReturnValue({
+      category: EBaseCategories.expenses,
+    });
     nlpService.analyzeDescription.mockResolvedValue({
       entities: [],
       sentiment: "NEUTRAL",

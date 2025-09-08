@@ -23,5 +23,5 @@ export interface ITransactionCategoryService {
     category: EBaseCategories;
     subCategory?: string;
     confidence?: number;
-  } | null> 
+  } | null>;
 }

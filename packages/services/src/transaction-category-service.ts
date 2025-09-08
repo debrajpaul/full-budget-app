@@ -9,13 +9,6 @@ import {
   EBaseCategories,
 } from "@common";
 import { keywordBaseCategoryMap, categorizeByRules } from "@nlp-tagger";
-import {
-  ESubExpenseCategories,
-  ESubIncomeCategories,
-  ESubInvestmentCategories,
-  ESubLoanCategories,
-  ESubSavingCategories,
-} from "@common";
 
 export class TransactionCategoryService implements ITransactionCategoryService {
   private readonly logger: ILogger;
@@ -155,14 +148,8 @@ export class TransactionCategoryService implements ITransactionCategoryService {
       );
     }
 
-    if (!category) {
-      const fallback = this.fallbackMapClassificationToEnums(topClass.Name);
-      category = fallback.category;
-      subCategory = fallback.subCategory;
-    }
-
     return {
-      category,
+      category:category || EBaseCategories.default,
       subCategory,
       confidence: topClass.Score,
     };
@@ -177,77 +164,5 @@ export class TransactionCategoryService implements ITransactionCategoryService {
     return Object.fromEntries(
       Object.entries(grouped).map(([k, v]) => [k, v as string[]]),
     );
-  }
-
-  // Local fallback mapper to keep service resilient when store mapping isn't available (e.g., in tests)
-  private fallbackMapClassificationToEnums(label: string): {
-    category: EBaseCategories;
-    subCategory?: string;
-  } {
-    const normalized = label.trim().toUpperCase().replace(/\s+/g, "_");
-
-    // Direct base category names
-    if (normalized === EBaseCategories.income)
-      return { category: EBaseCategories.income };
-    if (normalized === EBaseCategories.expenses)
-      return { category: EBaseCategories.expenses };
-    if (normalized === EBaseCategories.savings)
-      return { category: EBaseCategories.savings };
-    if (normalized === EBaseCategories.default)
-      return { category: EBaseCategories.default };
-
-    // Sub-category to base mapping
-    const isExpense = new Set<string>(Object.values(ESubExpenseCategories));
-    const isSaving = new Set<string>(Object.values(ESubSavingCategories));
-    const isIncome = new Set<string>(Object.values(ESubIncomeCategories));
-    const isInvestment = new Set<string>(
-      Object.values(ESubInvestmentCategories),
-    );
-    const isLoan = new Set<string>(Object.values(ESubLoanCategories));
-
-    if (isExpense.has(normalized))
-      return { category: EBaseCategories.expenses, subCategory: normalized };
-    if (isSaving.has(normalized))
-      return { category: EBaseCategories.savings, subCategory: normalized };
-    if (isIncome.has(normalized))
-      return { category: EBaseCategories.income, subCategory: normalized };
-    if (isInvestment.has(normalized))
-      return { category: EBaseCategories.savings, subCategory: normalized };
-    if (isLoan.has(normalized))
-      return { category: EBaseCategories.expenses, subCategory: normalized };
-
-    // Simple synonyms that models often emit
-    const synonyms: Record<
-      string,
-      { category: EBaseCategories; subCategory?: string }
-    > = {
-      REAL_ESTATE: {
-        category: EBaseCategories.savings,
-        subCategory: ESubInvestmentCategories.realEstate,
-      },
-      "REAL-ESTATE": {
-        category: EBaseCategories.savings,
-        subCategory: ESubInvestmentCategories.realEstate,
-      },
-      "REAL ESTATE": {
-        category: EBaseCategories.savings,
-        subCategory: ESubInvestmentCategories.realEstate,
-      },
-      MUTUAL_FUNDS: {
-        category: EBaseCategories.savings,
-        subCategory: ESubInvestmentCategories.mutualFunds,
-      },
-      "MUTUAL-FUNDS": {
-        category: EBaseCategories.savings,
-        subCategory: ESubInvestmentCategories.mutualFunds,
-      },
-      "MUTUAL FUNDS": {
-        category: EBaseCategories.savings,
-        subCategory: ESubInvestmentCategories.mutualFunds,
-      },
-    };
-    if (synonyms[normalized]) return synonyms[normalized];
-
-    return { category: EBaseCategories.default };
   }
 }
