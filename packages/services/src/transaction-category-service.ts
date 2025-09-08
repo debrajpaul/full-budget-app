@@ -149,7 +149,7 @@ export class TransactionCategoryService implements ITransactionCategoryService {
     }
 
     return {
-      category:category || EBaseCategories.default,
+      category: category || EBaseCategories.default,
       subCategory,
       confidence: topClass.Score,
     };
