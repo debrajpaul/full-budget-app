@@ -25,9 +25,18 @@ export class NlpService implements INlpService {
 
   public async analyzeDescription(description: string): Promise<INlpAnalysis> {
     const text = description.trim().slice(0, 5000);
-    const sentimentResult = await this.comprehend.send(
-      new DetectSentimentCommand({ Text: text, LanguageCode: "en" }),
-    );
+    // Default fallbacks to keep pipeline resilient
+    let sentiment: INlpAnalysis["sentiment"] = "NEUTRAL";
+
+    // Try to detect sentiment, but don't fail pipeline if API errors
+    try {
+      const sentimentResult = await this.comprehend.send(
+        new DetectSentimentCommand({ Text: text, LanguageCode: "en" }),
+      );
+      sentiment = sentimentResult.Sentiment ?? "NEUTRAL";
+    } catch (err) {
+      this.logger.error("DetectSentimentCommand failed", err as Error);
+    }
 
     if (this.classifierArn) {
       let classificationResult: ClassifyDocumentCommandOutput | undefined;
@@ -43,17 +52,24 @@ export class NlpService implements INlpService {
       }
       return {
         entities: [],
-        sentiment: sentimentResult.Sentiment ?? "NEUTRAL",
+        sentiment,
         classification: classificationResult?.Classes,
       };
     }
 
-    const entitiesResult = await this.comprehend.send(
-      new DetectEntitiesCommand({ Text: text, LanguageCode: "en" }),
-    );
+    // If no classifier, attempt entity detection; swallow errors and fallback to []
+    let entities: INlpAnalysis["entities"] = [];
+    try {
+      const entitiesResult = await this.comprehend.send(
+        new DetectEntitiesCommand({ Text: text, LanguageCode: "en" }),
+      );
+      entities = entitiesResult.Entities ?? [];
+    } catch (err) {
+      this.logger.error("DetectEntitiesCommand failed", err as Error);
+    }
     return {
-      entities: entitiesResult.Entities ?? [],
-      sentiment: sentimentResult.Sentiment ?? "NEUTRAL",
+      entities,
+      sentiment,
     };
   }
 

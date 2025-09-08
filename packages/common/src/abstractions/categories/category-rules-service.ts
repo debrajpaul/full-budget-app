@@ -19,4 +19,9 @@ export interface ITransactionCategoryService {
   getCategoriesByTenant(
     tenantId: ETenantType,
   ): Promise<Record<string, string[]>>;
+  classification(description: string): Promise<{
+    category: EBaseCategories;
+    subCategory?: string;
+    confidence?: number;
+  } | null> 
 }

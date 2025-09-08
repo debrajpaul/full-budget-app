@@ -83,7 +83,7 @@ export class TransactionCategoryService implements ITransactionCategoryService {
         const analysis = await this.nlpService.analyzeDescription(description);
         this.logger.debug("AI tagging result analysis:", { analysis });
 
-        const classification = await this.classifyDescription(description);
+        const classification = await this.classification(description);
         this.logger.debug("AI tagging result classification:", {
           classification,
         });
@@ -123,15 +123,18 @@ export class TransactionCategoryService implements ITransactionCategoryService {
     );
   }
 
-  public async classifyDescription(description: string): Promise<{
+  public async classification(description: string): Promise<{
     category: EBaseCategories;
     subCategory?: string;
     confidence?: number;
   } | null> {
-    if (!this.nlpService) return null;
+    if (!this.nlpService) return { category: EBaseCategories.default };
     const classes = await this.nlpService.classifyDescription(description);
     const topClass = classes && classes[0];
-    if (!topClass?.Name) return null;
+    if (!topClass?.Name)
+      return {
+        category: EBaseCategories.default,
+      };
 
     // Try store mapping first, then gracefully fallback
     let category: EBaseCategories | undefined;
