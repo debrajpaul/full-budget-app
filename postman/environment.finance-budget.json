@@ -1,0 +1,12 @@
+{
+  "name": "finance-budget",
+  "_postman_variable_scope": "environment",
+  "values": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:4005",
+      "type": "default",
+      "enabled": true
+    }
+  ]
+}

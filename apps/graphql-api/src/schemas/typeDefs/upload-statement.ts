@@ -6,6 +6,7 @@ export const uploadStatementTypeDefs = /* GraphQL */ `
   }
 
   type Mutation {
+    """Uploads a bank statement file (base64) for processing and import."""
     uploadStatement(input: StatementInput!): Boolean!
   }
 `;

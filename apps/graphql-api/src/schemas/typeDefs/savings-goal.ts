@@ -14,6 +14,7 @@ export const savingsGoalTypeDefs = /* GraphQL */ `
   }
 
   type Query {
+    """Lists savings goals with current progress and history."""
     savingsGoals: [SavingsGoal!]!
   }
 `;

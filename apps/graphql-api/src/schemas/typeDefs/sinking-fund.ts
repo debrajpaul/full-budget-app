@@ -15,6 +15,7 @@ export const sinkingFundTypeDefs = /* GraphQL */ `
   }
 
   type Query {
+    """Lists sinking funds, balances, and history for the tenant."""
     sinkingFunds: [SinkingFund!]!
   }
 `;

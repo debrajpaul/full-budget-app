@@ -1,6 +1,8 @@
 export const authTypeDefs = /* GraphQL */ `
   type Query {
+    """API version of the GraphQL service."""
     apiVersion: String
+    """Simple health check; returns a status string if the API is up."""
     healthCheck: String
   }
 
@@ -35,7 +37,9 @@ export const authTypeDefs = /* GraphQL */ `
   }
 
   type Mutation {
+    """Creates a new user account for the given tenant."""
     register(input: RegisterInput!): RegisterResponse!
+    """Authenticates a user and returns a login token."""
     login(input: LoginInput!): LoginResponse!
   }
 `;
