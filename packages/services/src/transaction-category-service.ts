@@ -146,7 +146,10 @@ export class TransactionCategoryService implements ITransactionCategoryService {
         ?.subCategory;
     } catch (e) {
       // ignore and use fallback
-      this.logger.debug("Error in categoryRulesStore mapClassificationToEnums",{e})
+      this.logger.debug(
+        "Error in categoryRulesStore mapClassificationToEnums",
+        { e },
+      );
     }
 
     if (!category) {
