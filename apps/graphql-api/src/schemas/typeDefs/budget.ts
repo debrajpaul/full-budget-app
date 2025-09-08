@@ -1,4 +1,5 @@
 export const budgetTypeDefs = /* GraphQL */ `
+  """Budget allocation for a category in a specific month/year."""
   type Budget {
     id: String!
     month: Int!
@@ -7,6 +8,7 @@ export const budgetTypeDefs = /* GraphQL */ `
     amount: Float!
   }
 
+  """Period identifier consisting of month and year."""
   input PeriodInput {
     month: Int!
     year: Int!

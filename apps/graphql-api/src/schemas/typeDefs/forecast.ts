@@ -1,4 +1,5 @@
 export const forecastTypeDefs = /* GraphQL */ `
+  """Per-day forecast metrics and running balance."""
   type ForecastDay {
     date: String!
     inflow: Float!
@@ -7,12 +8,14 @@ export const forecastTypeDefs = /* GraphQL */ `
     runningBalance: Float
   }
 
+  """Severity levels for forecast alerts."""
   enum AlertSeverity {
     info
     warning
     critical
   }
 
+  """Alert generated during forecasting with severity and message."""
   type ForecastAlert {
     date: String!
     type: String!
@@ -20,6 +23,7 @@ export const forecastTypeDefs = /* GraphQL */ `
     severity: AlertSeverity!
   }
 
+  """Monthly cash-flow forecast summary with daily details and alerts."""
   type ForecastResult {
     month: Int!
     year: Int!
@@ -29,12 +33,14 @@ export const forecastTypeDefs = /* GraphQL */ `
     alerts: [ForecastAlert!]!
   }
 
+  """Optional parameters to tune forecasting behavior and thresholds."""
   input ForecastOptionsInput {
     startingBalance: Float
     lowBalanceThreshold: Float
     largeExpenseThreshold: Float
   }
 
+  """Root query operations for the Finance Budget API."""
   type Query {
     """
     Forecasts daily cash flow for the specified month with optional rules.

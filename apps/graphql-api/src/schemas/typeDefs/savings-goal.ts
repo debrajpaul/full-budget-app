@@ -1,9 +1,11 @@
 export const savingsGoalTypeDefs = /* GraphQL */ `
+  """Historical point representing savings value on a date."""
   type SavingsHistoryPoint {
     date: String!
     value: Float!
   }
 
+  """Savings goal with target, current progress, deadline, and history."""
   type SavingsGoal {
     id: ID!
     name: String!
@@ -13,6 +15,7 @@ export const savingsGoalTypeDefs = /* GraphQL */ `
     history: [SavingsHistoryPoint!]!
   }
 
+  """Root query operations for the Finance Budget API."""
   type Query {
     """
     Lists savings goals with current progress and history.
