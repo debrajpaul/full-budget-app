@@ -12,6 +12,7 @@ import {
   IAnnualReview,
   IcategoryGroup,
   IAggregatedSummary,
+  EBaseCategories,
 } from "@common";
 import { HdfcBankParser, SbiBankParser } from "@parser";
 
@@ -274,7 +275,7 @@ export class TransactionService implements ITransactionService {
     await this.transactionStore.updateTransactionCategory(
       tenantId,
       transactionId,
-      category,
+      category as EBaseCategories,
       taggedBy,
     );
     return { id: transactionId, category, taggedBy };

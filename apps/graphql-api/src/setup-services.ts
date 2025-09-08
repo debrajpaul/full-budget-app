@@ -7,6 +7,7 @@ import {
   UserStore,
   CategoryRulesStore,
   RecurringTransactionStore,
+  BudgetStore,
 } from "@db";
 import {
   TransactionService,
@@ -18,6 +19,7 @@ import {
   SinkingFundService,
   ForecastService,
   RecurringTransactionService,
+  BudgetService,
 } from "@services";
 import { S3Service, SQSService } from "@client";
 import { DynamoDBDocumentClient } from "@aws-sdk/lib-dynamodb";
@@ -58,6 +60,11 @@ export function setupServices(
   const recurringStore = new RecurringTransactionStore(
     logger.child("RecurringTransactionStore"),
     config.dynamoRecurringTable,
+    dynamoDBDocumentClient,
+  );
+  const budgetStore = new BudgetStore(
+    logger.child("BudgetStore"),
+    config.dynamoBudgetTable,
     dynamoDBDocumentClient,
   );
   const authorizationService = new AuthorizationService(
@@ -104,6 +111,11 @@ export function setupServices(
     logger.child("ForecastService"),
     recurringStore,
   );
+  const budgetService = new BudgetService(
+    logger.child("BudgetService"),
+    budgetStore,
+    transactionStore,
+  );
 
   return {
     transactionService,
@@ -115,5 +127,6 @@ export function setupServices(
     forecastService,
     nlpService,
     recurringTransactionService,
+    budgetService,
   };
 }

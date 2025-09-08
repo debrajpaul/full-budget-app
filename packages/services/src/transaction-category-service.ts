@@ -52,7 +52,7 @@ export class TransactionCategoryService implements ITransactionCategoryService {
         return false;
       }
       // Skip if category already set
-      if (category && category.trim() !== "") {
+      if (category && category !== EBaseCategories.default) {
         this.logger.info(
           `Skipping transaction ${transactionId} — already categorized`,
         );
@@ -76,7 +76,7 @@ export class TransactionCategoryService implements ITransactionCategoryService {
         const analysis = await this.nlpService.analyzeDescription(description);
         this.logger.debug("AI tagging result analysis:", { analysis });
 
-        const classification = await this.classifyDescription(description);
+        const classification = await this.classification(description);
         this.logger.debug("AI tagging result classification:", {
           classification,
         });
@@ -116,13 +116,53 @@ export class TransactionCategoryService implements ITransactionCategoryService {
     );
   }
 
-  public async classifyDescription(
-    description: string,
-  ): Promise<{ category: string; confidence?: number } | null> {
-    if (!this.nlpService) return null;
+  public async classification(description: string): Promise<{
+    category: EBaseCategories;
+    subCategory?: string;
+    confidence?: number;
+  } | null> {
+    if (!this.nlpService) return { category: EBaseCategories.default };
     const classes = await this.nlpService.classifyDescription(description);
     const topClass = classes && classes[0];
-    if (!topClass?.Name) return null;
-    return { category: topClass.Name, confidence: topClass.Score };
+    if (!topClass?.Name)
+      return {
+        category: EBaseCategories.default,
+      };
+
+    // Try store mapping first, then gracefully fallback
+    let category: EBaseCategories | undefined;
+    let subCategory: string | undefined;
+    try {
+      const mapped = this.categoryRulesStore.mapClassificationToEnums(
+        topClass.Name,
+      );
+      category = mapped?.category;
+      // mapped.subCategory may be an enum; keep as string for simplicity here
+      subCategory = (mapped as unknown as { subCategory?: string })
+        ?.subCategory;
+    } catch (e) {
+      // ignore and use fallback
+      this.logger.debug(
+        "Error in categoryRulesStore mapClassificationToEnums",
+        { e },
+      );
+    }
+
+    return {
+      category: category || EBaseCategories.default,
+      subCategory,
+      confidence: topClass.Score,
+    };
+  }
+
+  public async getCategoriesByTenant(
+    tenantId: ETenantType,
+  ): Promise<Record<string, string[]>> {
+    const grouped =
+      await this.categoryRulesStore.listCategoriesByBase(tenantId);
+    // Return as Record<string, string[]> to keep GraphQL layer simple
+    return Object.fromEntries(
+      Object.entries(grouped).map(([k, v]) => [k, v as string[]]),
+    );
   }
 }

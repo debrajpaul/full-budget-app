@@ -13,7 +13,6 @@ export enum ESubSavingCategories {
   education = "EDUCATION",
   travel = "TRAVEL",
   health = "HEALTH",
-  default = "DEFAULT",
 }
 
 export enum ESubExpenseCategories {
@@ -22,7 +21,6 @@ export enum ESubExpenseCategories {
   food = "FOOD",
   utilities = "UTILITIES",
   healthcare = "HEALTHCARE",
-  default = "DEFAULT",
 }
 
 export enum ESubIncomeCategories {
@@ -30,7 +28,6 @@ export enum ESubIncomeCategories {
   business = "BUSINESS",
   investment = "INVESTMENT",
   freelance = "FREELANCE",
-  default = "DEFAULT",
 }
 
 export enum ESubInvestmentCategories {
@@ -38,7 +35,6 @@ export enum ESubInvestmentCategories {
   bonds = "BONDS",
   realEstate = "REAL_ESTATE",
   mutualFunds = "MUTUAL_FUNDS",
-  default = "DEFAULT",
 }
 
 export enum ESubLoanCategories {
@@ -46,7 +42,6 @@ export enum ESubLoanCategories {
   mortgage = "MORTGAGE",
   auto = "AUTO",
   student = "STUDENT",
-  default = "DEFAULT",
 }
 
 export interface ICategoryRules {
@@ -54,13 +49,17 @@ export interface ICategoryRules {
   tenantId: ETenantType;
   keyword: string;
   category: EBaseCategories;
-  subSavingCategory?: ESubSavingCategories;
-  subExpenseCategory?: ESubExpenseCategories;
-  subIncomeCategory?: ESubIncomeCategories;
-  subInvestmentCategory?: ESubInvestmentCategories;
-  subLoanCategory?: ESubLoanCategories;
+  subCategory?: string; // Optional detailed sub-category
   isActive: boolean;
   createdAt: string;
   updatedAt?: string;
   deletedAt?: string;
 }
+
+// Union of all supported sub-category enums
+export type EAllSubCategories =
+  | ESubExpenseCategories
+  | ESubSavingCategories
+  | ESubIncomeCategories
+  | ESubInvestmentCategories
+  | ESubLoanCategories;

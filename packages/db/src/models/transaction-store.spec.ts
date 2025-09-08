@@ -2,7 +2,13 @@
 import { TransactionStore } from "./transaction-store";
 import { mock } from "jest-mock-extended";
 import { DynamoDBDocumentClient } from "@aws-sdk/lib-dynamodb";
-import { ILogger, ITransaction, ETenantType, EBankName } from "@common";
+import {
+  ILogger,
+  ITransaction,
+  ETenantType,
+  EBankName,
+  EBaseCategories,
+} from "@common";
 
 describe("TransactionStore", () => {
   let storeMock: { send: jest.Mock };
@@ -19,7 +25,7 @@ describe("TransactionStore", () => {
     amount: 100,
     description: "desc",
     balance: 1000,
-    category: "cat",
+    category: EBaseCategories.default,
     embedding: [0.1, 0.2],
     taggedBy: "AI_TAGGER",
     confidence: 0.9,
@@ -120,7 +126,7 @@ describe("TransactionStore", () => {
     await transactionStore.updateTransactionCategory(
       tenantId,
       txn.transactionId,
-      "newCat",
+      EBaseCategories.expenses,
       "AI_TAGGER",
       0.95,
       [0.1, 0.2],
@@ -128,7 +134,7 @@ describe("TransactionStore", () => {
     expect(storeMock.send).toHaveBeenCalled();
     const command = storeMock.send.mock.calls[0][0];
     expect(command.input.ExpressionAttributeValues).toMatchObject({
-      ":cat": "newCat",
+      ":cat": EBaseCategories.expenses,
       ":tagger": "AI_TAGGER",
       ":conf": 0.95,
       ":emb": [0.1, 0.2],
@@ -141,14 +147,57 @@ describe("TransactionStore", () => {
     await transactionStore.updateTransactionCategory(
       tenantId,
       txn.transactionId,
-      "onlyCat",
+      EBaseCategories.income,
     );
     const command = storeMock.send.mock.calls[0][0];
     expect(command.input.ExpressionAttributeValues).toMatchObject({
-      ":cat": "onlyCat",
+      ":cat": EBaseCategories.income,
     });
     expect(command.input.UpdateExpression).toBe(
       "SET category = :cat, updatedAt = :updatedAt",
     );
+  });
+
+  it("should aggregate spend by category for given month and year", async () => {
+    const userId = txn.userId;
+    const items: ITransaction[] = [
+      {
+        ...txn,
+        transactionId: "txnA",
+        amount: -50,
+        category: EBaseCategories.expenses,
+      },
+      {
+        ...txn,
+        transactionId: "txnB",
+        amount: -100,
+        category: EBaseCategories.expenses,
+      },
+      {
+        ...txn,
+        transactionId: "txnC",
+        amount: 200,
+        category: EBaseCategories.income,
+      },
+    ];
+
+    jest
+      .spyOn(transactionStore, "getTransactionsByDateRange")
+      .mockResolvedValue(items);
+
+    const result = await transactionStore.aggregateSpendByCategory(
+      tenantId,
+      userId,
+      8,
+      2025,
+    );
+
+    expect(transactionStore.getTransactionsByDateRange).toHaveBeenCalledTimes(
+      1,
+    );
+    expect(result).toEqual({
+      [EBaseCategories.expenses]: -150,
+      [EBaseCategories.income]: 200,
+    });
   });
 });

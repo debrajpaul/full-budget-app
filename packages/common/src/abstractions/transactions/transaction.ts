@@ -1,5 +1,6 @@
 import { ETenantType } from "../users";
 import { EBankName } from "../bank-parser";
+import { EBaseCategories } from "../categories";
 export interface ITransaction {
   tenantId: ETenantType;
   userId: string;
@@ -9,7 +10,8 @@ export interface ITransaction {
   balance?: number;
   txnDate: string | undefined;
   description?: string;
-  category?: string;
+  category?: EBaseCategories;
+  subCategory?: string; // Optional detailed sub-category
   embedding?: number[];
   taggedBy?: string;
   confidence?: number;

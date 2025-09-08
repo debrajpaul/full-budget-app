@@ -1,5 +1,11 @@
 import { chunk } from "lodash";
-import { ITransaction, ILogger, ITransactionStore, ETenantType } from "@common";
+import {
+  ITransaction,
+  ILogger,
+  ITransactionStore,
+  ETenantType,
+  EBaseCategories,
+} from "@common";
 import {
   PutCommand,
   QueryCommand,
@@ -142,10 +148,35 @@ export class TransactionStore implements ITransactionStore {
     return (result.Items as ITransaction[]) || [];
   }
 
+  public async aggregateSpendByCategory(
+    tenantId: ETenantType,
+    userId: string,
+    month: number,
+    year: number,
+  ): Promise<Record<string, number>> {
+    const startDate = new Date(year, month - 1, 1).toISOString();
+    const endDate = new Date(year, month, 0).toISOString();
+    const items = await this.getTransactionsByDateRange(
+      tenantId,
+      userId,
+      startDate,
+      endDate,
+    );
+    return items.reduce(
+      (acc, txn) => {
+        const cat = txn.category || EBaseCategories.default;
+        const amount = Number(txn.amount) || 0;
+        acc[cat] = (acc[cat] || 0) + amount;
+        return acc;
+      },
+      {} as Record<string, number>,
+    );
+  }
+
   public async updateTransactionCategory(
     tenantId: ETenantType,
     transactionId: string,
-    matchedCategory: string,
+    matchedCategory: EBaseCategories,
     taggedBy?: string,
     confidence?: number,
     embedding?: number[],

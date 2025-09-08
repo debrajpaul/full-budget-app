@@ -1,9 +1,10 @@
-import { DynamoDBRecord } from "aws-lambda";
+import { DynamoDBRecord, AttributeValue } from "aws-lambda";
 import {
   ILogger,
   ITransactionCategoryService,
   ITransactionCategoryRequest,
   ETenantType,
+  EBaseCategories,
 } from "@common";
 
 export class TransactionCategoryLoader {
@@ -26,10 +27,12 @@ export class TransactionCategoryLoader {
         tenantId: (newImage.tenantId?.S as ETenantType) ?? ETenantType.default,
         transactionId: newImage.transactionId?.S ?? "",
         description: newImage.description?.S,
-        category: newImage.category?.S,
+        category:
+          (newImage.category?.S as EBaseCategories) ?? EBaseCategories.default,
         createdAt: newImage.createdAt?.S ?? new Date().toISOString(),
         embedding:
-          newImage.embedding?.L?.map((e: any) => Number(e.N)) ?? undefined,
+          newImage.embedding?.L?.map((e: AttributeValue) => Number(e.N || 0)) ??
+          undefined,
         taggedBy: newImage.taggedBy?.S,
         confidence: newImage.confidence?.N
           ? Number(newImage.confidence.N)

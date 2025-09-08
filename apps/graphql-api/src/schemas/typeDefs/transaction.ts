@@ -73,6 +73,18 @@ export const transactionTypeDefs = /* GraphQL */ `
     transactions: [Transaction!]!
   }
 
+  enum BaseCategory {
+    SAVINGS
+    EXPENSES
+    INCOME
+    DEFAULT
+  }
+
+  type CategoriesByBase {
+    base: BaseCategory!
+    categories: [String!]!
+  }
+
   type AggregatedSummary {
     totalIncome: Float!
     totalExpense: Float!
@@ -88,6 +100,7 @@ export const transactionTypeDefs = /* GraphQL */ `
       filters: TransactionsFilter!
       cursor: String
     ): TransactionsPage!
+    categoriesByBase: [CategoriesByBase!]!
   }
 
   type Mutation {

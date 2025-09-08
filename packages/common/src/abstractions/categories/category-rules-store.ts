@@ -1,9 +1,13 @@
 import { ETenantType } from "../users";
-import { EBaseCategories } from "./category-rules";
+import { EBaseCategories, EAllSubCategories } from "./category-rules";
 export interface ICategoryRulesStore {
   getRulesByTenant(
     tenantId: ETenantType,
   ): Promise<Record<string, EBaseCategories>>;
+  // Returns distinct category keywords grouped by base category for a tenant
+  listCategoriesByBase(
+    tenantId: ETenantType,
+  ): Promise<Record<EBaseCategories, string[]>>;
   addRules(
     tenantId: ETenantType,
     rules: Record<string, EBaseCategories>,
@@ -14,4 +18,8 @@ export interface ICategoryRulesStore {
     category: EBaseCategories,
   ): Promise<void>;
   removeRule(tenantId: ETenantType, ruleId: string): void;
+  mapClassificationToEnums(label: string): {
+    category: EBaseCategories;
+    subCategory?: EAllSubCategories;
+  };
 }

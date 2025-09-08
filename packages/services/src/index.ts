@@ -8,3 +8,4 @@ export * from "./savings-goal-service";
 export * from "./sinking-fund-service";
 export * from "./recurring-transaction-service";
 export * from "./forecast-service";
+export * from "./budget-service";

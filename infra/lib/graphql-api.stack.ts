@@ -10,6 +10,7 @@ interface GraphQLApiStackProps extends StackProps {
   categoryTableArn: string;
   userTableArn: string;
   recurringTableArn: string;
+  budgetTableArn: string;
   jwtParameter: StringParameter;
   environment: Record<string, string>;
 }
@@ -25,6 +26,7 @@ export class GraphQLApiStack extends Stack {
       categoryTableArn: props.categoryTableArn,
       userTableArn: props.userTableArn,
       recurringTableArn: props.recurringTableArn,
+      budgetTableArn: props.budgetTableArn,
       jwtParameter: props.jwtParameter,
       environment: props.environment,
     });

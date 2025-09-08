@@ -10,6 +10,7 @@ import { IAuthorizationService } from "./users/authorization-service";
 import { APIGatewayProxyEvent, Context as LambdaCtx } from "aws-lambda";
 import { IRecurringTransactionService } from "./recurring";
 import { IForecastService } from "./forecast";
+import { IBudgetService } from "./budgets";
 export interface IGraphQLContext {
   logger: ILogger;
   request: Request | APIGatewayProxyEvent; // Optional for Express or Lambda event
@@ -27,5 +28,6 @@ export interface IGraphQLContext {
     sinkingFundService: ISinkingFundService;
     recurringTransactionService: IRecurringTransactionService;
     forecastService: IForecastService;
+    budgetService: IBudgetService;
   };
 }
