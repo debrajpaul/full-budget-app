@@ -29,32 +29,29 @@ describe("CategoryRulesStore", () => {
     );
   });
 
-  it("should get rules by tenant including global defaults and respect overrides", async () => {
+  it("gets rules by tenant and appends global defaults", async () => {
     const tenantRules: ICategoryRules[] = [
       {
-        keyword: "food",
+        match: /food/i,
         category: EBaseCategories.income,
         tenantId,
-        ruleId: `${tenantId}#food`,
-        isActive: true,
+        ruleId: `${tenantId}#${/food/i}`,
         createdAt: "2025-08-12T00:00:00.000Z",
       },
     ];
     const globalRules: ICategoryRules[] = [
       {
-        keyword: "fuel",
+        match: /fuel/i,
         category: EBaseCategories.expenses,
         tenantId: defaultTenant,
-        ruleId: `${defaultTenant}#fuel`,
-        isActive: true,
+        ruleId: `${defaultTenant}#${/fuel/i}`,
         createdAt: "2025-08-12T00:00:00.000Z",
       },
       {
-        keyword: "food",
+        match: /food/i,
         category: EBaseCategories.expenses,
         tenantId: defaultTenant,
-        ruleId: `${defaultTenant}#food`,
-        isActive: true,
+        ruleId: `${defaultTenant}#${/food/i}`,
         createdAt: "2025-08-12T00:00:00.000Z",
       },
     ];
@@ -62,38 +59,37 @@ describe("CategoryRulesStore", () => {
       .mockResolvedValueOnce({ Items: tenantRules })
       .mockResolvedValueOnce({ Items: globalRules });
     const result = await rulesStore.getRulesByTenant(tenantId);
-    expect(result).toEqual({
-      // tenant override should win over global
-      food: EBaseCategories.income,
-      fuel: EBaseCategories.expenses,
-    });
+    // Returns tenant rules first, followed by global defaults (no override logic here)
+    expect(result).toEqual([...tenantRules, ...globalRules]);
   });
 
-  it("should add multiple rules in chunks", async () => {
-    const rules = {
-      saving: EBaseCategories.savings,
-      expenses: EBaseCategories.expenses,
-      income: EBaseCategories.income,
-    };
+  it("adds multiple rules in chunks", async () => {
+    const rules: Array<
+      Omit<ICategoryRules, "tenantId" | "ruleId" | "createdAt">
+    > = [
+      { match: /saving/i, category: EBaseCategories.savings },
+      { match: /expenses/i, category: EBaseCategories.expenses },
+      { match: /income/i, category: EBaseCategories.income },
+    ];
     const addRuleSpy = jest.spyOn(rulesStore, "addRule").mockResolvedValue();
-    await rulesStore.addRules(tenantId, rules);
+    await rulesStore.addRules(tenantId, rules as unknown as ICategoryRules[]);
     expect(addRuleSpy).toHaveBeenCalledTimes(3);
     expect(loggerMock.info).toHaveBeenCalledWith("Saving rules to DynamoDB");
   });
 
-  it("should add a single rule", async () => {
+  it("adds a single rule", async () => {
     storeMock.send.mockResolvedValue({});
-    await rulesStore.addRule(tenantId, "FOOD", EBaseCategories.expenses);
+    const regex = /food/i;
+    await rulesStore.addRule(tenantId, regex, EBaseCategories.expenses);
     expect(storeMock.send).toHaveBeenCalledWith(expect.any(PutCommand));
     const calledCommand = storeMock.send.mock.calls[0][0];
     expect(calledCommand.input).toMatchObject({
       TableName: tableName,
       Item: expect.objectContaining({
-        ruleId: `${tenantId}#food`,
+        ruleId: `${tenantId}#${regex}`,
         tenantId,
-        keyword: "food",
+        match: regex,
         category: EBaseCategories.expenses,
-        isActive: true,
       }),
       ConditionExpression: "attribute_not_exists(ruleId)",
     });
@@ -118,66 +114,60 @@ describe("CategoryRulesStore", () => {
     });
   });
 
-  it("should load rules for a tenant", async () => {
+  it("loads rules for a tenant", async () => {
     const rules: ICategoryRules[] = [
       {
-        keyword: "food",
+        match: /food/i,
         category: EBaseCategories.expenses,
         tenantId,
-        ruleId: `${tenantId}#food`,
-        isActive: true,
+        ruleId: `${tenantId}#${/food/i}`,
         createdAt: "2025-08-12T00:00:00.000Z",
       },
       {
-        keyword: "fuel",
+        match: /fuel/i,
         category: EBaseCategories.expenses,
         tenantId,
-        ruleId: `${tenantId}#fuel`,
-        isActive: true,
+        ruleId: `${tenantId}#${/fuel/i}`,
         createdAt: "2025-08-12T00:00:00.000Z",
       },
     ];
     storeMock.send.mockResolvedValue({ Items: rules });
-    const result = await rulesStore["loadRules"](tenantId);
+    const result = await (rulesStore as any)["loadRules"](tenantId);
     expect(result).toEqual(rules);
     expect(storeMock.send).toHaveBeenCalled();
   });
 
-  it("should list categories grouped by base with tenant overrides", async () => {
+  it("lists categories grouped by base with tenant overrides applied", async () => {
     const tenantRules: ICategoryRules[] = [
       {
-        keyword: "food",
+        match: /food/i,
         category: EBaseCategories.expenses,
         tenantId,
-        ruleId: `${tenantId}#food`,
-        isActive: true,
+        ruleId: `${tenantId}#${/food/i}`,
         createdAt: "2025-08-12T00:00:00.000Z",
       },
       {
-        keyword: "salary",
+        match: /salary/i,
         category: EBaseCategories.income,
         tenantId,
-        ruleId: `${tenantId}#salary`,
-        isActive: true,
+        ruleId: `${tenantId}#${/salary/i}`,
         createdAt: "2025-08-12T00:00:00.000Z",
       },
     ];
     const globalRules: ICategoryRules[] = [
       {
-        keyword: "fuel",
+        match: /fuel/i,
         category: EBaseCategories.expenses,
         tenantId: defaultTenant,
-        ruleId: `${defaultTenant}#fuel`,
-        isActive: true,
+        ruleId: `${defaultTenant}#${/fuel/i}`,
         createdAt: "2025-08-12T00:00:00.000Z",
       },
       {
         // Should not duplicate because tenant already has "food"
-        keyword: "food",
+        match: /food/i,
         category: EBaseCategories.expenses,
         tenantId: defaultTenant,
-        ruleId: `${defaultTenant}#food`,
-        isActive: true,
+        ruleId: `${defaultTenant}#${/food/i}`,
         createdAt: "2025-08-12T00:00:00.000Z",
       },
     ];
@@ -187,8 +177,8 @@ describe("CategoryRulesStore", () => {
       .mockResolvedValueOnce({ Items: globalRules });
 
     const result = await rulesStore.listCategoriesByBase(tenantId);
-    expect(result[EBaseCategories.expenses]).toEqual(["food", "fuel"]);
-    expect(result[EBaseCategories.income]).toEqual(["salary"]);
+    expect(result[EBaseCategories.expenses]).toEqual(["/food/i", "/fuel/i"]);
+    expect(result[EBaseCategories.income]).toEqual(["/salary/i"]);
   });
 
   it("maps NLP classification labels to enums with synonyms", () => {
@@ -211,9 +201,9 @@ describe("CategoryRulesStore", () => {
       subCategory: ESubInvestmentCategories.mutualFunds,
     });
 
-    // Unknown -> default
+    // Unknown -> unclassified
     expect(rulesStore.mapClassificationToEnums("UNKNOWN_LABEL")).toEqual({
-      category: EBaseCategories.default,
+      category: EBaseCategories.unclassified,
     });
   });
 });

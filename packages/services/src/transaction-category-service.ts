@@ -7,6 +7,7 @@ import {
   ICategoryRulesStore,
   ITransactionCategoryRequest,
   EBaseCategories,
+  EAllSubCategories,
 } from "@common";
 import { keywordBaseCategoryMap, categorizeByRules } from "@nlp-tagger";
 
@@ -52,7 +53,7 @@ export class TransactionCategoryService implements ITransactionCategoryService {
         return false;
       }
       // Skip if category already set
-      if (category && category !== EBaseCategories.default) {
+      if (category && category !== EBaseCategories.unclassified) {
         this.logger.info(
           `Skipping transaction ${transactionId} — already categorized`,
         );
@@ -62,13 +63,14 @@ export class TransactionCategoryService implements ITransactionCategoryService {
       const rules = await this.categoryRulesStore.getRulesByTenant(tenantId);
 
       // step 2: Match description against rules
-      let matchedCategory = categorizeByRules(description, rules);
+      let matchedCategory = categorizeByRules({ description, rules });
       let finalTaggedBy = taggedBy ?? "RULE_ENGINE";
       let finalConfidence: number | undefined = confidence ?? 1;
       let finalEmbedding = embedding;
 
       // step 3: Fallback to AI tagging only if no rule matched and AI enabled
-      const ruleMatched = matchedCategory !== EBaseCategories.default;
+      const ruleMatched =
+        matchedCategory.category !== EBaseCategories.unclassified;
       if (!ruleMatched && this.aiTaggingEnabled) {
         this.logger.info(
           `No rule matched for transaction ${transactionId}, falling back to AI tagging`,
@@ -81,7 +83,8 @@ export class TransactionCategoryService implements ITransactionCategoryService {
           classification,
         });
         if (classification) {
-          matchedCategory = classification.category as EBaseCategories;
+          matchedCategory.category = classification.category;
+          matchedCategory.subCategory = classification.subCategory;
           finalTaggedBy = "AI_TAGGER";
           finalConfidence = classification.confidence;
         }
@@ -91,7 +94,8 @@ export class TransactionCategoryService implements ITransactionCategoryService {
       await this.transactionStore.updateTransactionCategory(
         tenantId,
         transactionId,
-        matchedCategory,
+        matchedCategory.category,
+        matchedCategory.subCategory,
         finalTaggedBy,
         finalConfidence,
         finalEmbedding,
@@ -118,27 +122,27 @@ export class TransactionCategoryService implements ITransactionCategoryService {
 
   public async classification(description: string): Promise<{
     category: EBaseCategories;
-    subCategory?: string;
+    subCategory?: EAllSubCategories;
     confidence?: number;
   } | null> {
-    if (!this.nlpService) return { category: EBaseCategories.default };
+    if (!this.nlpService) return { category: EBaseCategories.unclassified };
     const classes = await this.nlpService.classifyDescription(description);
     const topClass = classes && classes[0];
     if (!topClass?.Name)
       return {
-        category: EBaseCategories.default,
+        category: EBaseCategories.unclassified,
       };
 
     // Try store mapping first, then gracefully fallback
     let category: EBaseCategories | undefined;
-    let subCategory: string | undefined;
+    let subCategory: EAllSubCategories | undefined;
     try {
       const mapped = this.categoryRulesStore.mapClassificationToEnums(
         topClass.Name,
       );
       category = mapped?.category;
       // mapped.subCategory may be an enum; keep as string for simplicity here
-      subCategory = (mapped as unknown as { subCategory?: string })
+      subCategory = (mapped as unknown as { subCategory?: EAllSubCategories })
         ?.subCategory;
     } catch (e) {
       // ignore and use fallback
@@ -149,7 +153,7 @@ export class TransactionCategoryService implements ITransactionCategoryService {
     }
 
     return {
-      category: category || EBaseCategories.default,
+      category: category || EBaseCategories.unclassified,
       subCategory,
       confidence: topClass.Score,
     };
