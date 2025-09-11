@@ -4,7 +4,10 @@ export enum EBaseCategories {
   savings = "SAVINGS",
   expenses = "EXPENSES",
   income = "INCOME",
-  default = "DEFAULT",
+  transfer = "TRANSFER",
+  loan = "LOAN",
+  investment = "INVESTMENT",
+  unclassified = "UNCLASSIFIED",
 }
 
 export enum ESubSavingCategories {
@@ -44,18 +47,6 @@ export enum ESubLoanCategories {
   student = "STUDENT",
 }
 
-export interface ICategoryRules {
-  ruleId: string;
-  tenantId: ETenantType;
-  keyword: string;
-  category: EBaseCategories;
-  subCategory?: string; // Optional detailed sub-category
-  isActive: boolean;
-  createdAt: string;
-  updatedAt?: string;
-  deletedAt?: string;
-}
-
 // Union of all supported sub-category enums
 export type EAllSubCategories =
   | ESubExpenseCategories
@@ -63,3 +54,17 @@ export type EAllSubCategories =
   | ESubIncomeCategories
   | ESubInvestmentCategories
   | ESubLoanCategories;
+
+export interface ICategoryRules {
+  ruleId: string;
+  tenantId: ETenantType;
+  match: RegExp;
+  category: EBaseCategories;
+  subCategory?: EAllSubCategories; // Optional detailed sub-category
+  when?: "CREDIT" | "DEBIT" | "ANY";
+  reason?: string;
+  confidence?: number;
+  createdAt: string;
+  updatedAt?: string;
+  deletedAt?: string;
+}

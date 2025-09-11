@@ -1,79 +1,56 @@
-import { EBaseCategories } from "@common";
+import { ICategoryRules, EBaseCategories } from "@common";
 
-function escapeRegExp(input: string): string {
-  return input.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
-}
+export type RawTxn = {
+  description: string;
+  rules: ICategoryRules[];
+  credit?: number; // positive for credits
+  debit?: number; // positive for debits
+  // ... your other fields (date, ref, balance, etc.)
+};
 
-export function categorizeByRules(
-  description: string,
-  rules: Record<string, EBaseCategories>,
-): EBaseCategories {
-  const lowerDesc = description.toLowerCase();
+const isCredit = (t: RawTxn) => (t.credit ?? 0) > 0 && (t.debit ?? 0) === 0;
+const isDebit = (t: RawTxn) => (t.debit ?? 0) > 0 && (t.credit ?? 0) === 0;
 
-  // Explicit override: any mention of Zerodha counts as savings
-  if (/zerodha/i.test(lowerDesc)) {
-    return EBaseCategories.savings;
-  }
+export const normalizeDescription = (raw: string): string =>
+  raw
+    .toLowerCase()
+    .replace(/\s+/g, " ")
+    .replace(/[^a-z0-9 @&/().+\-_:]/g, " ")
+    .replace(/\s+/g, " ")
+    .trim();
 
-  // Early override: UPI split/settle with credit indicators => income
-  // Must precede generic keyword matching (which maps "upi" to expenses).
-  const upiMentioned = /(\bupi\b|upi:\/\/)/i.test(lowerDesc);
-  if (upiMentioned) {
-    const splitOrSettle =
-      /(splitwise|\bsplit\b|settle|settled|settlement|settling)/i.test(
-        lowerDesc,
-      );
-    if (splitOrSettle) {
-      const creditSignals = /(\b(received|credit|cr)\b|\bto\s+account\b)/i.test(
-        lowerDesc,
-      );
-      if (creditSignals) {
-        return EBaseCategories.income;
-      }
+export function categorizeByRules(txn: RawTxn): Omit<
+  ICategoryRules,
+  "ruleId" | "tenantId" | "match" | "confidence" | "createdAt"
+> & {
+  confidence?: number;
+} {
+  const desc = normalizeDescription(txn.description || "");
+  const side: "CREDIT" | "DEBIT" | "ANY" = isCredit(txn)
+    ? "CREDIT"
+    : isDebit(txn)
+      ? "DEBIT"
+      : "ANY";
+
+  for (const rule of txn.rules) {
+    if (rule.when && rule.when !== "ANY" && rule.when !== side) continue;
+
+    // ICategoryRules.match is a RegExp; use test() directly
+    const matched = rule.match.test(desc);
+
+    if (matched) {
+      return {
+        category: rule.category,
+        subCategory: rule.subCategory,
+        reason: rule.reason,
+        confidence: rule.confidence ?? 0.8,
+      };
     }
   }
 
-  const keywords = Object.keys(rules);
-  if (lowerDesc.length === 0 || keywords.length === 0) {
-    return EBaseCategories.default;
-  }
-  const pattern = new RegExp(`(${keywords.map(escapeRegExp).join("|")})`, "i");
-  const match = lowerDesc.match(pattern);
-  if (match && match[1]) {
-    const found = match[1].toLowerCase();
-    const category = rules[found];
-    if (category) return category;
-  }
-
-  // Fallback heuristics when explicit rules don't match
-  // Income-oriented signals
-  const incomeFallbacks = [
-    /refund|reversal|cashback|reimb(ursement)?/i,
-    /dividend|interest\s*cr|int\s*cr/i,
-  ];
-  if (incomeFallbacks.some((re) => re.test(lowerDesc))) {
-    return EBaseCategories.income;
-  }
-
-  // Savings/investment signals
-  const savingsFallbacks = [
-    /mutual\s*fund|mf\b|sip\b|nps\b|ppf\b|fd\b|rd\b/i,
-    /investment|invest\b/i,
-  ];
-  if (savingsFallbacks.some((re) => re.test(lowerDesc))) {
-    return EBaseCategories.savings;
-  }
-
-  // Expense-oriented signals
-  const expenseFallbacks = [
-    /charge|fee|penalty|fine/i,
-    /purchase|payment|pos\b|card\b|atm\b/i,
-    /uber|ola|swiggy|zomato|amazon|flipkart|myntra/i,
-    /electricity|power\b|gas\b|water\b|broadband|internet|dth|mobile\s*recharge/i,
-  ];
-  if (expenseFallbacks.some((re) => re.test(lowerDesc))) {
-    return EBaseCategories.expenses;
-  }
-
-  return EBaseCategories.default;
+  return {
+    category: EBaseCategories.unclassified,
+    reason: "No rule matched",
+    confidence: 0.0,
+  };
 }

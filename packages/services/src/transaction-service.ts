@@ -13,6 +13,7 @@ import {
   IcategoryGroup,
   IAggregatedSummary,
   EBaseCategories,
+  EAllSubCategories,
 } from "@common";
 import { HdfcBankParser, SbiBankParser } from "@parser";
 
@@ -270,12 +271,14 @@ export class TransactionService implements ITransactionService {
     tenantId: ETenantType,
     transactionId: string,
     category: string,
+    subCategory?: string,
     taggedBy?: string,
   ): Promise<{ id: string; category: string; taggedBy?: string }> {
     await this.transactionStore.updateTransactionCategory(
       tenantId,
       transactionId,
       category as EBaseCategories,
+      subCategory as EAllSubCategories,
       taggedBy,
     );
     return { id: transactionId, category, taggedBy };

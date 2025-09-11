@@ -28,7 +28,8 @@ export class TransactionCategoryLoader {
         transactionId: newImage.transactionId?.S ?? "",
         description: newImage.description?.S,
         category:
-          (newImage.category?.S as EBaseCategories) ?? EBaseCategories.default,
+          (newImage.category?.S as EBaseCategories) ??
+          EBaseCategories.unclassified,
         createdAt: newImage.createdAt?.S ?? new Date().toISOString(),
         embedding:
           newImage.embedding?.L?.map((e: AttributeValue) => Number(e.N || 0)) ??

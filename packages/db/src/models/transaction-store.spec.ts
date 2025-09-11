@@ -8,6 +8,7 @@ import {
   ETenantType,
   EBankName,
   EBaseCategories,
+  ESubExpenseCategories,
 } from "@common";
 
 describe("TransactionStore", () => {
@@ -25,7 +26,7 @@ describe("TransactionStore", () => {
     amount: 100,
     description: "desc",
     balance: 1000,
-    category: EBaseCategories.default,
+    category: EBaseCategories.unclassified,
     embedding: [0.1, 0.2],
     taggedBy: "AI_TAGGER",
     confidence: 0.9,
@@ -127,6 +128,7 @@ describe("TransactionStore", () => {
       tenantId,
       txn.transactionId,
       EBaseCategories.expenses,
+      undefined,
       "AI_TAGGER",
       0.95,
       [0.1, 0.2],
@@ -140,6 +142,28 @@ describe("TransactionStore", () => {
       ":emb": [0.1, 0.2],
     });
     expect(command.input.ExpressionAttributeValues[":updatedAt"]).toBeDefined();
+  });
+
+  it("should update transaction category with subCategory", async () => {
+    storeMock.send = jest.fn().mockResolvedValue({});
+    await transactionStore.updateTransactionCategory(
+      tenantId,
+      txn.transactionId,
+      EBaseCategories.expenses,
+      ESubExpenseCategories.food,
+      "AI_TAGGER",
+      0.88,
+      [0.3, 0.4],
+    );
+    const command = storeMock.send.mock.calls[0][0];
+    expect(command.input.UpdateExpression).toContain("subCategory = :subCat");
+    expect(command.input.ExpressionAttributeValues).toMatchObject({
+      ":cat": EBaseCategories.expenses,
+      ":subCat": ESubExpenseCategories.food,
+      ":tagger": "AI_TAGGER",
+      ":conf": 0.88,
+      ":emb": [0.3, 0.4],
+    });
   });
 
   it("should update only category when no metadata provided", async () => {
