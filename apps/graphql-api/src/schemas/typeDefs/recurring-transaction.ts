@@ -1,4 +1,7 @@
 export const recurringTransactionTypeDefs = /* GraphQL */ `
+  """
+  Supported schedules for recurring transactions.
+  """
   enum RecurringFrequency {
     monthly
     weekly
@@ -6,6 +9,9 @@ export const recurringTransactionTypeDefs = /* GraphQL */ `
     yearly
   }
 
+  """
+  Definition and schedule of a recurring transaction.
+  """
   type RecurringTransaction {
     id: String!
     description: String!
@@ -20,6 +26,9 @@ export const recurringTransactionTypeDefs = /* GraphQL */ `
     nextRunDate: String
   }
 
+  """
+  Input to create a recurring transaction rule.
+  """
   input CreateRecurringTransactionInput {
     description: String!
     amount: Float!
@@ -33,13 +42,22 @@ export const recurringTransactionTypeDefs = /* GraphQL */ `
   }
 
   extend type Query {
+    """
+    Lists all recurring transactions for the current tenant/user.
+    """
     recurringTransactions: [RecurringTransaction!]!
   }
 
   extend type Mutation {
+    """
+    Creates a recurring transaction definition.
+    """
     createRecurringTransaction(
       input: CreateRecurringTransactionInput!
     ): RecurringTransaction!
+    """
+    Materializes recurring transactions for the given month and returns the count.
+    """
     generateRecurringTransactions(month: Int!, year: Int!): Int!
   }
 `;

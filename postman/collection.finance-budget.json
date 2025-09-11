@@ -1,0 +1,44 @@
+{
+  "info": {
+    "name": "Finance Budget API - Minimal",
+    "description": "Minimal collection for testing apiVersion and healthCheck.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "Query - apiVersion",
+      "request": {
+        "method": "POST",
+        "header": [
+          { "key": "Content-Type", "value": "application/json" }
+        ],
+        "url": "{{baseUrl}}/graphql",
+        "body": {
+          "mode": "graphql",
+          "graphql": {
+            "query": "query { apiVersion }",
+            "variables": "{}"
+          }
+        }
+      }
+    },
+    {
+      "name": "Query - healthCheck",
+      "request": {
+        "method": "POST",
+        "header": [
+          { "key": "Content-Type", "value": "application/json" }
+        ],
+        "url": "{{baseUrl}}/graphql",
+        "body": {
+          "mode": "graphql",
+          "graphql": {
+            "query": "query { healthCheck }",
+            "variables": "{}"
+          }
+        }
+      }
+    }
+  ],
+  "protocolProfileBehavior": {}
+}
