@@ -14,7 +14,6 @@ import {
   AuthorizationService,
   UploadStatementService,
   TransactionCategoryService,
-  NlpService,
   SavingsGoalService,
   SinkingFundService,
   ForecastService,
@@ -23,13 +22,11 @@ import {
 } from "@services";
 import { S3Service, SQSService } from "@client";
 import { DynamoDBDocumentClient } from "@aws-sdk/lib-dynamodb";
-import { ComprehendClient } from "@aws-sdk/client-comprehend";
 
 export function setupServices(
   logger: ILogger,
   s3Client: S3,
   sqsClient: SQS,
-  comprehendClient: ComprehendClient,
   dynamoDBDocumentClient: DynamoDBDocumentClient,
 ) {
   const s3Service = new S3Service(
@@ -83,17 +80,10 @@ export function setupServices(
     sqsService,
     transactionStore,
   );
-  const nlpService = new NlpService(
-    logger.child("NlpService"),
-    comprehendClient,
-    config.comprehendClassifierArn,
-  );
   const transactionCategoryService = new TransactionCategoryService(
     logger.child("TransactionCategoryService"),
     transactionStore,
     categoryRulesStore,
-    nlpService,
-    config.aiTaggingEnabled,
   );
 
   const savingsGoalService = new SavingsGoalService(
@@ -125,7 +115,6 @@ export function setupServices(
     savingsGoalService,
     sinkingFundService,
     forecastService,
-    nlpService,
     recurringTransactionService,
     budgetService,
   };
