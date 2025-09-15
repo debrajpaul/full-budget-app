@@ -23,13 +23,11 @@ import {
 } from "@services";
 import { S3Service, SQSService } from "@client";
 import { DynamoDBDocumentClient } from "@aws-sdk/lib-dynamodb";
-import { ComprehendClient } from "@aws-sdk/client-comprehend";
 
 export function setupServices(
   logger: ILogger,
   s3Client: S3,
   sqsClient: SQS,
-  comprehendClient: ComprehendClient,
   dynamoDBDocumentClient: DynamoDBDocumentClient,
 ) {
   const s3Service = new S3Service(
@@ -83,11 +81,7 @@ export function setupServices(
     sqsService,
     transactionStore,
   );
-  const nlpService = new NlpService(
-    logger.child("NlpService"),
-    comprehendClient,
-    config.comprehendClassifierArn,
-  );
+  const nlpService = new NlpService(logger.child("NlpService"));
   const transactionCategoryService = new TransactionCategoryService(
     logger.child("TransactionCategoryService"),
     transactionStore,

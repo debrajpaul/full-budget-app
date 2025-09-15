@@ -1,18 +1,26 @@
-import {
-  DetectEntitiesCommandOutput,
-  DetectSentimentCommandOutput,
-  ClassifyDocumentCommandOutput,
-} from "@aws-sdk/client-comprehend";
+// Lightweight, provider-agnostic NLP types (no AWS SDK dependencies)
+export type TNlpSentiment = "POSITIVE" | "NEGATIVE" | "NEUTRAL" | "MIXED";
+
+export interface TNlpEntity {
+  Text: string;
+  Type?: string;
+  Score?: number;
+  BeginOffset?: number;
+  EndOffset?: number;
+}
+
+export interface TNlpClass {
+  Name: string;
+  Score: number;
+}
 
 export interface INlpAnalysis {
-  entities: DetectEntitiesCommandOutput["Entities"];
-  sentiment: DetectSentimentCommandOutput["Sentiment"];
-  classification?: ClassifyDocumentCommandOutput["Classes"];
+  entities: TNlpEntity[];
+  sentiment: TNlpSentiment;
+  classification?: TNlpClass[];
 }
 
 export interface INlpService {
   analyzeDescription(description: string): Promise<INlpAnalysis>;
-  classifyDescription(
-    description: string,
-  ): Promise<ClassifyDocumentCommandOutput["Classes"]>;
+  classifyDescription(description: string): Promise<TNlpClass[]>;
 }

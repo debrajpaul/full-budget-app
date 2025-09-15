@@ -108,9 +108,8 @@ describe("TransactionCategoryService", () => {
       entities: [],
       sentiment: "NEUTRAL",
     });
-    type Classification = { Name?: string; Score?: number };
     nlpService.classifyDescription.mockResolvedValue([
-      { Name: "FOOD", Score: 0.9 } as Classification,
+      { Name: "FOOD", Score: 0.9 },
     ]);
     const req: ITransactionCategoryRequest = {
       tenantId: ETenantType.default,
