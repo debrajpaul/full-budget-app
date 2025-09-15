@@ -37,6 +37,14 @@ export const keywordBaseCategoryMap: Omit<
     reason: "MF/SIP",
     confidence: 0.9,
   },
+  {
+    match: /nps|nsc|national\s*pension\s*scheme/,
+    when: "ANY",
+    category: EBaseCategories.investment,
+    subCategory: ESubInvestmentCategories.mutualFunds,
+    reason: "NPS/NSC",
+    confidence: 0.9,
+  },
 
   // --- SAVINGS / DEPOSIT PRODUCTS ---
   {
@@ -58,7 +66,7 @@ export const keywordBaseCategoryMap: Omit<
 
   // --- EXPENSES ---
   {
-    match: /tata\s*aia|insurance|mediclaim/,
+    match: /tata\s*aia|insurance|policybazaar|lic|mediclaim/,
     when: "DEBIT",
     category: EBaseCategories.expenses,
     subCategory: ESubExpenseCategories.healthcare,
@@ -74,12 +82,56 @@ export const keywordBaseCategoryMap: Omit<
     confidence: 0.95,
   },
   {
-    match: /goods\s+and\s+services\s+tax|[^a-z]gst[^a-z]/,
+    match: /maid\s+salary/,
+    when: "DEBIT",
+    category: EBaseCategories.expenses,
+    subCategory: ESubExpenseCategories.housing,
+    reason: "Maid salary payment",
+    confidence: 0.9,
+  },
+  {
+    match: /billpay\s*dr.*hdfccs/,
+    when: "DEBIT",
+    category: EBaseCategories.expenses,
+    subCategory: ESubExpenseCategories.utilities,
+    reason: "Credit card bill payment",
+    confidence: 0.8,
+  },
+  {
+    match: /goods\s+and\s+services\s+tax|[^a-z]gst[^a-z]|gst\s+payment/,
     when: "DEBIT",
     category: EBaseCategories.expenses,
     subCategory: ESubExpenseCategories.utilities,
     reason: "GST/tax payment",
     confidence: 0.75,
+  },
+  {
+    match: /swiggy|zomato|blinkit|bigbasket|grofers/,
+    when: "DEBIT",
+    category: EBaseCategories.expenses,
+    subCategory: ESubExpenseCategories.food,
+    reason: "Food/grocery delivery",
+    confidence: 0.9,
+  },
+  {
+    // Include BMRCL (Bangalore Metro Rail Corporation Limited) to ensure metro
+    // payments from HDFC statements are captured as transportation expenses.
+    match:
+      /uber|ola|bmrcl|irctc|railway|metro|flight|airways|petrol|diesel|fuel/,
+    when: "DEBIT",
+    category: EBaseCategories.expenses,
+    subCategory: ESubExpenseCategories.transportation,
+    reason: "Transportation expense",
+    confidence: 0.85,
+  },
+  {
+    match:
+      /bescom|torrent\s*power|electricity|broadband|jio|airtel|\bvi\b|bsnl|internet|water\s+bill/,
+    when: "DEBIT",
+    category: EBaseCategories.expenses,
+    subCategory: ESubExpenseCategories.utilities,
+    reason: "Utility payment",
+    confidence: 0.8,
   },
 
   // --- INCOME (payouts & salary-like) ---
@@ -108,10 +160,18 @@ export const keywordBaseCategoryMap: Omit<
     reason: "Incoming transfer (likely earnings)",
     confidence: 0.6,
   },
+  {
+    match: /robosoft/,
+    when: "CREDIT",
+    category: EBaseCategories.income,
+    subCategory: ESubIncomeCategories.salary,
+    reason: "Salary credit (Robosoft)",
+    confidence: 0.9,
+  },
 
   // --- FEES (treated as utilities unless you have a Fees subcategory) ---
   {
-    match: /charges|fee|sms\s+charge|debit\s+card\s+annual|pos\s+charge/,
+    match: /charge|fee|sms\s+charge|annual\s+fee|atm\s+withdrawal|penalty/,
     when: "DEBIT",
     category: EBaseCategories.expenses,
     subCategory: ESubExpenseCategories.utilities,
@@ -121,9 +181,9 @@ export const keywordBaseCategoryMap: Omit<
 
   // --- TRANSFERS / MOVES ---
   {
-    // SBI exports are full of these; we keep them neutral as TRANSFER
+    // we keep them neutral as TRANSFER
     match:
-      /(withdrawal\s+transfer|to\s+transfer|by\s+transfer|imps|neft|upi|p2a|p2p)/,
+      /(withdrawal\s+transfer|to\s+transfer|by\s+transfer|funds\s+transfer|imps|neft|upi|p2a|p2p|transfer-inb|rtgs|ecs)/,
     when: "ANY",
     category: EBaseCategories.transfer,
     reason: "Generic transfer",

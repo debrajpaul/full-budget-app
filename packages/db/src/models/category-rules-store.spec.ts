@@ -55,9 +55,18 @@ describe("CategoryRulesStore", () => {
         createdAt: "2025-08-12T00:00:00.000Z",
       },
     ];
+    const toDbItems = (arr: ICategoryRules[]) =>
+      arr.map((r) => ({
+        ruleId: r.ruleId,
+        tenantId: r.tenantId,
+        pattern: r.match.source,
+        flags: r.match.flags,
+        category: r.category,
+        createdAt: r.createdAt,
+      }));
     storeMock.send
-      .mockResolvedValueOnce({ Items: tenantRules })
-      .mockResolvedValueOnce({ Items: globalRules });
+      .mockResolvedValueOnce({ Items: toDbItems(tenantRules) })
+      .mockResolvedValueOnce({ Items: toDbItems(globalRules) });
     const result = await rulesStore.getRulesByTenant(tenantId);
     // Returns tenant rules first, followed by global defaults (no override logic here)
     expect(result).toEqual([...tenantRules, ...globalRules]);
@@ -88,7 +97,8 @@ describe("CategoryRulesStore", () => {
       Item: expect.objectContaining({
         ruleId: `${tenantId}#${regex}`,
         tenantId,
-        match: regex,
+        pattern: regex.source,
+        flags: regex.flags,
         category: EBaseCategories.expenses,
       }),
       ConditionExpression: "attribute_not_exists(ruleId)",
@@ -131,7 +141,15 @@ describe("CategoryRulesStore", () => {
         createdAt: "2025-08-12T00:00:00.000Z",
       },
     ];
-    storeMock.send.mockResolvedValue({ Items: rules });
+    const Items = rules.map((r) => ({
+      ruleId: r.ruleId,
+      tenantId: r.tenantId,
+      pattern: r.match.source,
+      flags: r.match.flags,
+      category: r.category,
+      createdAt: r.createdAt,
+    }));
+    storeMock.send.mockResolvedValue({ Items });
     const result = await (rulesStore as any)["loadRules"](tenantId);
     expect(result).toEqual(rules);
     expect(storeMock.send).toHaveBeenCalled();
@@ -171,10 +189,19 @@ describe("CategoryRulesStore", () => {
         createdAt: "2025-08-12T00:00:00.000Z",
       },
     ];
+    const toDbItems = (arr: ICategoryRules[]) =>
+      arr.map((r) => ({
+        ruleId: r.ruleId,
+        tenantId: r.tenantId,
+        pattern: r.match.source,
+        flags: r.match.flags,
+        category: r.category,
+        createdAt: r.createdAt,
+      }));
 
     storeMock.send
-      .mockResolvedValueOnce({ Items: tenantRules })
-      .mockResolvedValueOnce({ Items: globalRules });
+      .mockResolvedValueOnce({ Items: toDbItems(tenantRules) })
+      .mockResolvedValueOnce({ Items: toDbItems(globalRules) });
 
     const result = await rulesStore.listCategoriesByBase(tenantId);
     expect(result[EBaseCategories.expenses]).toEqual(["/food/i", "/fuel/i"]);

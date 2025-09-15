@@ -120,16 +120,22 @@ export class CategoryRulesStore implements ICategoryRulesStore {
       reason,
       confidence,
     });
-    const item: ICategoryRules = {
-      ruleId: `${tenantId}#${match}`,
+    // Persist regex as pattern + flags to avoid marshalling class instances
+    const pattern = match.source;
+    const flags = match.flags;
+    const ruleId = `${tenantId}#/${pattern}/${flags}`;
+
+    const item = {
+      ruleId,
       tenantId,
-      match,
+      pattern,
+      flags,
       category,
       subCategory,
       reason,
       confidence,
       createdAt: new Date().toISOString(),
-    };
+    } as const;
 
     const command = new PutCommand({
       TableName: this.tableName,
@@ -251,10 +257,50 @@ export class CategoryRulesStore implements ICategoryRulesStore {
       TableName: this.tableName,
       KeyConditionExpression: "tenantId = :tid",
       ExpressionAttributeValues: { ":tid": tenantId },
-      ProjectionExpression: "keyword, category",
+      ProjectionExpression:
+        "ruleId, tenantId, pattern, flags, category, subCategory, reason, confidence, createdAt",
     });
     const result = await this.store.send(command);
-    return (result.Items as ICategoryRules[]) || [];
+    const items =
+      (result.Items as Array<{
+        ruleId: string;
+        tenantId: ETenantType;
+        pattern?: string;
+        flags?: string;
+        category: EBaseCategories;
+        subCategory?: EAllSubCategories;
+        reason?: string;
+        confidence?: number;
+        createdAt: string;
+      }>) || [];
+
+    return items.map((it) => {
+      let pattern = it.pattern;
+      let flags = it.flags ?? "";
+      const rawMatch = (it as unknown as { match?: string }).match;
+      if (!pattern && rawMatch && typeof rawMatch === "string") {
+        // Fallback for legacy rows stored as "/pattern/flags"
+        const lastSlash = rawMatch.lastIndexOf("/");
+        if (rawMatch.startsWith("/") && lastSlash > 0) {
+          pattern = rawMatch.slice(1, lastSlash);
+          flags = rawMatch.slice(lastSlash + 1);
+        } else {
+          // Treat as a simple substring match if not a regex literal
+          pattern = rawMatch.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+          flags = "i";
+        }
+      }
+      return {
+        ruleId: it.ruleId,
+        tenantId: it.tenantId,
+        match: new RegExp(pattern ?? "", flags),
+        category: it.category,
+        subCategory: it.subCategory,
+        reason: it.reason,
+        confidence: it.confidence,
+        createdAt: it.createdAt,
+      } as ICategoryRules;
+    });
   }
 
   /**
