@@ -20,6 +20,7 @@ import {
   RecurringTransactionService,
   BudgetService,
 } from "@services";
+import { RuleEngine } from "@nlp-tagger";
 import { S3Service, SQSService } from "@client";
 import { DynamoDBDocumentClient } from "@aws-sdk/lib-dynamodb";
 
@@ -29,6 +30,9 @@ export function setupServices(
   sqsClient: SQS,
   dynamoDBDocumentClient: DynamoDBDocumentClient,
 ) {
+  const ruleEngine = new RuleEngine(
+    logger.child("RuleEngine"),
+  );
   const s3Service = new S3Service(
     logger.child("S3Service"),
     config.awsS3Bucket,
@@ -84,6 +88,7 @@ export function setupServices(
     logger.child("TransactionCategoryService"),
     transactionStore,
     categoryRulesStore,
+    ruleEngine,
   );
 
   const savingsGoalService = new SavingsGoalService(

@@ -7,6 +7,7 @@ import {
   ITransactionCategoryRequest,
   EBaseCategories,
   ESubInvestmentCategories,
+  IRuleEngine,
 } from "@common";
 import { TransactionCategoryService } from "./transaction-category-service";
 
@@ -14,16 +15,19 @@ describe("TransactionCategoryService", () => {
   let logger: ReturnType<typeof mock<ILogger>>;
   let transactionStore: ReturnType<typeof mock<ITransactionStore>>;
   let rulesStore: ReturnType<typeof mock<ICategoryRulesStore>>;
+  let ruleEngine: ReturnType<typeof mock<IRuleEngine>>;
   let service: TransactionCategoryService;
 
   beforeEach(() => {
     logger = mock<ILogger>();
     transactionStore = mock<ITransactionStore>();
     rulesStore = mock<ICategoryRulesStore>();
+    ruleEngine = mock<IRuleEngine>();
     service = new TransactionCategoryService(
       logger,
       transactionStore,
       rulesStore,
+      ruleEngine,
     );
   });
 
@@ -39,6 +43,13 @@ describe("TransactionCategoryService", () => {
         createdAt: new Date(0).toISOString(),
       },
     ] as any);
+    // Rule engine now performs the categorization based on description + rules
+    ruleEngine.categorize.mockReturnValue({
+      category: EBaseCategories.investment,
+      subCategory: ESubInvestmentCategories.stocks,
+      reason: "Matched zerodha keyword",
+      confidence: 0.8,
+    });
     const req: ITransactionCategoryRequest = {
       tenantId: ETenantType.default,
       transactionId: "t1",
@@ -48,6 +59,13 @@ describe("TransactionCategoryService", () => {
     const result = await service.process(req);
 
     expect(result).toBe(true);
+    expect(ruleEngine.categorize).toHaveBeenCalledTimes(1);
+    expect(ruleEngine.categorize).toHaveBeenCalledWith(
+      expect.objectContaining({
+        description: req.description,
+        rules: expect.any(Array),
+      })
+    );
     expect(transactionStore.updateTransactionCategory).toHaveBeenCalledWith(
       ETenantType.default,
       "t1",
@@ -61,11 +79,11 @@ describe("TransactionCategoryService", () => {
 
   it("keeps unclassified when no rule matches", async () => {
     rulesStore.getRulesByTenant.mockResolvedValue([] as any);
-    service = new TransactionCategoryService(
-      logger,
-      transactionStore,
-      rulesStore,
-    );
+    ruleEngine.categorize.mockReturnValue({
+      category: EBaseCategories.unclassified,
+      reason: "No rule matched",
+      confidence: 0,
+    });
     const req: ITransactionCategoryRequest = {
       tenantId: ETenantType.default,
       transactionId: "t2",
