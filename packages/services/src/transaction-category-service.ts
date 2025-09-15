@@ -1,13 +1,11 @@
 import {
   ILogger,
   ETenantType,
-  INlpService,
   ITransactionStore,
   ITransactionCategoryService,
   ICategoryRulesStore,
   ITransactionCategoryRequest,
   EBaseCategories,
-  EAllSubCategories,
 } from "@common";
 import { keywordBaseCategoryMap, categorizeByRules } from "@nlp-tagger";
 
@@ -15,21 +13,15 @@ export class TransactionCategoryService implements ITransactionCategoryService {
   private readonly logger: ILogger;
   private readonly transactionStore: ITransactionStore;
   private readonly categoryRulesStore: ICategoryRulesStore;
-  private readonly nlpService: INlpService;
-  private readonly aiTaggingEnabled: boolean;
 
   constructor(
     logger: ILogger,
     transactionStore: ITransactionStore,
     categoryRulesStore: ICategoryRulesStore,
-    nlpService: INlpService,
-    aiTaggingEnabled?: boolean,
   ) {
     this.logger = logger;
     this.transactionStore = transactionStore;
     this.categoryRulesStore = categoryRulesStore;
-    this.nlpService = nlpService;
-    this.aiTaggingEnabled = aiTaggingEnabled ?? false;
     this.logger.info("ProcessService initialized");
   }
   public async process(request: ITransactionCategoryRequest): Promise<boolean> {
@@ -40,7 +32,6 @@ export class TransactionCategoryService implements ITransactionCategoryService {
         transactionId,
         description,
         category,
-        embedding,
         taggedBy,
         confidence,
       } = request;
@@ -66,30 +57,7 @@ export class TransactionCategoryService implements ITransactionCategoryService {
       let matchedCategory = categorizeByRules({ description, rules });
       let finalTaggedBy = taggedBy ?? "RULE_ENGINE";
       let finalConfidence: number | undefined = confidence ?? 1;
-      let finalEmbedding = embedding;
-
-      // step 3: Fallback to AI tagging only if no rule matched and AI enabled
-      const ruleMatched =
-        matchedCategory.category !== EBaseCategories.unclassified;
-      if (!ruleMatched && this.aiTaggingEnabled) {
-        this.logger.info(
-          `No rule matched for transaction ${transactionId}, falling back to AI tagging`,
-        );
-        const analysis = await this.nlpService.analyzeDescription(description);
-        this.logger.debug("AI tagging result analysis:", { analysis });
-
-        const classification = await this.classification(description);
-        this.logger.debug("AI tagging result classification:", {
-          classification,
-        });
-        if (classification) {
-          matchedCategory.category = classification.category;
-          matchedCategory.subCategory = classification.subCategory;
-          finalTaggedBy = "AI_TAGGER";
-          finalConfidence = classification.confidence;
-        }
-        finalEmbedding = embedding;
-      }
+      // No AI fallback; rules are the single source of truth
       // step 4: Update transaction with matched category
       await this.transactionStore.updateTransactionCategory(
         tenantId,
@@ -98,10 +66,10 @@ export class TransactionCategoryService implements ITransactionCategoryService {
         matchedCategory.subCategory,
         finalTaggedBy,
         finalConfidence,
-        finalEmbedding,
+        undefined,
       );
       this.logger.info(
-        `Transaction ${transactionId} categorized as "${matchedCategory}"`,
+        `Transaction ${transactionId} categorized`,
       );
       return true;
     } catch (err) {
@@ -118,45 +86,6 @@ export class TransactionCategoryService implements ITransactionCategoryService {
       tenantId,
       keywordBaseCategoryMap,
     );
-  }
-
-  public async classification(description: string): Promise<{
-    category: EBaseCategories;
-    subCategory?: EAllSubCategories;
-    confidence?: number;
-  } | null> {
-    if (!this.nlpService) return { category: EBaseCategories.unclassified };
-    const classes = await this.nlpService.classifyDescription(description);
-    const topClass = classes && classes[0];
-    if (!topClass?.Name)
-      return {
-        category: EBaseCategories.unclassified,
-      };
-
-    // Try store mapping first, then gracefully fallback
-    let category: EBaseCategories | undefined;
-    let subCategory: EAllSubCategories | undefined;
-    try {
-      const mapped = this.categoryRulesStore.mapClassificationToEnums(
-        topClass.Name,
-      );
-      category = mapped?.category;
-      // mapped.subCategory may be an enum; keep as string for simplicity here
-      subCategory = (mapped as unknown as { subCategory?: EAllSubCategories })
-        ?.subCategory;
-    } catch (e) {
-      // ignore and use fallback
-      this.logger.debug(
-        "Error in categoryRulesStore mapClassificationToEnums",
-        { e },
-      );
-    }
-
-    return {
-      category: category || EBaseCategories.unclassified,
-      subCategory,
-      confidence: topClass.Score,
-    };
   }
 
   public async getCategoriesByTenant(

@@ -86,8 +86,6 @@ export function setupServices(
     logger.child("TransactionCategoryService"),
     transactionStore,
     categoryRulesStore,
-    nlpService,
-    config.aiTaggingEnabled,
   );
 
   const savingsGoalService = new SavingsGoalService(

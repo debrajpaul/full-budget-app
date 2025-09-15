@@ -1,6 +1,6 @@
 import { ILogger } from "@common";
 import { config } from "./environment";
-import { TransactionCategoryService, NlpService } from "@services";
+import { TransactionCategoryService } from "@services";
 import { TransactionStore, CategoryRulesStore } from "@db";
 import { DynamoDBDocumentClient } from "@aws-sdk/lib-dynamodb";
 
@@ -18,17 +18,13 @@ export function setupServices(
     config.dynamoCategoryRulesTable,
     dynamoDBDocumentClient,
   );
-  const nlpService = new NlpService(logger.child("NlpService"));
   const transactionCategoryService = new TransactionCategoryService(
     logger.child("TransactionCategoryService"),
     transactionStore,
     categoryRulesStore,
-    nlpService,
-    config.aiTaggingEnabled,
   );
 
   return {
     transactionCategoryService,
-    nlpService,
   };
 }

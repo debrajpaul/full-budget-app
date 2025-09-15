@@ -2,13 +2,11 @@ import { mock } from "jest-mock-extended";
 import {
   ETenantType,
   ILogger,
-  INlpService,
   ITransactionStore,
   ICategoryRulesStore,
   ITransactionCategoryRequest,
   EBaseCategories,
   ESubInvestmentCategories,
-  ESubExpenseCategories,
 } from "@common";
 import { TransactionCategoryService } from "./transaction-category-service";
 
@@ -16,21 +14,13 @@ describe("TransactionCategoryService", () => {
   let logger: ReturnType<typeof mock<ILogger>>;
   let transactionStore: ReturnType<typeof mock<ITransactionStore>>;
   let rulesStore: ReturnType<typeof mock<ICategoryRulesStore>>;
-  let nlpService: ReturnType<typeof mock<INlpService>>;
   let service: TransactionCategoryService;
 
   beforeEach(() => {
     logger = mock<ILogger>();
     transactionStore = mock<ITransactionStore>();
     rulesStore = mock<ICategoryRulesStore>();
-    nlpService = mock<INlpService>();
-    service = new TransactionCategoryService(
-      logger,
-      transactionStore,
-      rulesStore,
-      nlpService,
-      true,
-    );
+    service = new TransactionCategoryService(logger, transactionStore, rulesStore);
   });
 
   it("categorizes by rules when keyword matches", async () => {
@@ -54,7 +44,6 @@ describe("TransactionCategoryService", () => {
     const result = await service.process(req);
 
     expect(result).toBe(true);
-    expect(nlpService.classifyDescription).not.toHaveBeenCalled();
     expect(transactionStore.updateTransactionCategory).toHaveBeenCalledWith(
       ETenantType.default,
       "t1",
@@ -66,15 +55,9 @@ describe("TransactionCategoryService", () => {
     );
   });
 
-  it("skips AI tagging when disabled via env var", async () => {
+  it("keeps unclassified when no rule matches", async () => {
     rulesStore.getRulesByTenant.mockResolvedValue([] as any);
-    service = new TransactionCategoryService(
-      logger,
-      transactionStore,
-      rulesStore,
-      nlpService,
-      false,
-    );
+    service = new TransactionCategoryService(logger, transactionStore, rulesStore);
     const req: ITransactionCategoryRequest = {
       tenantId: ETenantType.default,
       transactionId: "t2",
@@ -85,7 +68,6 @@ describe("TransactionCategoryService", () => {
     const result = await service.process(req);
 
     expect(result).toBe(true);
-    expect(nlpService.classifyDescription).not.toHaveBeenCalled();
     expect(transactionStore.updateTransactionCategory).toHaveBeenCalledWith(
       ETenantType.default,
       "t2",
@@ -93,43 +75,6 @@ describe("TransactionCategoryService", () => {
       undefined,
       "RULE_ENGINE",
       1,
-      undefined,
-    );
-  });
-
-  it("falls back to AI tagging when no rule matches", async () => {
-    rulesStore.getRulesByTenant.mockResolvedValue([] as any);
-    // Align mock with implementation: map NLP class to enums
-    rulesStore.mapClassificationToEnums.mockReturnValue({
-      category: EBaseCategories.expenses,
-      subCategory: ESubExpenseCategories.food,
-    } as any);
-    nlpService.analyzeDescription.mockResolvedValue({
-      entities: [],
-      sentiment: "NEUTRAL",
-    });
-    nlpService.classifyDescription.mockResolvedValue([
-      { Name: "FOOD", Score: 0.9 },
-    ]);
-    const req: ITransactionCategoryRequest = {
-      tenantId: ETenantType.default,
-      transactionId: "t3",
-      description: "Amazon purchase",
-      createdAt: "2025-01-01",
-    };
-
-    const result = await service.process(req);
-    expect(result).toBe(true);
-    expect(nlpService.analyzeDescription).toHaveBeenCalledWith(
-      "Amazon purchase",
-    );
-    expect(transactionStore.updateTransactionCategory).toHaveBeenCalledWith(
-      ETenantType.default,
-      "t3",
-      EBaseCategories.expenses,
-      ESubExpenseCategories.food,
-      "AI_TAGGER",
-      0.9,
       undefined,
     );
   });
