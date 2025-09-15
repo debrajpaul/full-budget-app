@@ -7,6 +7,8 @@ import {
   ICategoryRulesStore,
   ITransactionCategoryRequest,
   EBaseCategories,
+  ESubInvestmentCategories,
+  ESubExpenseCategories,
 } from "@common";
 import { TransactionCategoryService } from "./transaction-category-service";
 
@@ -32,9 +34,17 @@ describe("TransactionCategoryService", () => {
   });
 
   it("categorizes by rules when keyword matches", async () => {
-    rulesStore.getRulesByTenant.mockResolvedValue({
-      zerodha: EBaseCategories.savings,
-    });
+    // New API: getRulesByTenant returns an array of ICategoryRules
+    rulesStore.getRulesByTenant.mockResolvedValue([
+      {
+        ruleId: "r1",
+        tenantId: ETenantType.default,
+        match: /zerodha/i,
+        category: EBaseCategories.investment,
+        subCategory: ESubInvestmentCategories.stocks,
+        createdAt: new Date(0).toISOString(),
+      },
+    ] as any);
     const req: ITransactionCategoryRequest = {
       tenantId: ETenantType.default,
       transactionId: "t1",
@@ -48,7 +58,8 @@ describe("TransactionCategoryService", () => {
     expect(transactionStore.updateTransactionCategory).toHaveBeenCalledWith(
       ETenantType.default,
       "t1",
-      EBaseCategories.savings,
+      EBaseCategories.investment,
+      ESubInvestmentCategories.stocks,
       "RULE_ENGINE",
       1,
       undefined,
@@ -56,7 +67,7 @@ describe("TransactionCategoryService", () => {
   });
 
   it("skips AI tagging when disabled via env var", async () => {
-    rulesStore.getRulesByTenant.mockResolvedValue({});
+    rulesStore.getRulesByTenant.mockResolvedValue([] as any);
     service = new TransactionCategoryService(
       logger,
       transactionStore,
@@ -78,7 +89,8 @@ describe("TransactionCategoryService", () => {
     expect(transactionStore.updateTransactionCategory).toHaveBeenCalledWith(
       ETenantType.default,
       "t2",
-      EBaseCategories.default,
+      EBaseCategories.unclassified,
+      undefined,
       "RULE_ENGINE",
       1,
       undefined,
@@ -86,11 +98,12 @@ describe("TransactionCategoryService", () => {
   });
 
   it("falls back to AI tagging when no rule matches", async () => {
-    rulesStore.getRulesByTenant.mockResolvedValue({});
+    rulesStore.getRulesByTenant.mockResolvedValue([] as any);
     // Align mock with implementation: map NLP class to enums
     rulesStore.mapClassificationToEnums.mockReturnValue({
       category: EBaseCategories.expenses,
-    });
+      subCategory: ESubExpenseCategories.food,
+    } as any);
     nlpService.analyzeDescription.mockResolvedValue({
       entities: [],
       sentiment: "NEUTRAL",
@@ -115,6 +128,7 @@ describe("TransactionCategoryService", () => {
       ETenantType.default,
       "t3",
       EBaseCategories.expenses,
+      ESubExpenseCategories.food,
       "AI_TAGGER",
       0.9,
       undefined,

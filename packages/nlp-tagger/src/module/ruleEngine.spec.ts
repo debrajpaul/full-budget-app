@@ -1,91 +1,92 @@
-import { categorizeByRules } from "./ruleEngine";
+import { categorizeByRules, RawTxn } from "./ruleEngine";
 import { keywordBaseCategoryMap } from "./rules";
-import { EBaseCategories } from "@common";
+import {
+  EBaseCategories,
+  ESubIncomeCategories,
+  ESubInvestmentCategories,
+  ESubExpenseCategories,
+  ETenantType,
+  ICategoryRules,
+} from "@common";
 
-describe("categorizeByRules", () => {
-  const rules = keywordBaseCategoryMap;
+describe("categorizeByRules (updated API)", () => {
+  const rules: ICategoryRules[] = keywordBaseCategoryMap.map((r, i) => ({
+    ...r,
+    ruleId: `test-${i}`,
+    tenantId: ETenantType.default,
+    createdAt: new Date(0).toISOString(),
+  }));
 
-  it("returns correct base category for known keywords in map", () => {
-    expect(categorizeByRules("Salary credited via RTGS", rules)).toBe(
-      EBaseCategories.income,
+  const makeTxn = (overrides: Partial<RawTxn>): RawTxn => ({
+    description: overrides.description || "",
+    rules,
+    credit: overrides.credit,
+    debit: overrides.debit,
+  });
+
+  it("returns category object for known keywords (credit-side)", () => {
+    const res = categorizeByRules(
+      makeTxn({ description: "Salary credited via ACH", credit: 1000 }),
     );
-    expect(categorizeByRules("Paid using UPI at store", rules)).toBe(
-      EBaseCategories.expenses,
+    expect(res.category).toBe(EBaseCategories.income);
+    expect(res.subCategory).toBe(ESubIncomeCategories.salary);
+    expect(res.reason).toBe("ACH credit / payroll");
+    expect(res.confidence).toBeGreaterThan(0);
+  });
+
+  it("classifies UPI generic as transfer (any side)", () => {
+    const res = categorizeByRules(
+      makeTxn({ description: "Paid using UPI at store" }),
     );
-    expect(
-      categorizeByRules(
-        "BY TRANSFER-NEFT*YESB0000001*YESB40930207163*ZERODHA BROKING L--",
-        rules,
-      ),
-    ).toBe(EBaseCategories.savings);
+    expect(res.category).toBe(EBaseCategories.transfer);
+    expect(res.reason).toBe("Generic transfer");
+  });
+
+  it("handles Zerodha/CDSL as investment (any side)", () => {
+    const res = categorizeByRules(
+      makeTxn({
+        description:
+          "BY TRANSFER-NEFT*YESB0000001*YESB40930207163*ZERODHA BROKING L--",
+      }),
+    );
+    expect(res.category).toBe(EBaseCategories.investment);
+    expect(res.subCategory).toBe(ESubInvestmentCategories.stocks);
   });
 
   it("matches case-insensitively on description", () => {
-    expect(categorizeByRules("RTGS credit received", rules)).toBe(
-      EBaseCategories.income,
+    const res1 = categorizeByRules(
+      makeTxn({ description: "DIVIDEND CREDITED", credit: 10 }),
     );
-    expect(categorizeByRules("paid via UPI", rules)).toBe(
-      EBaseCategories.expenses,
+    expect(res1.category).toBe(EBaseCategories.income);
+    expect(res1.subCategory).toBe(ESubIncomeCategories.investment);
+
+    const res2 = categorizeByRules(
+      makeTxn({ description: "rent paid for flat", debit: 1000 }),
     );
-    expect(categorizeByRules("ZERODHA investment", rules)).toBe(
-      EBaseCategories.savings,
-    );
+    expect(res2.category).toBe(EBaseCategories.expenses);
+    expect(res2.subCategory).toBe(ESubExpenseCategories.housing);
   });
 
-  it("returns default when no keyword matches", () => {
-    expect(categorizeByRules("No rule applies here", rules)).toBe(
-      EBaseCategories.default,
+  it("returns unclassified when no rule matches", () => {
+    const res = categorizeByRules(
+      makeTxn({ description: "No rule applies here" }),
     );
+    expect(res.category).toBe(EBaseCategories.unclassified);
+    expect(res.reason).toBe("No rule matched");
+    expect(res.confidence).toBe(0);
   });
 
-  it("picks the earliest match when multiple keywords appear", () => {
-    expect(categorizeByRules("rtgs and upi in one line", rules)).toBe(
-      EBaseCategories.income,
+  it("respects credit/debit gating via rule.when", () => {
+    // 'dividend' is CREDIT-side rule; should not match on DEBIT
+    const resDebitSide = categorizeByRules(
+      makeTxn({ description: "interim dividend posted", debit: 50 }),
     );
-    expect(categorizeByRules("upi then rtgs in one line", rules)).toBe(
-      EBaseCategories.expenses,
-    );
-  });
+    expect(resDebitSide.category).toBe(EBaseCategories.unclassified);
 
-  it("handles Zerodha transfers as savings via explicit regex", () => {
-    const desc = "BY TRANSFER-NEFT***ZERODHA BROKING L--";
-    expect(categorizeByRules(desc, rules)).toBe(EBaseCategories.savings);
-  });
-
-  it("uses fallback heuristics for common patterns when no explicit rule matches", () => {
-    expect(categorizeByRules("Cashback credited", rules)).toBe(
-      EBaseCategories.income,
+    // 'rent' is DEBIT-side rule; should not match on CREDIT
+    const resCreditSide = categorizeByRules(
+      makeTxn({ description: "monthly rent", credit: 5000 }),
     );
-    expect(categorizeByRules("EMI charge applied", rules)).toBe(
-      EBaseCategories.expenses,
-    );
-    expect(categorizeByRules("SIP investment to MF", rules)).toBe(
-      EBaseCategories.savings,
-    );
-    expect(categorizeByRules("Amazon purchase #1234", rules)).toBe(
-      EBaseCategories.expenses,
-    );
-  });
-
-  it("classifies UPI split/settle links as expenses by default", () => {
-    const descs = [
-      "Splitwise settle up via upi://pay?pa=alice@okicici&am=500",
-      "Paid for split using UPI link upi://pay?pa=bob@oksbi",
-      "UPI split bill to charlie@okaxis",
-    ];
-    for (const d of descs) {
-      expect(categorizeByRules(d, rules)).toBe(EBaseCategories.expenses);
-    }
-  });
-
-  it("classifies UPI split/settle as income when received/credit indicated", () => {
-    const descs = [
-      "UPI settlement received from Dave upi://pay?pa=dave@okhdfcbank",
-      "Splitwise settle CR via UPI from erin@okicici",
-      "UPI split received to account from frank@oksbi",
-    ];
-    for (const d of descs) {
-      expect(categorizeByRules(d, rules)).toBe(EBaseCategories.income);
-    }
+    expect(resCreditSide.category).toBe(EBaseCategories.unclassified);
   });
 });

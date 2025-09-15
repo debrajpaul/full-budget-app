@@ -5,6 +5,7 @@ import {
   ITransactionStore,
   ETenantType,
   EBaseCategories,
+  EAllSubCategories,
 } from "@common";
 import {
   PutCommand,
@@ -164,7 +165,7 @@ export class TransactionStore implements ITransactionStore {
     );
     return items.reduce(
       (acc, txn) => {
-        const cat = txn.category || EBaseCategories.default;
+        const cat = txn.category || EBaseCategories.unclassified;
         const amount = Number(txn.amount) || 0;
         acc[cat] = (acc[cat] || 0) + amount;
         return acc;
@@ -177,6 +178,7 @@ export class TransactionStore implements ITransactionStore {
     tenantId: ETenantType,
     transactionId: string,
     matchedCategory: EBaseCategories,
+    matchedSubCategory?: EAllSubCategories,
     taggedBy?: string,
     confidence?: number,
     embedding?: number[],
@@ -191,6 +193,11 @@ export class TransactionStore implements ITransactionStore {
     const expressionAttributeValues: Record<string, any> = {
       ":cat": matchedCategory,
     };
+
+    if (matchedSubCategory !== undefined) {
+      updateExpressions.push("subCategory = :subCat");
+      expressionAttributeValues[":subCat"] = matchedSubCategory;
+    }
 
     if (taggedBy !== undefined) {
       updateExpressions.push("taggedBy = :tagger");

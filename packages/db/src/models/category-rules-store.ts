@@ -1,7 +1,7 @@
 import { chunk } from "lodash";
 import {
-  ICategoryRules,
   ILogger,
+  ICategoryRules,
   ICategoryRulesStore,
   ETenantType,
   EBaseCategories,
@@ -36,27 +36,16 @@ export class CategoryRulesStore implements ICategoryRulesStore {
 
   public async getRulesByTenant(
     tenantId: ETenantType,
-  ): Promise<Record<string, EBaseCategories>> {
-    const rules: Record<string, EBaseCategories> = {};
-
+  ): Promise<ICategoryRules[]> {
     // Load tenant-specific rules
     const tenantRules: ICategoryRules[] = await this.loadRules(tenantId);
-
-    tenantRules.forEach((tenantRule: ICategoryRules) => {
-      rules[tenantRule.keyword.toLowerCase()] = tenantRule.category;
-    });
 
     // Load global defaults (only if tenant doesn't override)
     const globalRules: ICategoryRules[] = await this.loadRules(
       ETenantType.default,
     );
-    globalRules.forEach((item) => {
-      const key = item.keyword.toLowerCase();
-      if (!rules[key]) {
-        rules[key] = item.category;
-      }
-    });
-    return rules;
+
+    return [...tenantRules, ...globalRules];
   }
 
   public async listCategoriesByBase(
@@ -66,20 +55,23 @@ export class CategoryRulesStore implements ICategoryRulesStore {
       [EBaseCategories.savings]: new Set<string>(),
       [EBaseCategories.expenses]: new Set<string>(),
       [EBaseCategories.income]: new Set<string>(),
-      [EBaseCategories.default]: new Set<string>(),
+      [EBaseCategories.investment]: new Set<string>(),
+      [EBaseCategories.loan]: new Set<string>(),
+      [EBaseCategories.transfer]: new Set<string>(),
+      [EBaseCategories.unclassified]: new Set<string>(),
     };
 
     // Load tenant-specific rules
     const tenantRules: ICategoryRules[] = await this.loadRules(tenantId);
-    tenantRules.forEach((r) => grouped[r.category]?.add(r.keyword));
+    tenantRules.forEach((r) => grouped[r.category]?.add(String(r.match)));
 
     // Load global defaults and only add if not already present
     const globalRules: ICategoryRules[] = await this.loadRules(
       ETenantType.default,
     );
     globalRules.forEach((r) => {
-      if (!grouped[r.category]?.has(r.keyword)) {
-        grouped[r.category]?.add(r.keyword);
+      if (!grouped[r.category]?.has(String(r.match))) {
+        grouped[r.category]?.add(String(r.match));
       }
     });
 
@@ -90,15 +82,22 @@ export class CategoryRulesStore implements ICategoryRulesStore {
 
   public async addRules(
     tenantId: ETenantType,
-    rules: Record<string, EBaseCategories>,
+    rules: ICategoryRules[],
   ): Promise<void> {
     this.logger.info("Saving rules to DynamoDB");
     this.logger.debug("Rules", { rules });
 
-    const chunks = chunk(Object.entries(rules), 25);
+    const chunks = chunk(rules, 25);
     for (const chunk of chunks) {
-      const promises = chunk.map(([keyword, category]) =>
-        this.addRule(tenantId, keyword, category),
+      const promises = chunk.map((rule: ICategoryRules) =>
+        this.addRule(
+          tenantId,
+          rule.match,
+          rule.category,
+          rule.subCategory,
+          rule.reason,
+          rule.confidence,
+        ),
       );
       await Promise.all(promises);
     }
@@ -106,19 +105,37 @@ export class CategoryRulesStore implements ICategoryRulesStore {
 
   public async addRule(
     tenantId: ETenantType,
-    keyword: string,
+    match: RegExp,
     category: EBaseCategories,
+    subCategory?: EAllSubCategories,
+    reason?: string,
+    confidence?: number,
   ): Promise<void> {
     this.logger.info("Saving rule to DynamoDB");
-    this.logger.debug("Rule", { tenantId, keyword, category });
-    const item: ICategoryRules = {
-      ruleId: `${tenantId}#${keyword.toLowerCase()}`,
+    this.logger.debug("Rule", {
       tenantId,
-      keyword: keyword.toLowerCase(),
+      match,
       category,
-      isActive: true,
+      subCategory,
+      reason,
+      confidence,
+    });
+    // Persist regex as pattern + flags to avoid marshalling class instances
+    const pattern = match.source;
+    const flags = match.flags;
+    const ruleId = `${tenantId}#/${pattern}/${flags}`;
+
+    const item = {
+      ruleId,
+      tenantId,
+      pattern,
+      flags,
+      category,
+      subCategory,
+      reason,
+      confidence,
       createdAt: new Date().toISOString(),
-    };
+    } as const;
 
     const command = new PutCommand({
       TableName: this.tableName,
@@ -160,8 +177,15 @@ export class CategoryRulesStore implements ICategoryRulesStore {
       case EBaseCategories.expenses:
         return { category: EBaseCategories.expenses };
       case EBaseCategories.savings:
-      case EBaseCategories.default:
-        return { category: EBaseCategories.default };
+        return { category: EBaseCategories.savings };
+      case EBaseCategories.investment:
+        return { category: EBaseCategories.investment };
+      case EBaseCategories.loan:
+        return { category: EBaseCategories.loan };
+      case EBaseCategories.transfer:
+        return { category: EBaseCategories.transfer };
+      case EBaseCategories.unclassified:
+        return { category: EBaseCategories.unclassified };
     }
 
     // Use an explicit lookup across all sub-category enums
@@ -224,8 +248,8 @@ export class CategoryRulesStore implements ICategoryRulesStore {
       };
     }
 
-    // Fallback: nothing recognized -> DEFAULT
-    return { category: EBaseCategories.default };
+    // Fallback: nothing recognized -> unclassified
+    return { category: EBaseCategories.unclassified };
   }
 
   private async loadRules(tenantId: ETenantType): Promise<ICategoryRules[]> {
@@ -233,10 +257,50 @@ export class CategoryRulesStore implements ICategoryRulesStore {
       TableName: this.tableName,
       KeyConditionExpression: "tenantId = :tid",
       ExpressionAttributeValues: { ":tid": tenantId },
-      ProjectionExpression: "keyword, category",
+      ProjectionExpression:
+        "ruleId, tenantId, pattern, flags, category, subCategory, reason, confidence, createdAt",
     });
     const result = await this.store.send(command);
-    return (result.Items as ICategoryRules[]) || [];
+    const items =
+      (result.Items as Array<{
+        ruleId: string;
+        tenantId: ETenantType;
+        pattern?: string;
+        flags?: string;
+        category: EBaseCategories;
+        subCategory?: EAllSubCategories;
+        reason?: string;
+        confidence?: number;
+        createdAt: string;
+      }>) || [];
+
+    return items.map((it) => {
+      let pattern = it.pattern;
+      let flags = it.flags ?? "";
+      const rawMatch = (it as unknown as { match?: string }).match;
+      if (!pattern && rawMatch && typeof rawMatch === "string") {
+        // Fallback for legacy rows stored as "/pattern/flags"
+        const lastSlash = rawMatch.lastIndexOf("/");
+        if (rawMatch.startsWith("/") && lastSlash > 0) {
+          pattern = rawMatch.slice(1, lastSlash);
+          flags = rawMatch.slice(lastSlash + 1);
+        } else {
+          // Treat as a simple substring match if not a regex literal
+          pattern = rawMatch.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+          flags = "i";
+        }
+      }
+      return {
+        ruleId: it.ruleId,
+        tenantId: it.tenantId,
+        match: new RegExp(pattern ?? "", flags),
+        category: it.category,
+        subCategory: it.subCategory,
+        reason: it.reason,
+        confidence: it.confidence,
+        createdAt: it.createdAt,
+      } as ICategoryRules;
+    });
   }
 
   /**
@@ -286,7 +350,7 @@ export class CategoryRulesStore implements ICategoryRulesStore {
         return EBaseCategories.expenses; // Loan payments are expenses by default
 
       default:
-        return EBaseCategories.default;
+        return EBaseCategories.unclassified;
     }
   }
 

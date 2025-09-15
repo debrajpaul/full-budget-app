@@ -21,6 +21,9 @@
   },
   "homepage": "https://github.com/debrajpaul/full-budget-app#readme",
   "devDependencies": {
+    "@aws-sdk/client-dynamodb": "^3.873.0",
+    "@aws-sdk/client-s3": "^3.873.0",
+    "@aws-sdk/lib-dynamodb": "^3.873.0",
     "@commitlint/cli": "^19.8.1",
     "@commitlint/config-conventional": "^19.8.1",
     "@eslint/js": "^9.27.0",
@@ -43,6 +46,7 @@
     "husky": "^9.1.7",
     "jest": "^29.7.0",
     "jest-mock-extended": "^4.0.0",
+    "dotenv": "^16.4.5",
     "lint-staged": "^16.1.2",
     "prettier": "^3.6.2",
     "rimraf": "^5.0.5",
@@ -62,7 +66,8 @@
     "dev": "pnpm clean && node esbuild.config.js --watch",
     "synth": "pnpm build && pnpm --filter ./infra cdk:synth",
     "deploy:all": "pnpm build && pnpm --filter ./infra cdk:deploy:all",
-    "destroy:all": "pnpm --filter ./infra cdk:destroy:all"
+    "destroy:all": "pnpm --filter ./infra cdk:destroy:all",
+    "prepare:comprehend": "node scripts/prepare-comprehend-dataset.js"
   },
   "lint-staged": {
     "apps/**/*.{ts,tsx,js,jsx}": [
