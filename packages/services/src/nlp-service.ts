@@ -27,7 +27,7 @@ export class NlpService implements INlpService {
   public async classifyDescription(description: string): Promise<TNlpClass[]> {
     // No external classifier; return empty predictions
     const data = description; // keep signature; avoid unused warning
-    console.log("data", data)
+    console.log("data", data);
     return [];
   }
 }
