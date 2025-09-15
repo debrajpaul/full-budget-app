@@ -9,9 +9,7 @@ export function setupServices(
   logger: ILogger,
   dynamoDBDocumentClient: DynamoDBDocumentClient,
 ) {
-  const ruleEngine = new RuleEngine(
-    logger.child("RuleEngine"),
-  );
+  const ruleEngine = new RuleEngine(logger.child("RuleEngine"));
   const transactionStore = new TransactionStore(
     logger.child("TransactionStore"),
     config.dynamoTransactionTable,

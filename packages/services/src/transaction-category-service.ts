@@ -6,7 +6,7 @@ import {
   ICategoryRulesStore,
   ITransactionCategoryRequest,
   EBaseCategories,
-  IRuleEngine
+  IRuleEngine,
 } from "@common";
 import { keywordBaseCategoryMap } from "@nlp-tagger";
 
@@ -16,12 +16,11 @@ export class TransactionCategoryService implements ITransactionCategoryService {
   private readonly categoryRulesStore: ICategoryRulesStore;
   private readonly ruleEngine: IRuleEngine;
 
-
   constructor(
     logger: ILogger,
     transactionStore: ITransactionStore,
     categoryRulesStore: ICategoryRulesStore,
-    ruleEngine: IRuleEngine
+    ruleEngine: IRuleEngine,
   ) {
     this.logger = logger;
     this.transactionStore = transactionStore;

@@ -30,9 +30,7 @@ export function setupServices(
   sqsClient: SQS,
   dynamoDBDocumentClient: DynamoDBDocumentClient,
 ) {
-  const ruleEngine = new RuleEngine(
-    logger.child("RuleEngine"),
-  );
+  const ruleEngine = new RuleEngine(logger.child("RuleEngine"));
   const s3Service = new S3Service(
     logger.child("S3Service"),
     config.awsS3Bucket,

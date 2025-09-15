@@ -1,21 +1,28 @@
-import { ILogger, EBaseCategories,  IRawTxn, CategorizeResult, IRuleEngine} from "@common";
+import {
+  ILogger,
+  EBaseCategories,
+  IRawTxn,
+  CategorizeResult,
+  IRuleEngine,
+} from "@common";
 
 export class RuleEngine implements IRuleEngine {
   private readonly logger: ILogger;
 
-  constructor(logger: ILogger,) {
-    this.logger = logger
+  constructor(logger: ILogger) {
+    this.logger = logger;
   }
 
-  private isCredit = (t: IRawTxn) => (t.credit ?? 0) > 0 && (t.debit ?? 0) === 0;
+  private isCredit = (t: IRawTxn) =>
+    (t.credit ?? 0) > 0 && (t.debit ?? 0) === 0;
   private isDebit = (t: IRawTxn) => (t.debit ?? 0) > 0 && (t.credit ?? 0) === 0;
   private normalizeDescription = (raw: string): string =>
-  raw
-    .toLowerCase()
-    .replace(/\s+/g, " ")
-    .replace(/[^a-z0-9 @&/().+\-_:]/g, " ")
-    .replace(/\s+/g, " ")
-    .trim();
+    raw
+      .toLowerCase()
+      .replace(/\s+/g, " ")
+      .replace(/[^a-z0-9 @&/().+\-_:]/g, " ")
+      .replace(/\s+/g, " ")
+      .trim();
 
   public categorize(txn: IRawTxn): CategorizeResult {
     this.logger.info(`Categorizing transaction: ${txn.description}`);

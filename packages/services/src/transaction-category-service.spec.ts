@@ -64,7 +64,7 @@ describe("TransactionCategoryService", () => {
       expect.objectContaining({
         description: req.description,
         rules: expect.any(Array),
-      })
+      }),
     );
     expect(transactionStore.updateTransactionCategory).toHaveBeenCalledWith(
       ETenantType.default,

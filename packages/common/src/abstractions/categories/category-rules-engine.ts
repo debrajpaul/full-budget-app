@@ -6,7 +6,7 @@ export interface IRawTxn {
   credit?: number; // positive for credits
   debit?: number; // positive for debits
   // ... your other fields (date, ref, balance, etc.)
-};
+}
 
 export type CategorizeResult = Omit<
   ICategoryRules,
