@@ -14,7 +14,6 @@ import {
   AuthorizationService,
   UploadStatementService,
   TransactionCategoryService,
-  NlpService,
   SavingsGoalService,
   SinkingFundService,
   ForecastService,
@@ -81,7 +80,6 @@ export function setupServices(
     sqsService,
     transactionStore,
   );
-  const nlpService = new NlpService(logger.child("NlpService"));
   const transactionCategoryService = new TransactionCategoryService(
     logger.child("TransactionCategoryService"),
     transactionStore,
@@ -117,7 +115,6 @@ export function setupServices(
     savingsGoalService,
     sinkingFundService,
     forecastService,
-    nlpService,
     recurringTransactionService,
     budgetService,
   };
