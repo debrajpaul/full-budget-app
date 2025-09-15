@@ -20,7 +20,11 @@ describe("TransactionCategoryService", () => {
     logger = mock<ILogger>();
     transactionStore = mock<ITransactionStore>();
     rulesStore = mock<ICategoryRulesStore>();
-    service = new TransactionCategoryService(logger, transactionStore, rulesStore);
+    service = new TransactionCategoryService(
+      logger,
+      transactionStore,
+      rulesStore,
+    );
   });
 
   it("categorizes by rules when keyword matches", async () => {
@@ -57,7 +61,11 @@ describe("TransactionCategoryService", () => {
 
   it("keeps unclassified when no rule matches", async () => {
     rulesStore.getRulesByTenant.mockResolvedValue([] as any);
-    service = new TransactionCategoryService(logger, transactionStore, rulesStore);
+    service = new TransactionCategoryService(
+      logger,
+      transactionStore,
+      rulesStore,
+    );
     const req: ITransactionCategoryRequest = {
       tenantId: ETenantType.default,
       transactionId: "t2",

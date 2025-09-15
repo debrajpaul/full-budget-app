@@ -68,9 +68,7 @@ export class TransactionCategoryService implements ITransactionCategoryService {
         finalConfidence,
         undefined,
       );
-      this.logger.info(
-        `Transaction ${transactionId} categorized`,
-      );
+      this.logger.info(`Transaction ${transactionId} categorized`);
       return true;
     } catch (err) {
       this.logger.error("Error processing message", err as Error);
