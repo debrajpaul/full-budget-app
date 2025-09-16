@@ -21,7 +21,7 @@ const {
   DYNAMO_BUDGET_TABLE,
   JWT_SECRET,
   AI_TAGGING_ENABLED,
-  COMPREHEND_CLASSIFIER_ARN,
+  BEDROCK_MODEL_ID
 } = process.env;
 
 export const config: IConfig = {
@@ -40,5 +40,5 @@ export const config: IConfig = {
   dynamoBudgetTable: DYNAMO_BUDGET_TABLE as string,
   jwtSecret: JWT_SECRET as string,
   aiTaggingEnabled: AI_TAGGING_ENABLED === "true",
-  comprehendClassifierArn: COMPREHEND_CLASSIFIER_ARN as string | undefined,
+  bedrockModelId: BEDROCK_MODEL_ID as string | undefined,
 };

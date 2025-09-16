@@ -16,5 +16,5 @@ export interface IConfig {
   dynamoBudgetTable: string;
   jwtSecret: string;
   aiTaggingEnabled: boolean;
-  comprehendClassifierArn?: string;
+  bedrockModelId?: string;
 }

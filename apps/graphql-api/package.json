@@ -25,6 +25,7 @@
     "@aws-sdk/client-sqs": "^3.300.0",
     "@aws-sdk/lib-dynamodb": "^3.844.0",
     "@graphql-tools/schema": "^10.0.25",
+    "@aws-sdk/client-bedrock-runtime": "^3.873.0",
     "aws-lambda": "^1.0.7",
     "cors": "^2.8.5",
     "express": "^5.1.0",

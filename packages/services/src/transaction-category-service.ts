@@ -6,7 +6,9 @@ import {
   ICategoryRulesStore,
   ITransactionCategoryRequest,
   EBaseCategories,
+  EAllSubCategories,
   IRuleEngine,
+  IBedrockClassifierService,
 } from "@common";
 import { keywordBaseCategoryMap } from "@nlp-tagger";
 
@@ -15,17 +17,23 @@ export class TransactionCategoryService implements ITransactionCategoryService {
   private readonly transactionStore: ITransactionStore;
   private readonly categoryRulesStore: ICategoryRulesStore;
   private readonly ruleEngine: IRuleEngine;
+  private readonly bedrockClassifierService: IBedrockClassifierService;
+  private readonly aiTaggingEnabled: boolean;
 
   constructor(
     logger: ILogger,
     transactionStore: ITransactionStore,
     categoryRulesStore: ICategoryRulesStore,
     ruleEngine: IRuleEngine,
+    bedrockClassifierService: IBedrockClassifierService,
+    aiTaggingEnabled: boolean
   ) {
     this.logger = logger;
     this.transactionStore = transactionStore;
     this.categoryRulesStore = categoryRulesStore;
     this.ruleEngine = ruleEngine;
+    this.bedrockClassifierService = bedrockClassifierService;
+    this.aiTaggingEnabled = aiTaggingEnabled;
     this.logger.info("ProcessService initialized");
   }
   public async process(request: ITransactionCategoryRequest): Promise<boolean> {
@@ -61,7 +69,24 @@ export class TransactionCategoryService implements ITransactionCategoryService {
       let matchedCategory = this.ruleEngine.categorize({ description, rules });
       let finalTaggedBy = taggedBy ?? "RULE_ENGINE";
       let finalConfidence: number | undefined = confidence ?? 1;
-      // No AI fallback; rules are the single source of truth
+
+      // Fallback to Bedrock if still unclassified
+      if (matchedCategory.category === EBaseCategories.unclassified && this.aiTaggingEnabled) {
+        this.logger.info(
+          `Rules returned UNCLASSIFIED for ${transactionId}; invoking Bedrock`,
+        );
+        const aiResult = await this.bedrockClassifierService.classifyWithBedrock(
+          description,
+        );
+        if (aiResult) {
+          matchedCategory = {
+            category: aiResult.base as EBaseCategories,
+            subCategory: aiResult.sub as EAllSubCategories ?? undefined,
+          };
+          finalTaggedBy = "BEDROCK";
+          finalConfidence = aiResult.confidence ?? 0.7;
+        }
+      }
       // step 4: Update transaction with matched category
       await this.transactionStore.updateTransactionCategory(
         tenantId,

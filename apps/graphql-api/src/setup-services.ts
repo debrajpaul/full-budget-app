@@ -1,4 +1,4 @@
-import { ILogger } from "@common";
+import { ILogger, IBedrockClient } from "@common";
 import { config } from "./environment";
 import { S3 } from "@aws-sdk/client-s3";
 import { SQS } from "@aws-sdk/client-sqs";
@@ -14,6 +14,7 @@ import {
   AuthorizationService,
   UploadStatementService,
   TransactionCategoryService,
+  BedrockClassifierService,
   SavingsGoalService,
   SinkingFundService,
   ForecastService,
@@ -29,6 +30,7 @@ export function setupServices(
   s3Client: S3,
   sqsClient: SQS,
   dynamoDBDocumentClient: DynamoDBDocumentClient,
+  bedrockClient:IBedrockClient
 ) {
   const ruleEngine = new RuleEngine(logger.child("RuleEngine"));
   const s3Service = new S3Service(
@@ -82,11 +84,17 @@ export function setupServices(
     sqsService,
     transactionStore,
   );
+  const bedrockClassifierService = new BedrockClassifierService(
+    logger.child("BedrockClassifierService"),
+    bedrockClient,
+  );
   const transactionCategoryService = new TransactionCategoryService(
     logger.child("TransactionCategoryService"),
     transactionStore,
     categoryRulesStore,
     ruleEngine,
+    bedrockClassifierService,
+    config.aiTaggingEnabled,
   );
 
   const savingsGoalService = new SavingsGoalService(

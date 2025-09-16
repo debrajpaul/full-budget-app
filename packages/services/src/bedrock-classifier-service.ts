@@ -1,6 +1,5 @@
-import { ILogger, IBedrockClient } from "@common";
-
-export class BedrockClassifierService {
+import { ILogger, IBedrockClient, IBedrockClassifierService } from "@common";
+export class BedrockClassifierService implements IBedrockClassifierService{
   private readonly logger: ILogger;
   private readonly bedrockClient: IBedrockClient;
 

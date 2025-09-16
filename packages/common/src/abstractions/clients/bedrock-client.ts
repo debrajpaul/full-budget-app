@@ -9,3 +9,12 @@ export interface IBedrockClientConfig {
 export interface IBedrockClient {
   invokeModel(description: string): Promise<any>;
 }
+
+export interface IBedrockClassifierService {
+  classifyWithBedrock(description: string): Promise<{
+    base: string;
+    sub?: string;
+    reason?: string;
+    confidence?: number;
+  } | null> 
+}
