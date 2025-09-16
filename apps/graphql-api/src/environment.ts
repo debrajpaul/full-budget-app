@@ -21,7 +21,7 @@ const {
   DYNAMO_BUDGET_TABLE,
   JWT_SECRET,
   AI_TAGGING_ENABLED,
-  BEDROCK_MODEL_ID
+  BEDROCK_MODEL_ID,
 } = process.env;
 
 export const config: IConfig = {

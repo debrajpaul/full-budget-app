@@ -16,5 +16,5 @@ export interface IBedrockClassifierService {
     sub?: string;
     reason?: string;
     confidence?: number;
-  } | null> 
+  } | null>;
 }

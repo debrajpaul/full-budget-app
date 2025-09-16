@@ -30,7 +30,13 @@ const {
   forecastService,
   recurringTransactionService,
   budgetService,
-} = setupServices(logger, s3Client, sqsClient, dynamoDBDocumentClient, bedrockClient);
+} = setupServices(
+  logger,
+  s3Client,
+  sqsClient,
+  dynamoDBDocumentClient,
+  bedrockClient,
+);
 
 export const createContext = async (
   ctx: IncomingRequest,

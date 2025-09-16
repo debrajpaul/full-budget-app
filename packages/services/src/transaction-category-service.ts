@@ -26,7 +26,7 @@ export class TransactionCategoryService implements ITransactionCategoryService {
     categoryRulesStore: ICategoryRulesStore,
     ruleEngine: IRuleEngine,
     bedrockClassifierService: IBedrockClassifierService,
-    aiTaggingEnabled: boolean
+    aiTaggingEnabled: boolean,
   ) {
     this.logger = logger;
     this.transactionStore = transactionStore;
@@ -71,17 +71,19 @@ export class TransactionCategoryService implements ITransactionCategoryService {
       let finalConfidence: number | undefined = confidence ?? 1;
 
       // Fallback to Bedrock if still unclassified
-      if (matchedCategory.category === EBaseCategories.unclassified && this.aiTaggingEnabled) {
+      if (
+        matchedCategory.category === EBaseCategories.unclassified &&
+        this.aiTaggingEnabled
+      ) {
         this.logger.info(
           `Rules returned UNCLASSIFIED for ${transactionId}; invoking Bedrock`,
         );
-        const aiResult = await this.bedrockClassifierService.classifyWithBedrock(
-          description,
-        );
+        const aiResult =
+          await this.bedrockClassifierService.classifyWithBedrock(description);
         if (aiResult) {
           matchedCategory = {
             category: aiResult.base as EBaseCategories,
-            subCategory: aiResult.sub as EAllSubCategories ?? undefined,
+            subCategory: (aiResult.sub as EAllSubCategories) ?? undefined,
           };
           finalTaggedBy = "BEDROCK";
           finalConfidence = aiResult.confidence ?? 0.7;

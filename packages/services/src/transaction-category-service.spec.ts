@@ -17,7 +17,9 @@ describe("TransactionCategoryService", () => {
   let transactionStore: ReturnType<typeof mock<ITransactionStore>>;
   let rulesStore: ReturnType<typeof mock<ICategoryRulesStore>>;
   let ruleEngine: ReturnType<typeof mock<IRuleEngine>>;
-  let bedrockClassifierService: ReturnType<typeof mock<IBedrockClassifierService>>;
+  let bedrockClassifierService: ReturnType<
+    typeof mock<IBedrockClassifierService>
+  >;
   let service: TransactionCategoryService;
 
   beforeEach(() => {
@@ -72,9 +74,7 @@ describe("TransactionCategoryService", () => {
       }),
     );
     // Should not invoke Bedrock when rules classify successfully
-    expect(
-      bedrockClassifierService.classifyWithBedrock,
-    ).not.toHaveBeenCalled();
+    expect(bedrockClassifierService.classifyWithBedrock).not.toHaveBeenCalled();
     expect(transactionStore.updateTransactionCategory).toHaveBeenCalledWith(
       ETenantType.default,
       "t1",
@@ -93,7 +93,9 @@ describe("TransactionCategoryService", () => {
       reason: "No rule matched",
       confidence: 0,
     });
-    (bedrockClassifierService.classifyWithBedrock as jest.Mock).mockResolvedValue(null);
+    (
+      bedrockClassifierService.classifyWithBedrock as jest.Mock
+    ).mockResolvedValue(null);
     const req: ITransactionCategoryRequest = {
       tenantId: ETenantType.default,
       transactionId: "t2",
@@ -126,7 +128,9 @@ describe("TransactionCategoryService", () => {
       reason: "No rule matched",
       confidence: 0,
     });
-    (bedrockClassifierService.classifyWithBedrock as jest.Mock).mockResolvedValue({
+    (
+      bedrockClassifierService.classifyWithBedrock as jest.Mock
+    ).mockResolvedValue({
       base: EBaseCategories.income,
       sub: undefined,
       confidence: 0.9,

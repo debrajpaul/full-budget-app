@@ -11,10 +11,14 @@ export function setupDependency() {
   const dynamoDBDocumentClient = DynamoDBDocumentClient.from(client);
   const logger = WinstonLogger.getInstance(config.logLevel);
   const bedrock = new BedrockRuntimeClient({ region: config.awsRegion });
-  const bedrockClient = new BedrockClient(logger.child("BedrockClient"), bedrock,{ modelId: config.bedrockModelId} as IBedrockClientConfig);
+  const bedrockClient = new BedrockClient(
+    logger.child("BedrockClient"),
+    bedrock,
+    { modelId: config.bedrockModelId } as IBedrockClientConfig,
+  );
   return {
     logger,
     dynamoDBDocumentClient,
-    bedrockClient
+    bedrockClient,
   };
 }

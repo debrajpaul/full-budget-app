@@ -1,14 +1,17 @@
 import { ILogger, IBedrockClient } from "@common";
 import { config } from "./environment";
 import { RuleEngine } from "@nlp-tagger";
-import { TransactionCategoryService, BedrockClassifierService } from "@services";
+import {
+  TransactionCategoryService,
+  BedrockClassifierService,
+} from "@services";
 import { TransactionStore, CategoryRulesStore } from "@db";
 import { DynamoDBDocumentClient } from "@aws-sdk/lib-dynamodb";
 
 export function setupServices(
   logger: ILogger,
   dynamoDBDocumentClient: DynamoDBDocumentClient,
-  bedrockClient:IBedrockClient
+  bedrockClient: IBedrockClient,
 ) {
   const ruleEngine = new RuleEngine(logger.child("RuleEngine"));
   const transactionStore = new TransactionStore(

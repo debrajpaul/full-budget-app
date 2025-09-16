@@ -30,7 +30,7 @@ export function setupServices(
   s3Client: S3,
   sqsClient: SQS,
   dynamoDBDocumentClient: DynamoDBDocumentClient,
-  bedrockClient:IBedrockClient
+  bedrockClient: IBedrockClient,
 ) {
   const ruleEngine = new RuleEngine(logger.child("RuleEngine"));
   const s3Service = new S3Service(
