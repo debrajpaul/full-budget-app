@@ -56,8 +56,7 @@ const fakeDdb = {
       updateCapture.TableName = input.TableName;
       updateCapture.Key = input.Key;
       updateCapture.UpdateExpression = input.UpdateExpression;
-      updateCapture.ExpressionAttributeValues =
-        input.ExpressionAttributeValues;
+      updateCapture.ExpressionAttributeValues = input.ExpressionAttributeValues;
       return { Attributes: {} };
     }
     return {};
