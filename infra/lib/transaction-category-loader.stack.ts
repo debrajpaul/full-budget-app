@@ -46,15 +46,11 @@ export class TransactionCategoryStack extends Stack {
       })
     );
 
-    // Amazon Comprehend access
+    // Amazon Bedrock model invocation access
     transactionCategoryLambda.addToRolePolicy(
       new iam.PolicyStatement({
-        actions: [
-          'comprehend:DetectEntities',
-          'comprehend:DetectSentiment',
-          'comprehend:ClassifyDocument',
-        ],
-        resources: ['*'],
+        actions: ['bedrock:InvokeModel'],
+        resources: ['*'], // Consider narrowing to specific model ARN(s)
       }),
     );
 

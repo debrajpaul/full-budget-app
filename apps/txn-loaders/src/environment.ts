@@ -21,6 +21,7 @@ const {
   DYNAMO_BUDGET_TABLE,
   JWT_SECRET,
   AI_TAGGING_ENABLED,
+  AI_CONFIDENCE_THRESHOLD,
 } = process.env;
 
 export const config: IConfig = {
@@ -39,4 +40,8 @@ export const config: IConfig = {
   dynamoBudgetTable: DYNAMO_BUDGET_TABLE as string,
   jwtSecret: JWT_SECRET as string,
   aiTaggingEnabled: AI_TAGGING_ENABLED === "true",
+  aiConfidenceThreshold:
+    AI_CONFIDENCE_THRESHOLD !== undefined && AI_CONFIDENCE_THRESHOLD !== ""
+      ? Number(AI_CONFIDENCE_THRESHOLD)
+      : undefined,
 };

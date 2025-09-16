@@ -38,7 +38,9 @@ export class BedrockClassifierService implements IBedrockClassifierService {
         `Classifying transaction with description: ${description}`,
       );
       const response = await this.bedrockClient.invokeModel(description);
-      return this.buildResponse(response);
+      const built = this.buildResponse(response);
+      this.logger.debug("Bedrock classification parsed", built ?? {});
+      return built;
     } catch (error) {
       this.logger.error(`Error classifying transaction: ${error}`);
       return Promise.resolve(null);

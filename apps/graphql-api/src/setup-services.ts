@@ -95,6 +95,7 @@ export function setupServices(
     ruleEngine,
     bedrockClassifierService,
     config.aiTaggingEnabled,
+    config.aiConfidenceThreshold,
   );
 
   const savingsGoalService = new SavingsGoalService(

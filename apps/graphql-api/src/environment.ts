@@ -22,6 +22,7 @@ const {
   JWT_SECRET,
   AI_TAGGING_ENABLED,
   BEDROCK_MODEL_ID,
+  AI_CONFIDENCE_THRESHOLD,
 } = process.env;
 
 export const config: IConfig = {
@@ -41,4 +42,8 @@ export const config: IConfig = {
   jwtSecret: JWT_SECRET as string,
   aiTaggingEnabled: AI_TAGGING_ENABLED === "true",
   bedrockModelId: BEDROCK_MODEL_ID as string | undefined,
+  aiConfidenceThreshold:
+    AI_CONFIDENCE_THRESHOLD !== undefined && AI_CONFIDENCE_THRESHOLD !== ""
+      ? Number(AI_CONFIDENCE_THRESHOLD)
+      : undefined,
 };
