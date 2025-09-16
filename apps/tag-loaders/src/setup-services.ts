@@ -35,7 +35,6 @@ export function setupServices(
     ruleEngine,
     bedrockClassifierService,
     config.aiTaggingEnabled,
-    config.aiConfidenceThreshold,
   );
 
   return {

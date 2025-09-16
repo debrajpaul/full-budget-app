@@ -19,7 +19,6 @@ export class TransactionCategoryService implements ITransactionCategoryService {
   private readonly ruleEngine: IRuleEngine;
   private readonly bedrockClassifierService: IBedrockClassifierService;
   private readonly aiTaggingEnabled: boolean;
-  private readonly aiConfidenceThreshold?: number;
 
   constructor(
     logger: ILogger,
@@ -28,7 +27,6 @@ export class TransactionCategoryService implements ITransactionCategoryService {
     ruleEngine: IRuleEngine,
     bedrockClassifierService: IBedrockClassifierService,
     aiTaggingEnabled: boolean,
-    aiConfidenceThreshold?: number,
   ) {
     this.logger = logger;
     this.transactionStore = transactionStore;
@@ -36,7 +34,6 @@ export class TransactionCategoryService implements ITransactionCategoryService {
     this.ruleEngine = ruleEngine;
     this.bedrockClassifierService = bedrockClassifierService;
     this.aiTaggingEnabled = aiTaggingEnabled;
-    this.aiConfidenceThreshold = aiConfidenceThreshold;
     this.logger.info("ProcessService initialized");
   }
   public async process(request: ITransactionCategoryRequest): Promise<boolean> {
@@ -84,11 +81,6 @@ export class TransactionCategoryService implements ITransactionCategoryService {
         const aiResult =
           await this.bedrockClassifierService.classifyWithBedrock(description);
         if (aiResult) {
-          const aiConfidence = aiResult.confidence ?? 0;
-          const threshold = this.aiConfidenceThreshold;
-          const passesThreshold =
-            threshold === undefined || aiConfidence >= threshold;
-
           this.logger.info(
             "AI fallback result",
             Object.assign(
@@ -96,26 +88,19 @@ export class TransactionCategoryService implements ITransactionCategoryService {
                 transactionId,
                 aiBase: aiResult.base,
                 aiSub: aiResult.sub,
-                aiConfidence,
-                threshold,
-                accepted: passesThreshold,
+                aiConfidence: aiResult.confidence,
               },
               aiResult.reason ? { aiReason: aiResult.reason } : {},
             ),
           );
-
-          if (passesThreshold) {
-            matchedCategory = {
-              category: aiResult.base as EBaseCategories,
-              subCategory: (aiResult.sub as EAllSubCategories) ?? undefined,
-            };
-            finalTaggedBy = "BEDROCK";
-            finalConfidence = aiConfidence || 0.7;
-          } else {
-            this.logger.warn(
-              `AI classification below threshold; keeping UNCLASSIFIED for ${transactionId}`,
-            );
-          }
+          matchedCategory = {
+            category: aiResult.base as EBaseCategories,
+            subCategory: (aiResult.sub as EAllSubCategories) ?? undefined,
+          };
+          finalTaggedBy = "BEDROCK";
+          finalConfidence = aiResult.confidence || 0.7;
+        } else {
+          this.logger.debug(`No AI result for ${transactionId}`);
         }
       }
       // step 4: Update transaction with matched category

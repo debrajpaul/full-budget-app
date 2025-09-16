@@ -38,6 +38,119 @@ describe("TransactionCategoryService", () => {
     );
   });
 
+  it("does not call Bedrock when AI tagging disabled", async () => {
+    // Recreate service with AI disabled
+    service = new TransactionCategoryService(
+      logger,
+      transactionStore,
+      rulesStore,
+      ruleEngine,
+      bedrockClassifierService,
+      /* aiTaggingEnabled */ false,
+    );
+
+    rulesStore.getRulesByTenant.mockResolvedValue([] as any);
+    ruleEngine.categorize.mockReturnValue({
+      category: EBaseCategories.unclassified,
+      reason: "No rule matched",
+      confidence: 0,
+    });
+
+    const req: ITransactionCategoryRequest = {
+      tenantId: ETenantType.default,
+      transactionId: "t-ai-off",
+      description: "Unknown store",
+      createdAt: "2025-01-01",
+    };
+
+    const result = await service.process(req);
+
+    expect(result).toBe(true);
+    expect(bedrockClassifierService.classifyWithBedrock).not.toHaveBeenCalled();
+    expect(transactionStore.updateTransactionCategory).toHaveBeenCalledWith(
+      ETenantType.default,
+      "t-ai-off",
+      EBaseCategories.unclassified,
+      undefined,
+      "RULE_ENGINE",
+      1,
+      undefined,
+    );
+  });
+
+  it("uses provided taggedBy/confidence when present", async () => {
+    rulesStore.getRulesByTenant.mockResolvedValue([] as any);
+    ruleEngine.categorize.mockReturnValue({
+      category: EBaseCategories.investment,
+      subCategory: ESubInvestmentCategories.stocks,
+      reason: "Manual override test",
+      confidence: 0.9,
+    });
+
+    const req: ITransactionCategoryRequest = {
+      tenantId: ETenantType.default,
+      transactionId: "t6",
+      description: "ZERODHA BROKING",
+      createdAt: "2025-01-01",
+      taggedBy: "MANUAL",
+      confidence: 0.66,
+    };
+
+    const result = await service.process(req);
+
+    expect(result).toBe(true);
+    expect(bedrockClassifierService.classifyWithBedrock).not.toHaveBeenCalled();
+    expect(transactionStore.updateTransactionCategory).toHaveBeenCalledWith(
+      ETenantType.default,
+      "t6",
+      EBaseCategories.investment,
+      ESubInvestmentCategories.stocks,
+      // Should use the provided taggedBy/confidence
+      "MANUAL",
+      0.66,
+      undefined,
+    );
+  });
+
+  it("overrides provided taggedBy/confidence when Bedrock used", async () => {
+    rulesStore.getRulesByTenant.mockResolvedValue([] as any);
+    ruleEngine.categorize.mockReturnValue({
+      category: EBaseCategories.unclassified,
+      reason: "No rule matched",
+      confidence: 0,
+    });
+    (
+      bedrockClassifierService.classifyWithBedrock as jest.Mock
+    ).mockResolvedValue({
+      base: EBaseCategories.income,
+      sub: undefined,
+      confidence: 0.8,
+    });
+
+    const req: ITransactionCategoryRequest = {
+      tenantId: ETenantType.default,
+      transactionId: "t7",
+      description: "Some transfer description",
+      createdAt: "2025-01-01",
+      taggedBy: "MANUAL",
+      confidence: 0.3,
+    };
+
+    const result = await service.process(req);
+    expect(result).toBe(true);
+    expect(bedrockClassifierService.classifyWithBedrock).toHaveBeenCalled();
+    expect(transactionStore.updateTransactionCategory).toHaveBeenCalledWith(
+      ETenantType.default,
+      "t7",
+      EBaseCategories.income,
+      undefined,
+      // Overridden by Bedrock
+      "BEDROCK",
+      0.8,
+      undefined,
+    );
+  });
+
   it("categorizes by rules when keyword matches", async () => {
     // New API: getRulesByTenant returns an array of ICategoryRules
     rulesStore.getRulesByTenant.mockResolvedValue([
