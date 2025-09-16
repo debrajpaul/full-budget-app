@@ -1,5 +1,5 @@
-import { ETenantType } from "./users";
-import { EBankName } from "./bank-parser";
+import { ETenantType } from "../users";
+import { EBankName } from "../bank-parser";
 export interface ITransactionRequest {
   bankName: EBankName;
   fileName: string;

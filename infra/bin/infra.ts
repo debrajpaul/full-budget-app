@@ -43,6 +43,7 @@ new GraphQLApiStack(app, 'GraphQLApiStack', {
     SQS_QUEUE_URL: queueStack.statementProcessingQueue.queueUrl,
     AWS_S3_BUCKET: storageStack.uploadBucket.bucketName,
     AI_TAGGING_ENABLED: 'true',
+    BEDROCK_MODEL_ID: '',
   },
 });
 
@@ -57,6 +58,7 @@ new TransactionLoaderStack(app, 'TransactionLoaderStack', {
     SQS_QUEUE_URL: queueStack.statementProcessingQueue.queueUrl,
     AWS_S3_BUCKET: storageStack.uploadBucket.bucketName,
     AI_TAGGING_ENABLED: 'true',
+    BEDROCK_MODEL_ID: '',
   },
 });
 
@@ -69,5 +71,6 @@ new TransactionCategoryStack(app, 'TransactionCategoryStack', {
     DYNAMO_TRANSACTION_TABLE: transactionsTableStack.transactionsTable.tableName,
     DYNAMO_CATEGORY_RULES_TABLE: transactionsCategoryTableStack.transactionsCategoryTable.tableName,
     AI_TAGGING_ENABLED: 'true',
+    BEDROCK_MODEL_ID: '',
   },
 });
