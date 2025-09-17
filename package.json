@@ -66,8 +66,7 @@
     "dev": "pnpm clean && node esbuild.config.js --watch",
     "synth": "pnpm build && pnpm --filter ./infra cdk:synth",
     "deploy:all": "pnpm build && pnpm --filter ./infra cdk:deploy:all",
-    "destroy:all": "pnpm --filter ./infra cdk:destroy:all",
-    "prepare:comprehend": "node scripts/prepare-comprehend-dataset.js"
+    "destroy:all": "pnpm --filter ./infra cdk:destroy:all"
   },
   "lint-staged": {
     "apps/**/*.{ts,tsx,js,jsx}": [
