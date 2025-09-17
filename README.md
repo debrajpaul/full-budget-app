@@ -1,271 +1,134 @@
 # full-budget-app
 
-A modular, scalable microservice architecture with best practices of a multi-tenancy SaaS platform for managing transactions, budgets, and reviews using AWS CDK, Lambda, DynamoDB, SQS, and S3.
+A modular, scalable microservice architecture for managing transactions, budgets, and reviews on AWS. The platform ingests statements, enriches transactions, and serves a tenant-aware GraphQL API. The latest update introduces an Amazon Bedrock powered fallback so the system can auto-classify transactions when local rules cannot find a match.
 
-- **GraphQL Apollo** for the API layer
-- **SQS** for event-driven background processing
-- **S3** to store the bank statement
-- **DynamoDB** for the persistence layer
-- **pnpm workspaces** for package management
+## Core Capabilities
+- GraphQL Apollo API with schema-first design and observability hooks
+- Serverless background processing through S3, SQS, Lambda, and DynamoDB
+- Transaction categorization pipeline combining deterministic rules with Amazon Bedrock LLM inference
+- Shared pnpm workspace for reusable auth, client, NLP, and service packages
+- Multi-tenant safeguards across logging, data isolation, and billing workflows
 
-## Design Decisions
+## What's New
+- **Amazon Bedrock fallback for transaction classification**: `TransactionCategoryService` now calls `BedrockClassifierService` when the rule engine returns `UNCLASSIFIED`, enabling AI-assisted tagging routed through `packages/services/src/transaction-category-service.ts`.
+- **Configurable feature flag and confidence hints**: toggle the integration with `AI_TAGGING_ENABLED=true`, supply a model via `BEDROCK_MODEL_ID` (for example `anthropic.claude-3-haiku-20240307-v1:0`), and surface an optional `AI_CONFIDENCE_THRESHOLD` for consumers that want to enforce a minimum LLM score.
+- **Bedrock client package**: `packages/client/src/bedrock-client.ts` wraps the AWS SDK `BedrockRuntimeClient`, constructing prompts that mirror the platform's base/sub-category taxonomy so Bedrock responses map directly to the domain model.
 
-- **Monorepo (pnpm workspaces)**
-  - Enables code reuse (commons) across GraphQL API and worker
-  - Clear project separation with fast local builds
-- **AWS CDK**
-  - Infrastructure-as-code with reusable L3 Constructs
-- **Parameter Store (SSM)**
-  - Used for secrets/config management
-- **GraphQL Apollo**
-  - Simple schema-first API with modern middleware support
-  - Exposes /metrics endpoint for CloudWatch dashboard
-- **SQS**
-  - Background task processing (bank parser)
-  - Decouples write-heavy or async logic from API
-- **DynamoDB**
-  - Document-oriented for nested data (bank → transactions[])
-  - Easy ODM support with validation
-- **Winston Logger**
-  - Standardized logs across all services
-  - Tagged by topic, service, and error level
+## Architecture Highlights
+- **Monorepo (pnpm workspaces)** keeps packages modular while sharing typed DTOs, logging, and utilities
+- **AWS CDK** provisions S3, SQS, DynamoDB tables, and Lambda functions with repeatable infrastructure-as-code
+- **Parameter Store (SSM)** stores shared secrets (JWT, API keys) for runtime environments
+- **Rule Engine + AI Tagging** first applies keyword rules, then consults Bedrock when permitted to maximize accuracy without sacrificing determinism
+- **Observability** standardizes Winston logging and exposes `/metrics` for dashboards
 
-## \*Architecture Diagram **coming soon\***
-
-### Multi-Tenancy Models
-
-**Single Table / Shared Infrastructure (Recommended Initially)**
-
-- Add `tenantId` to every DynamoDB record
-- Inject `tenantId` into GraphQL context via middleware
-- Enforce tenant scoping in queries and mutations
-
-**Isolated Resources per Tenant (Enterprise)**
-
-- S3: Prefix all paths with `tenantId` → `s3://bucket/<tenantId>/`
-- DynamoDB: Table-per-tenant for strict isolation
-
-### Authentication
-
-- JWT includes `tenantId`:
-
-```json
-{
-  "userId": "user-id",
-  "tenantId": "tenant-abc123",
-  "email": "user@example.com"
-}
+## Repository Layout
+```
+.
+├── apps/
+│   ├── graphql-api/           # GraphQL API (DynamoDB reads/writes, Bedrock wiring)
+│   ├── txn-loaders/           # Processes uploaded statements and writes transactions
+│   └── tag-loaders/           # Applies rule engine + Bedrock fallbacks via SQS workers
+├── infra/                     # AWS CDK stacks
+├── packages/
+│   ├── client/                # S3/SQS helpers + Bedrock client wrapper
+│   ├── commons/               # Shared types, configs, logging contracts
+│   ├── db/                    # DynamoDB repositories
+│   ├── nlp-tagger/            # Rule engine, keyword maps
+│   └── services/              # Domain services (TransactionCategoryService, BedrockClassifierService, etc.)
+├── scripts/                   # Utility scripts
+└── docs/                      # Additional design notes and artifacts
 ```
 
-- Middleware extracts and validates `tenantId`
+## Prerequisites
+- Node.js 18+ and pnpm (repo uses `pnpm@10.x`)
+- AWS credentials with rights to S3, SQS, DynamoDB, Parameter Store, and (optionally) `bedrock:InvokeModel`
+- Amazon Bedrock access in the chosen region when enabling AI tagging
+- Optional: Docker + AWS CDK CLI for infrastructure deployments
 
-### Tenant Provisioning
-
-1. Generate unique `tenantId`
-2. Create entry in `Tenants` table with plan and limits
-3. Initialize S3 prefix
-4. Send onboarding email
-
-### Billing & Plans
-
-- Integrate **Stripe** for subscriptions
-- Store `stripeCustomerId` in `Tenants`
-- Track usage in DynamoDB and enforce limits
-
-### Security
-
-- Use IAM condition keys to restrict access by `tenantId`
-- Include `tenantId` in CloudWatch logs for auditing
-
-### Observability
-
-- Tag all logs with `tenantId`
-- Filter logs in CloudWatch Insights by `tenantId`
-
-### Testing Isolation
-
-- Create mock tenants in seed data
-- Run integration tests to ensure no cross-tenant data leaks
-
-### SaaS Readiness Checklist
-
-| Area           | Implementation                                     |
-| -------------- | -------------------------------------------------- |
-| Multi-Tenancy  | Tenant-aware context, `tenantId` filtering         |
-| Authentication | JWT with `tenantId`                                |
-| Billing        | Stripe + usage tracking                            |
-| Data Isolation | S3 prefixes, Dynamo filters                        |
-| Observability  | Logs & metrics tagged with `tenantId`              |
-| Scalability    | Serverless infra, provisioned concurrency optional |
-
----
-
-## What is this repository for?
-
-    Monorepo Structure
-    .
-    ├── apps/
-    │ ├── graphql-api/ # GraphQL API (reads/writes to DynamoDB)
-    │ │ ├── dockerfile
-    │ │ ├── package.json
-    │ │ └── tsconfig.json
-    │ ├── txn-loaders/ # SQS consumer (adds transaction to DynamoDB)
-    │ │ ├── dockerfile
-    │ │ ├── package.json
-    │ │ └── tsconfig.json
-    │ ├── tag-loaders/ # DynamoDB stream consumer (adds categories to DynamoDB)
-    │ │ ├── dockerfile
-    │ │ ├── package.json
-    │ │ └── tsconfig.json
-    ├── infra/
-    │ ├── bin/ # root entry (AWS CDK)
-    │ ├── lib/ # all reusable L3 Constructs (AWS CDK)
-    ├── packages/
-    │ ├── auth/ # Authentication service for managing user sessions and security
-    │ │ ├── package.json
-    │ │ └── tsconfig.json
-    │ ├── client/ # Client for managing file uploads and downloads
-    │ │ ├── package.json
-    │ │ └── tsconfig.json
-    │ ├── commons/ # Common service providing foundational functionality for the application
-    │ │ ├── package.json
-    │ │ └── tsconfig.json
-    │ ├── db/ # Database service for managing data storage and retrieval
-    │ │ ├── package.json
-    │ │ └── tsconfig.json
-    │ ├── logger/ # Logger for application events
-    │ │ ├── package.json
-    │ │ └── tsconfig.json
-    │ ├── nlp-tagger/ # NLP Tagger service for processing and tagging text data
-    │ │ ├── package.json
-    │ │ └── tsconfig.json
-    │ ├── parser/ # Parser service for HDFC and SBI data processing
-    │ │ ├── package.json
-    │ │ └── tsconfig.json
-    │ └── services/ # Service layer for handling business logic
-    │   ├── package.json
-    │   └── tsconfig.json
-    ├── pnpm-workspace.yaml
-    ├── docker-compose.yml
-    ├── package.json
-    └── tsconfig.json
-
-## How do I get set up?
-
-1. Clone the repo:
+## Setup
+1. Clone the repository and install dependencies:
    ```bash
    git clone https://github.com/debrajpaul/full-budget-app.git
-   ```
-2. Go to the root folder and install dependencies:
-   ```bash
+   cd full-budget-app
    pnpm install
    ```
+2. Ensure your AWS CLI profile or environment variables expose the required credentials.
 
-> 📦 Version: `1.0`
-
----
-
-## Server Configuration:-
-
-- Region: `ap-south-1`
-- Deployed via: AWS CDK v2
-- Log Retention: 7 days (set via CDK)
-- CDK Bootstrapping Required:
-
-```bash
-cdk bootstrap aws://<account-id>/ap-south-1
-```
-
----
-
-## Dependencies
-
-All dependencies are listed in the `package.json` files across `apps/`, `infra/` and `packages/`.
-
-Steps:
-
-1. In terminal, go to your project directory
-2. Run:
-   ```bash
-   pnpm install
-   ```
-
----
-
-## .env file
-
+## Environment Variables
+Create a `.env` at the repo root (values shown below are illustrative):
 ```
 PORT=4005
 NODE_ENV=dev
 LOG_LEVEL=debug
 
-# mongo cred
-MONGO_HOST=localhost
-MONGO_PORT=27017
-MONGO_DB=bookdb
+# AWS cred
+AWS_ACCESS_KEY_ID=your-access-key-id
+AWS_SECRET_ACCESS_KEY=your-secret-access-key
+AWS_REGION=ap-south-1
 
-# kafka cred
-KAFKA_BROKERS_HOST=localhost
-KAFKA_BROKERS_PORT=9092
-CLIENT_ID=book-service
+# S3 bucket
+AWS_S3_BUCKET=full-budget-bank-uploads
+
+# sqs queue
+SQS_QUEUE_URL=https://sqs.ap-south-1.amazonaws.com/123456789012/bank-statement-jobs
+
+# DynamoDB table
+DYNAMO_USER_TABLE=users
+DYNAMO_TRANSACTION_TABLE=transactions
+DYNAMO_CATEGORY_RULES_TABLE=transaction-categories
+DYNAMO_RECURRING_TABLE=recurring-transactions
+DYNAMO_BUDGET_TABLE=budgets
+
+# JWT secret
+JWT_SECRET=replace-me
+
+# AI tagging controls
+AI_TAGGING_ENABLED=false
+BEDROCK_MODEL_ID=anthropic.claude-3-haiku-20240307-v1:0
+AI_CONFIDENCE_THRESHOLD=0.65
+```
+Set `AI_TAGGING_ENABLED=false` (or omit the Bedrock fields) if you want to rely purely on rule-based classification.
+
+## Running Locally
+```bash
+pnpm dev                                   # rebuild packages on change
+pnpm --filter @app/graphql-api dev         # start GraphQL API locally
+pnpm --filter @app/tag-loaders dev         # run transaction tagger worker
+pnpm --filter @app/txn-loaders dev         # process uploaded statements
 ```
 
----
+Integration tests live in `packages/services` and `packages/client`; run them with `pnpm test` or scope with `pnpm --filter <package> test`.
 
-## Local Deployment instructions:-
+## AI-powered Transaction Categorization Flow
+1. `tag-loaders` consumes SQS events produced after statement ingestion.
+2. `TransactionCategoryService` fetches tenant-specific rules and applies the keyword rule engine.
+3. If the transaction remains `UNCLASSIFIED` and `AI_TAGGING_ENABLED` is true, the service calls `BedrockClassifierService`, which delegates to the shared Bedrock client.
+4. The resulting base/sub category, reason, tagged source, and confidence score are written back to DynamoDB via `TransactionStore`.
+5. Downstream consumers can compare the returned confidence against the optional `AI_CONFIDENCE_THRESHOLD` value if they need to gate AI suggestions.
 
-1. Build backend:
-
-   ```bash
-   cd apps/api && pnpm build
-   ```
-
-2. Deploy CDK Stacks:
-
-   ```bash
-   cd infra && pnpm run build && pnpm exec cdk deploy --all
-   ```
-
-3. If deployment fails due to LogGroup already exists, go to AWS CloudWatch Logs and delete the corresponding log group manually.
-
-4. (Optional) Delete failed CloudFormation stacks via CloudFormation Console.
-
----
-
-## Local development
-
-  Run the build in watch mode and start individual services locally:
-
+## Deployment Notes
+- Bootstrap the target AWS environment before CDK deploys:
   ```bash
-  pnpm dev                                   # rebuild packages on change
-  pnpm --filter @app/graphql-api dev         # run GraphQL API
-  pnpm --filter @app/tag-loaders dev         # run tag-loaders
-  pnpm --filter @app/txn-loaders dev         # run txn-loaders
+  cdk bootstrap aws://<account-id>/<region>
   ```
-
----
+- Build and deploy all stacks once bootstrapped:
+  ```bash
+  pnpm build
+  pnpm --filter ./infra cdk:deploy:all
+  ```
+- CDK environment variables default `AI_TAGGING_ENABLED` to `false`; update stack parameters or related SSM parameters to enable Bedrock in non-local environments.
 
 ## Suggested Improvements
+- Security: adopt KMS encryption and enforce least-privilege IAM roles for Bedrock access
+- Testing: extend integration coverage for Bedrock fallback paths and AI confidence gating
+- Deployment: add CI/CD automation with safe rollbacks
+- Observability: integrate distributed tracing (AWS X-Ray) and per-tenant dashboards
+- Reliability: tune SQS/Lambda DLQs and retry policies for AI provider timeouts
 
-    * Security:- Use KMS encryption and least-privilege IAM roles.
-    * Testing:- Add unit/integration tests for background jobs and Lambda handlers.
-    * Deployment:- Integrate CI/CD pipelines with rollback support.
-    * Observability:- Integrate with AWS X-Ray or third-party tracing.
-    * Retry Logic:- Improve SQS + Lambda dead-letter handling and retries.
-    * API Evolution:- GraphQL schema versioning support.
-    * Reduce Latency:- Enable Lambda provisioned concurrency if needed.
-    * Traceability:- Include X-Request-ID or correlation IDs in logs.
-
----
-
-## Who do I talk to?
-
-    Debraj Paul
-    contact info:- pauldebraj7@gmail.com
-    LinkedIn:- https://www.linkedin.com/in/debraj-paul
-
----
+## Contact
+Debraj Paul  
+Email: pauldebraj7@gmail.com  
+LinkedIn: https://www.linkedin.com/in/debraj-paul
 
 ## License
-
-    Apache License
+Apache License 2.0
