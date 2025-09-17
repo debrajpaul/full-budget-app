@@ -127,24 +127,31 @@ Integration tests live in `packages/services` and `packages/client`; run them wi
 
 ## How to Contribute
 
-Find any typos? Have another resource you think should be included? Contributions are welcome!
+We welcome bug reports, feature ideas, and documentation updates. To propose a change that lines up with the monorepo tooling:
 
-First, fork this repository.
+1. Fork `debrajpaul/full-budget-app`, then clone your fork and move into the project directory:
+   ```sh
+   git clone https://github.com/<your-user>/full-budget-app.git
+   cd full-budget-app
+   ```
+2. Install dependencies with pnpm (the repo is configured as a pnpm workspace):
+   ```sh
+   pnpm install
+   ```
+3. Create a feature branch before you start editing:
+   ```sh
+   git checkout -b feat/<short-description>
+   ```
+4. Make your changes. When possible, include tests or update existing ones in the relevant `apps/*` or `packages/*` workspace.
+5. Verify everything passes before you push:
+   ```sh
+   pnpm lint
+   pnpm test
+   pnpm build        # optional, but recommended for infra changes
+   ```
+6. Commit using Conventional Commits (enforced by commitlint) and push your branch. Open a pull request against `main`, describing the change and any setup steps reviewers should know.
 
-![Fork Icon](.github/images/fork-icon.png)
-
-Next, clone this repository to your desktop to make changes.
-
-```sh
-$ git clone {YOUR_REPOSITORY_CLONE_URL}
-$ cd stock-market
-```
-
-Once you've pushed changes to your local repository, you can issue a pull request by clicking on the green pull request icon.
-
-![Pull Request Icon](.github/images/pull-request-icon.png)
-
-Instead of cloning the repository to your desktop, you can also go to `README.md` in your fork on GitHub.com, hit the Edit button (the button with the pencil) to edit the file in your browser, then hit the `Propose file change` button, and finally make a pull request.
+Minor improvements can also be made directly from the GitHub web editor—just open the file in your fork, click the pencil icon, and submit a pull request with your edits.
 
 ## Contact
 Debraj Paul  
