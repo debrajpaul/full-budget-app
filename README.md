@@ -125,22 +125,13 @@ Integration tests live in `packages/services` and `packages/client`; run them wi
 - Observability: integrate distributed tracing (AWS X-Ray) and per-tenant dashboards
 - Reliability: tune SQS/Lambda DLQs and retry policies for AI provider timeouts
 
-## Contact
-Debraj Paul  
-Email: pauldebraj7@gmail.com  
-LinkedIn: https://www.linkedin.com/in/debraj-paul
-
-## License
-Apache License 2.0
-
-
 ## How to Contribute
 
 Find any typos? Have another resource you think should be included? Contributions are welcome!
 
 First, fork this repository.
 
-![Fork Icon](images/fork-icon.png)
+![Fork Icon](.github/images/fork-icon.png)
 
 Next, clone this repository to your desktop to make changes.
 
@@ -151,6 +142,14 @@ $ cd stock-market
 
 Once you've pushed changes to your local repository, you can issue a pull request by clicking on the green pull request icon.
 
-![Pull Request Icon](images/pull-request-icon.png)
+![Pull Request Icon](.github/images/pull-request-icon.png)
 
 Instead of cloning the repository to your desktop, you can also go to `README.md` in your fork on GitHub.com, hit the Edit button (the button with the pencil) to edit the file in your browser, then hit the `Propose file change` button, and finally make a pull request.
+
+## Contact
+Debraj Paul  
+Email: pauldebraj7@gmail.com  
+LinkedIn: https://www.linkedin.com/in/debraj-paul
+
+## License
+Apache License 2.0
