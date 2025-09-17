@@ -35,7 +35,6 @@ new GraphQLApiStack(app, 'GraphQLApiStack', {
   environment: {
     NODE_ENV: 'dev',
     LOG_LEVEL: 'debug',
-    AWS_REGION: 'ap-south-1',
     DYNAMO_CATEGORY_RULES_TABLE: transactionsCategoryTableStack.transactionsCategoryTable.tableName,
     DYNAMO_TRANSACTION_TABLE: transactionsTableStack.transactionsTable.tableName,
     DYNAMO_RECURRING_TABLE: recurringTransactionsTableStack.recurringTransactionsTable.tableName,
@@ -55,7 +54,6 @@ new TransactionLoaderStack(app, 'TransactionLoaderStack', {
   environment: {
     NODE_ENV: 'dev',
     LOG_LEVEL: 'debug',
-    AWS_REGION: 'ap-south-1',
     DYNAMO_TRANSACTION_TABLE: transactionsTableStack.transactionsTable.tableName,
     SQS_QUEUE_URL: queueStack.statementProcessingQueue.queueUrl,
     AWS_S3_BUCKET: storageStack.uploadBucket.bucketName,
@@ -70,7 +68,6 @@ new TransactionCategoryStack(app, 'TransactionCategoryStack', {
   environment: {
     NODE_ENV: 'dev',
     LOG_LEVEL: 'debug',
-    AWS_REGION: 'ap-south-1',
     DYNAMO_TRANSACTION_TABLE: transactionsTableStack.transactionsTable.tableName,
     DYNAMO_CATEGORY_RULES_TABLE: transactionsCategoryTableStack.transactionsCategoryTable.tableName,
     AI_TAGGING_ENABLED: 'false',
