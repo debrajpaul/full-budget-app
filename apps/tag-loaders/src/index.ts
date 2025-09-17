@@ -3,11 +3,12 @@ import { setupDependency } from "./setup-dependency";
 import { setupServices } from "./setup-services";
 import { setupLoaders } from "./setup-loaders";
 
-const { logger, dynamoDBDocumentClient } = setupDependency();
+const { logger, dynamoDBDocumentClient, bedrockClient } = setupDependency();
 
 const { transactionCategoryService } = setupServices(
   logger,
   dynamoDBDocumentClient,
+  bedrockClient,
 );
 
 const { transactionCategoryLoader } = setupLoaders(
@@ -18,7 +19,7 @@ const { transactionCategoryLoader } = setupLoaders(
 export const handler = async (event: DynamoDBStreamEvent) => {
   logger.info(`#handler`);
   logger.debug(`handler event: ${JSON.stringify(event)}`);
-  const result = await transactionCategoryLoader.handle(event.Records);
+  const result = await transactionCategoryLoader.loader(event.Records);
   logger.info(`handler result: ${JSON.stringify(result)}`);
   return result;
 };

@@ -1,6 +1,6 @@
 import { ITransaction } from "./transaction";
 import { EBankName } from "../bank-parser";
-import { ITransactionRequest } from "../sqs-service";
+import { ITransactionRequest } from "../clients/sqs-service";
 
 export interface IMonthlyReview {
   totalIncome: number;

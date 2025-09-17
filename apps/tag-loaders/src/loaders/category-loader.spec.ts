@@ -26,7 +26,7 @@ describe("TransactionCategoryLoader", () => {
       },
     } as unknown as DynamoDBRecord;
 
-    await loader.handle([record]);
+    await loader.loader([record]);
 
     expect(service.process).toHaveBeenCalledWith({
       tenantId: ETenantType.default,
@@ -60,7 +60,7 @@ describe("TransactionCategoryLoader", () => {
       },
     } as unknown as DynamoDBRecord;
 
-    await loader.handle([record]);
+    await loader.loader([record]);
 
     expect(service.process).toHaveBeenCalledWith({
       tenantId: ETenantType.default,

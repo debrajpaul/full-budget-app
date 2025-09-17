@@ -13,9 +13,9 @@ export class TransactionCategoryLoader {
     private readonly transactionCategoryService: ITransactionCategoryService,
   ) {}
 
-  public async handle(records: DynamoDBRecord[]) {
-    this.logger.info(`Handling ${records.length} records`);
-    this.logger.debug("Handling records", { records });
+  public async loader(records: DynamoDBRecord[]) {
+    this.logger.info(`Loader ${records.length} records`);
+    this.logger.debug("Loader records", { records });
     for (const record of records) {
       this.logger.info(`Processing record: ${record.eventID}`);
       if (record.eventName !== "INSERT" && record.eventName !== "MODIFY") {

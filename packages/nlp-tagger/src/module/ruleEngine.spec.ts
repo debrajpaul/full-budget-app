@@ -1,15 +1,18 @@
-import { categorizeByRules, RawTxn } from "./ruleEngine";
+import { RuleEngine } from "./ruleEngine";
+import { mock } from "jest-mock-extended";
 import { keywordBaseCategoryMap } from "./rules";
 import {
+  IRawTxn,
   EBaseCategories,
   ESubIncomeCategories,
   ESubInvestmentCategories,
   ESubExpenseCategories,
   ETenantType,
   ICategoryRules,
+  ILogger,
 } from "@common";
 
-describe("categorizeByRules (updated API)", () => {
+describe("RuleEngine.categorize", () => {
   const rules: ICategoryRules[] = keywordBaseCategoryMap.map((r, i) => ({
     ...r,
     ruleId: `test-${i}`,
@@ -17,7 +20,13 @@ describe("categorizeByRules (updated API)", () => {
     createdAt: new Date(0).toISOString(),
   }));
 
-  const makeTxn = (overrides: Partial<RawTxn>): RawTxn => ({
+  let logger: ReturnType<typeof mock<ILogger>>;
+
+  beforeEach(() => {
+    logger = mock<ILogger>();
+  });
+
+  const makeTxn = (overrides: Partial<IRawTxn>): IRawTxn => ({
     description: overrides.description || "",
     rules,
     credit: overrides.credit,
@@ -25,7 +34,8 @@ describe("categorizeByRules (updated API)", () => {
   });
 
   it("returns category object for known keywords (credit-side)", () => {
-    const res = categorizeByRules(
+    const engine = new RuleEngine(logger);
+    const res = engine.categorize(
       makeTxn({ description: "Salary credited via ACH", credit: 1000 }),
     );
     expect(res.category).toBe(EBaseCategories.income);
@@ -35,7 +45,8 @@ describe("categorizeByRules (updated API)", () => {
   });
 
   it("classifies UPI generic as transfer (any side)", () => {
-    const res = categorizeByRules(
+    const engine = new RuleEngine(logger);
+    const res = engine.categorize(
       makeTxn({ description: "Paid using UPI at store" }),
     );
     expect(res.category).toBe(EBaseCategories.transfer);
@@ -43,7 +54,8 @@ describe("categorizeByRules (updated API)", () => {
   });
 
   it("handles Zerodha/CDSL as investment (any side)", () => {
-    const res = categorizeByRules(
+    const engine = new RuleEngine(logger);
+    const res = engine.categorize(
       makeTxn({
         description:
           "BY TRANSFER-NEFT*YESB0000001*YESB40930207163*ZERODHA BROKING L--",
@@ -54,13 +66,14 @@ describe("categorizeByRules (updated API)", () => {
   });
 
   it("matches case-insensitively on description", () => {
-    const res1 = categorizeByRules(
+    const engine = new RuleEngine(logger);
+    const res1 = engine.categorize(
       makeTxn({ description: "DIVIDEND CREDITED", credit: 10 }),
     );
     expect(res1.category).toBe(EBaseCategories.income);
     expect(res1.subCategory).toBe(ESubIncomeCategories.investment);
 
-    const res2 = categorizeByRules(
+    const res2 = engine.categorize(
       makeTxn({ description: "rent paid for flat", debit: 1000 }),
     );
     expect(res2.category).toBe(EBaseCategories.expenses);
@@ -68,7 +81,8 @@ describe("categorizeByRules (updated API)", () => {
   });
 
   it("returns unclassified when no rule matches", () => {
-    const res = categorizeByRules(
+    const engine = new RuleEngine(logger);
+    const res = engine.categorize(
       makeTxn({ description: "No rule applies here" }),
     );
     expect(res.category).toBe(EBaseCategories.unclassified);
@@ -77,14 +91,15 @@ describe("categorizeByRules (updated API)", () => {
   });
 
   it("respects credit/debit gating via rule.when", () => {
+    const engine = new RuleEngine(logger);
     // 'dividend' is CREDIT-side rule; should not match on DEBIT
-    const resDebitSide = categorizeByRules(
+    const resDebitSide = engine.categorize(
       makeTxn({ description: "interim dividend posted", debit: 50 }),
     );
     expect(resDebitSide.category).toBe(EBaseCategories.unclassified);
 
     // 'rent' is DEBIT-side rule; should not match on CREDIT
-    const resCreditSide = categorizeByRules(
+    const resCreditSide = engine.categorize(
       makeTxn({ description: "monthly rent", credit: 5000 }),
     );
     expect(resCreditSide.category).toBe(EBaseCategories.unclassified);

@@ -16,5 +16,10 @@ export interface IConfig {
   dynamoBudgetTable: string;
   jwtSecret: string;
   aiTaggingEnabled: boolean;
-  comprehendClassifierArn?: string;
+  bedrockModelId?: string;
+  /**
+   * Optional minimum confidence required to accept AI (Bedrock) classifications
+   * for auto-tagging. When undefined, all AI classifications are accepted.
+   */
+  aiConfidenceThreshold?: number;
 }
