@@ -1,35 +1,131 @@
 # Architecture
 
-## Directory layout
+## Overview
+🧠📊 Full Budget App is a multi-tenant, serverless budgeting platform that ingests raw bank
+statements, enriches transactions, and exposes a GraphQL API for dashboards and
+automations. The monorepo is managed with pnpm workspaces so application code,
+shared services, and infrastructure definitions can evolve together while
+staying deployable as independent AWS Lambda functions.
 
-The repository is organized as a pnpm workspace.
+Key principles:
+- **Serverless first** – Lambda, DynamoDB, S3, and SQS supply elastic scale without
+  maintaining servers.
+- **Shared domain services** – Business logic (budgets, categorisation, savings,
+  recurring transactions) lives in `packages/services` and is imported by any
+  runtime needing the functionality.
+- **Tenant isolation** – Request context carries tenant metadata so data access
+  and logging remain scoped per tenant.
+- **AI assist, deterministic core** – Keyword rules classify transactions first;
+  Amazon Bedrock is only invoked for unclassified records or when extra signal
+  is desired.
 
-- `apps/` – runtime services.
-  - `graphql-api` exposes the GraphQL API and a `/metrics` endpoint.
-  - `txn-loaders` consumes SQS messages and persists transactions.
-  - `tag-loaders` listens to DynamoDB streams to assign categories.
-- `packages/` – shared libraries and business logic.
-  - `parser` turns raw bank CSV/PDF statements into transaction objects.
-  - `nlp-tagger` contains the tagging rules and serves as the entry point for training or inference.
-  - `db`, `auth`, `logger`, `services`, and others provide reusable utilities.
-- `infra/` – AWS CDK stacks and constructs.
-- `docs/` – project documentation.
+## Runtime Services (apps/)
+- **`graphql-api`** – Apollo Server running on Lambda (with Express support for
+  local dev). Resolves queries/mutations by delegating to service layer modules,
+  wires multi-tenant context, and exposes a `/metrics` endpoint for Prometheus
+  scrapers.
+- **`txn-loaders`** – SQS-triggered Lambda that reads ingestion jobs, pulls the
+  corresponding bank statement from S3, normalises it with parsers from
+  `@parser`, and persists canonical transactions through `TransactionStore`.
+- **`tag-loaders`** – Worker Lambda that consumes categorisation jobs, runs the
+  rule engine, optionally calls Bedrock, and writes enriched categories and
+  confidence scores back to DynamoDB.
 
-## Data flow
+Each service bundles with esbuild for fast cold starts and provides a
+`dev` script powered by `ts-node-dev` for local iteration.
 
-1. **CSV ingestion** – Statements uploaded to S3 are parsed by classes in `packages/parser` and converted into canonical transaction records.
-2. **Window generation** – Service layer utilities arrange transactions into time windows that form the training dataset.
-3. **Training** – Windowed data is fed to the tagging model. Scripts in `packages/nlp-tagger/src/start.ts` orchestrate training and inference.
-4. **Testing** – Each package contains Jest specs (`*.spec.ts`). Run `pnpm -r test` to validate parsers, services and models.
-5. **Metrics** – During training or API execution, metrics are emitted through the logger and exposed by `apps/graphql-api` at `/metrics` for CloudWatch dashboards.
-6. **Run record** – Final metrics and model artefacts are persisted via the database layer in `packages/db`.
-7. **Dashboard** – The GraphQL API backs client dashboards that visualize run records and aggregate metrics.
+## Shared Packages (packages/)
+- **`services`** – Domain orchestrators such as `TransactionCategoryService`,
+  `BudgetService`, `ForecastService`, and the Bedrock integration.
+- **`client`** – Thin wrappers around AWS SDK clients (S3, SQS, BedrockRuntime)
+  exposing typed helpers used by the services.
+- **`parser`** – HDFC and SBI CSV parsers plus abstractions for introducing new
+  banks or formats.
+- **`nlp-tagger`** – Deterministic keyword tagging rules, rule store, and
+  utilities for testing or extending the tagging logic.
+- **`db`** – DynamoDB repositories that encapsulate table access patterns and
+  time-window queries.
+- **`auth`, `common`, `logger`** – Shared DTOs, JWT helpers, error contracts,
+  logging abstractions, and cross-cutting utilities.
 
-## Customising models
+Workspaces share TypeScript configuration and leverage path aliases so services
+import package code directly (e.g. `import { BudgetService } from "@services"`).
 
-Model topology and optimiser settings live in `packages/nlp-tagger/src/start.ts`. Replace the rule‑based logic with a neural model or adjust optimiser parameters there. Additional model components can be placed in `packages/nlp-tagger/src/module`.
+## Infrastructure as Code (infra/)
+AWS CDK stacks provision the platform. Key stacks include:
+- **Storage & queues** (`storage.stack.ts`, `queue.stack.ts`) – S3 buckets for
+  statement uploads and SQS queues for ingestion + categorisation workflows.
+- **Tables** (`transactions-table.stack.ts`, `transaction-category-table.stack.ts`,
+  `budgets-table.stack.ts`, `recurring-transactions-table.stack.ts`,
+  `users-table.stack.ts`) – Tenant-scoped DynamoDB tables with on-demand
+  capacity.
+- **Functions** (`transaction-loader.stack.ts`,
+  `transaction-category-loader.stack.ts`, `graphql-api.stack.ts`) – Lambda
+  definitions wired to the deployed bundles.
+- **Parameters & alarms** (`ssm-param.stack.ts`, `lambda-alarms-construct.ts`) –
+  Stores shared secrets/flags in SSM Parameter Store and configures CloudWatch
+  alarms for error budgets.
 
-## Extending metrics and datasets
+`pnpm --filter ./infra cdk:deploy:all` deploys every stack after a monorepo
+build, while `pnpm synth` produces the CloudFormation templates for review.
 
-- **Metrics** – Add collectors under `apps/graphql-api` (or a dedicated metrics package) and register them so they appear in the `/metrics` endpoint.
-- **Dataset generators** – Implement additional parsers inside `packages/parser/src` and export them from `packages/parser/src/index.ts`. Service-layer helpers can build training windows from these parsers for new datasets.
+## Data Flow
+1. **Upload & queue** – Tenants upload statements to S3 and enqueue ingestion
+   jobs in the SQS statement queue.
+2. **Ingest** – `txn-loaders` fetches the file, parses rows into canonical
+   transactions, and persists them to the transactions table.
+3. **Categorise** – Transaction records requiring tagging emit jobs that the
+   `tag-loaders` worker consumes. Keyword rules run first; unresolved entries
+   trigger Bedrock classification when `AI_TAGGING_ENABLED` permits it.
+4. **Persist insights** – Categorised transactions, budgets, recurring
+   transactions, and savings goals live in dedicated DynamoDB tables via stores
+   in `@db`.
+5. **Serve API** – `graphql-api` combines data from the stores and domain
+   services to power dashboards (reviews, forecasts, budgeting tools).
+6. **Observe** – Structured logs flow through the shared logger, and metrics are
+   exposed via `/metrics` for alerting and dashboards.
+
+## AI-Assisted Categorisation
+- **Rule engine first** – `TransactionCategoryService` executes deterministic
+  keyword/tagging rules from `@nlp-tagger`. This keeps behaviour explainable and
+  avoids unnecessary AI calls.
+- **Bedrock fallback** – When a transaction remains `UNCLASSIFIED`,
+  `BedrockClassifierService` invokes the Anthropic Claude model (or whichever ID
+  is set in `BEDROCK_MODEL_ID`) via the wrapper in `@client`.
+- **Confidence hints** – Responses include a suggested category, reasoning, and
+  score. Downstream consumers can enforce thresholds through
+  `AI_CONFIDENCE_THRESHOLD`.
+- **Feature flag** – `AI_TAGGING_ENABLED` and the presence of Bedrock
+  credentials determine whether the AI step runs in each environment.
+
+## Observability & Operations
+- **Logging** – `@logger` provides a Winston-based logger injected into every
+  service. Logs include tenant, request, and correlation metadata.
+- **Metrics** – The GraphQL service exports Prometheus metrics; extend collectors
+  under `apps/graphql-api/src/utils` to expose new counters or histograms.
+- **Alarms** – CDK constructs create CloudWatch alarms for key Lambdas. DLQ and
+  retry policies can be tuned per queue.
+- **Configuration** – Runtime configuration comes from environment variables,
+  SSM parameters, and feature flags injected during deployment.
+
+## Local Development Workflow
+- Run `pnpm install` once to hydrate workspace dependencies.
+- Use `pnpm dev` to build packages in watch mode; individual apps can be started
+  with `pnpm --filter @app/<service> dev`.
+- Tests live alongside their packages (`*.spec.ts`); execute
+  `pnpm test`, `pnpm lint`, and `pnpm typecheck` before shipping changes.
+- Postman collections (`postman/`) and sample data (`artifacts/training.csv`)
+  support manual verification.
+
+## Extending the Platform
+- **Add a new bank parser** by implementing it in `packages/parser` and exporting
+  it from the package index. Update `txn-loaders` to recognise the new bank code.
+- **Launch additional metrics** by declaring collectors in `graphql-api` and
+  wiring them into the Express handler.
+- **Introduce new budgeting logic** within `packages/services` so both API and
+  workers can reuse it.
+- **Expand infrastructure** by authoring a new construct/stack under `infra/lib`
+  and wiring it into the composed `cdk:deploy:all` command.
+
+Refer to `README.md` for environment setup, deployment commands, and contribution
+guidelines.
