@@ -117,7 +117,10 @@ describe("CategoryRulesStore", () => {
       reason: "auto-tag",
       confidence: 0.9,
     });
-    expect(storeMock.send).toHaveBeenNthCalledWith(1, expect.any(DeleteCommand));
+    expect(storeMock.send).toHaveBeenNthCalledWith(
+      1,
+      expect.any(DeleteCommand),
+    );
     expect(storeMock.send).toHaveBeenNthCalledWith(2, expect.any(PutCommand));
 
     const deleteCommand = storeMock.send.mock.calls[0][0];

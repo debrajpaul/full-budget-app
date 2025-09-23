@@ -82,18 +82,16 @@ export class CategoryRulesStore implements ICategoryRulesStore {
 
   public async addRules(
     tenantId: ETenantType,
-    rules:  Omit<ICategoryRules, "tenantId" | "ruleId" | "createdAt">[],
+    rules: Omit<ICategoryRules, "tenantId" | "ruleId" | "createdAt">[],
   ): Promise<void> {
     this.logger.info("Saving rules to DynamoDB");
     this.logger.debug("Rules", { rules });
 
     const chunks = chunk(rules, 25);
     for (const chunk of chunks) {
-      const promises = chunk.map((rule:  Omit<ICategoryRules, "tenantId" | "ruleId" | "createdAt">) =>
-        this.addRule(
-          tenantId,
-          rule
-        ),
+      const promises = chunk.map(
+        (rule: Omit<ICategoryRules, "tenantId" | "ruleId" | "createdAt">) =>
+          this.addRule(tenantId, rule),
       );
       await Promise.all(promises);
     }
@@ -101,7 +99,7 @@ export class CategoryRulesStore implements ICategoryRulesStore {
 
   public async addRule(
     tenantId: ETenantType,
-    rule:  Omit<ICategoryRules, "tenantId" | "ruleId" | "createdAt">,
+    rule: Omit<ICategoryRules, "tenantId" | "ruleId" | "createdAt">,
   ): Promise<void> {
     this.logger.info("Saving rule to DynamoDB");
     const { match, category, taggedBy, subCategory, reason, confidence, when } =
