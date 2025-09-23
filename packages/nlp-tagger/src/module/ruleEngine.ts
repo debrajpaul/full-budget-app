@@ -14,9 +14,13 @@ export class RuleEngine implements IRuleEngine {
     this.logger = logger;
   }
 
-  private isCredit = (t: IRawTxn) =>
-    (t.credit ?? 0) > 0 && (t.debit ?? 0) === 0;
-  private isDebit = (t: IRawTxn) => (t.debit ?? 0) > 0 && (t.credit ?? 0) === 0;
+  private isCreditOrDebit = (t:IRawTxn): "CREDIT" | "DEBIT" | "ANY" => {
+    if (t.balance === undefined || t.balance === null || t.balance === 0) {
+      return "ANY";
+    }
+    return t.balance > 0 ? "CREDIT" : "DEBIT";
+  };
+
   private normalizeDescription = (raw: string): string =>
     raw
       .toLowerCase()
@@ -36,11 +40,7 @@ export class RuleEngine implements IRuleEngine {
       };
     }
     const desc = this.normalizeDescription(txn.description || "");
-    const side: "CREDIT" | "DEBIT" | "ANY" = this.isCredit(txn)
-      ? "CREDIT"
-      : this.isDebit(txn)
-        ? "DEBIT"
-        : "ANY";
+    const side: "CREDIT" | "DEBIT" | "ANY" = this.isCreditOrDebit(txn);
 
     for (const rule of txn.rules) {
       // Skip if rule is not ANY

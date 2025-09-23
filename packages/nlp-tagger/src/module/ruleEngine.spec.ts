@@ -29,14 +29,13 @@ describe("RuleEngine.categorize", () => {
   const makeTxn = (overrides: Partial<IRawTxn> = {}): IRawTxn => ({
     description: overrides.description ?? "",
     rules: overrides.rules ?? rules,
-    credit: overrides.credit,
-    debit: overrides.debit,
+    balance: overrides.balance,
   });
 
   it("returns category object for known keywords (credit-side)", () => {
     const engine = new RuleEngine(logger);
     const res = engine.categorize(
-      makeTxn({ description: "Salary credited via ACH", credit: 1000 }),
+      makeTxn({ description: "Salary credited via ACH", balance: 1000 }),
     );
     expect(res.taggedBy).toBe("RULE_ENGINE");
     expect(res.category).toBe(EBaseCategories.income);
@@ -72,14 +71,14 @@ describe("RuleEngine.categorize", () => {
   it("matches case-insensitively on description", () => {
     const engine = new RuleEngine(logger);
     const res1 = engine.categorize(
-      makeTxn({ description: "DIVIDEND CREDITED", credit: 10 }),
+      makeTxn({ description: "DIVIDEND CREDITED", balance: 10 }),
     );
     expect(res1.taggedBy).toBe("RULE_ENGINE");
     expect(res1.category).toBe(EBaseCategories.income);
     expect(res1.subCategory).toBe(ESubIncomeCategories.investment);
 
     const res2 = engine.categorize(
-      makeTxn({ description: "rent paid for flat", debit: 1000 }),
+      makeTxn({ description: "rent paid for flat", balance: -1000 }),
     );
     expect(res2.taggedBy).toBe("RULE_ENGINE");
     expect(res2.category).toBe(EBaseCategories.expenses);
@@ -112,14 +111,14 @@ describe("RuleEngine.categorize", () => {
     const engine = new RuleEngine(logger);
     // 'dividend' is CREDIT-side rule; should not match on DEBIT
     const resDebitSide = engine.categorize(
-      makeTxn({ description: "interim dividend posted", debit: 50 }),
+      makeTxn({ description: "interim dividend posted", balance: -50 }),
     );
     expect(resDebitSide.taggedBy).toBe("RULE_ENGINE");
     expect(resDebitSide.category).toBe(EBaseCategories.unclassified);
 
     // 'rent' is DEBIT-side rule; should not match on CREDIT
     const resCreditSide = engine.categorize(
-      makeTxn({ description: "monthly rent", credit: 5000 }),
+      makeTxn({ description: "monthly rent", balance: 5000 }),
     );
     expect(resCreditSide.taggedBy).toBe("RULE_ENGINE");
     expect(resCreditSide.category).toBe(EBaseCategories.unclassified);

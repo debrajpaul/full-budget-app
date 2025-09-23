@@ -39,7 +39,7 @@ export class TransactionCategoryService implements ITransactionCategoryService {
   public async process(request: ITransactionCategoryRequest): Promise<boolean> {
     this.logger.info("process started processing messages");
     try {
-      const { tenantId, transactionId, description, category } = request;
+      const { tenantId, transactionId, description, category, balance } = request;
 
       if (!tenantId || !transactionId || !description) {
         this.logger.warn("Skipping record with missing required fields", {
@@ -59,7 +59,7 @@ export class TransactionCategoryService implements ITransactionCategoryService {
       const rules = await this.categoryRulesStore.getRulesByTenant(tenantId);
 
       // step 2: Match description against rules
-      let matchedCategory = this.ruleEngine.categorize({ description, rules });
+      let matchedCategory = this.ruleEngine.categorize({ description, rules, balance });
 
       // Fallback to Bedrock if still unclassified
       if (

@@ -3,8 +3,7 @@ import { ICategoryRules } from "./category-rules";
 export interface IRawTxn {
   description: string;
   rules: ICategoryRules[];
-  credit?: number; // positive for credits
-  debit?: number; // positive for debits
+  balance?: number | null; // positive for credits & negative for debits
   // ... your other fields (date, ref, balance, etc.)
 }
 
