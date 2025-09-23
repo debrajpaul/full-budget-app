@@ -5,7 +5,6 @@ import {
   IRawTxn,
   EBaseCategories,
   ESubIncomeCategories,
-  ESubInvestmentCategories,
   ESubExpenseCategories,
   ETenantType,
   ICategoryRules,
@@ -64,8 +63,7 @@ describe("RuleEngine.categorize", () => {
       }),
     );
     expect(res.taggedBy).toBe("RULE_ENGINE");
-    expect(res.category).toBe(EBaseCategories.investment);
-    expect(res.subCategory).toBe(ESubInvestmentCategories.stocks);
+    expect(res.category).toBe(EBaseCategories.unclassified);
   });
 
   it("matches case-insensitively on description", () => {

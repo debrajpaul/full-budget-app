@@ -15,7 +15,16 @@ export const keywordBaseCategoryMap: Omit<
   // --- INVESTMENTS ---
   {
     match: /zerodha|central\s+depository|cdsl|hdfcsec|icici\s*direct/,
-    when: "ANY",
+    when: "CREDIT",
+    category: EBaseCategories.income,
+    subCategory: ESubInvestmentCategories.stocks,
+    reason: "Broker/CDSL reference",
+    confidence: 0.95,
+    taggedBy: "RULE_ENGINE",
+  },
+  {
+    match: /zerodha|central\s+depository|cdsl|hdfcsec|icici\s*direct/,
+    when: "DEBIT",
     category: EBaseCategories.investment,
     subCategory: ESubInvestmentCategories.stocks,
     reason: "Broker/CDSL reference",

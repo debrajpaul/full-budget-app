@@ -33,8 +33,15 @@ type RuleCase = {
 const ruleCases: RuleCase[] = [
   {
     description: "payment to zerodha broking",
-    when: "ANY",
+    when: "DEBIT",
     category: EBaseCategories.investment,
+    subCategory: ESubInvestmentCategories.stocks,
+    reason: "Broker/CDSL reference",
+  },
+  {
+    description: "zerodha payout credited",
+    when: "CREDIT",
+    category: EBaseCategories.income,
     subCategory: ESubInvestmentCategories.stocks,
     reason: "Broker/CDSL reference",
   },
