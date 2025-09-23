@@ -103,4 +103,25 @@ describe("TransactionCategoryLoader", () => {
 
     expect(service.process).not.toHaveBeenCalled();
   });
+
+  it("should skip records with blank description", async () => {
+    const logger = mock<ILogger>();
+    const service = mock<ITransactionCategoryService>();
+    const loader = new TransactionCategoryLoader(logger, service);
+
+    const record = {
+      eventID: "4",
+      eventName: "INSERT",
+      dynamodb: {
+        NewImage: {
+          tenantId: { S: ETenantType.default },
+          description: { S: "   " },
+        },
+      },
+    } as unknown as DynamoDBRecord;
+
+    await loader.loader([record]);
+
+    expect(service.process).not.toHaveBeenCalled();
+  });
 });

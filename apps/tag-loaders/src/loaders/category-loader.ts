@@ -33,7 +33,8 @@ export class TransactionCategoryLoader {
         });
         continue;
       }
-      if (!newImage?.description?.S) {
+      const description = newImage.description?.S;
+      if (!description || description.trim().length === 0) {
         this.logger.debug("Skipping record without description", {
           eventID: record.eventID,
           description: newImage?.description?.S,
@@ -43,7 +44,7 @@ export class TransactionCategoryLoader {
       const request: ITransactionCategoryRequest = {
         tenantId: (newImage.tenantId?.S as ETenantType) ?? ETenantType.default,
         transactionId: newImage.transactionId?.S ?? "",
-        description: newImage.description?.S,
+        description,
         category:
           (newImage.category?.S as EBaseCategories) ??
           EBaseCategories.unclassified,
