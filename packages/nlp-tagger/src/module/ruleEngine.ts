@@ -14,7 +14,7 @@ export class RuleEngine implements IRuleEngine {
     this.logger = logger;
   }
 
-  private isCreditOrDebit = (t:IRawTxn): "CREDIT" | "DEBIT" | "ANY" => {
+  private isCreditOrDebit = (t: IRawTxn): "CREDIT" | "DEBIT" | "ANY" => {
     if (t.balance === undefined || t.balance === null || t.balance === 0) {
       return "ANY";
     }
