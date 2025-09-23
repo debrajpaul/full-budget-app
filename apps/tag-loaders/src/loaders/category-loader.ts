@@ -19,18 +19,24 @@ export class TransactionCategoryLoader {
     for (const record of records) {
       this.logger.info(`Processing record: ${record.eventID}`);
       if (record.eventName !== "INSERT" && record.eventName !== "MODIFY") {
+        this.logger.debug("Skipping record with eventName", {
+          eventID: record.eventID,
+          eventName: record.eventName,
+        });
         continue; // only process new or updated transactions
       }
       const newImage = record.dynamodb?.NewImage;
       if (!newImage) {
         this.logger.debug("Skipping record without NewImage", {
           eventID: record.eventID,
+          newImage: newImage,
         });
         continue;
       }
-      if (!newImage.description?.S) {
+      if (!newImage?.description?.S) {
         this.logger.debug("Skipping record without description", {
           eventID: record.eventID,
+          description: newImage?.description?.S,
         });
         continue;
       }
@@ -41,7 +47,7 @@ export class TransactionCategoryLoader {
         category:
           (newImage.category?.S as EBaseCategories) ??
           EBaseCategories.unclassified,
-        amount: newImage.amount?.N ? Number(newImage.balance.N) : undefined,
+        amount: newImage.amount?.N ? Number(newImage.amount.N) : undefined,
         createdAt: newImage.createdAt?.S ?? new Date().toISOString(),
         embedding:
           newImage.embedding?.L?.map((e: AttributeValue) => Number(e.N || 0)) ??

@@ -24,7 +24,6 @@ describe("TransactionCategoryLoader", () => {
           description: { S: "desc" },
           category: { S: "" },
           amount: { N: "12.34" },
-          balance: { N: "12.34" },
           createdAt: { S: "2024-01-01T00:00:00.000Z" },
           embedding: { L: [{ N: "0.1" }, { N: "0.2" }] },
           taggedBy: { S: "RULE_ENGINE" },
