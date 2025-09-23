@@ -15,10 +15,10 @@ export class RuleEngine implements IRuleEngine {
   }
 
   private isCreditOrDebit = (t: IRawTxn): "CREDIT" | "DEBIT" | "ANY" => {
-    if (t.balance === undefined || t.balance === null || t.balance === 0) {
+    if (t.amount === undefined || t.amount === null || t.amount === 0) {
       return "ANY";
     }
-    return t.balance > 0 ? "CREDIT" : "DEBIT";
+    return t.amount > 0 ? "CREDIT" : "DEBIT";
   };
 
   private normalizeDescription = (raw: string): string =>

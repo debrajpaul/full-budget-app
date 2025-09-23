@@ -41,7 +41,7 @@ export class TransactionCategoryLoader {
         category:
           (newImage.category?.S as EBaseCategories) ??
           EBaseCategories.unclassified,
-        balance: newImage.balance?.N ? Number(newImage.balance.N) : undefined,
+        amount: newImage.amount?.N ? Number(newImage.balance.N) : undefined,
         createdAt: newImage.createdAt?.S ?? new Date().toISOString(),
         embedding:
           newImage.embedding?.L?.map((e: AttributeValue) => Number(e.N || 0)) ??
