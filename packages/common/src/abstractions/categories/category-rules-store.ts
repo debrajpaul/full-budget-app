@@ -16,12 +16,7 @@ export interface ICategoryRulesStore {
   ): Promise<void>;
   addRule(
     tenantId: ETenantType,
-    match: RegExp,
-    category: EBaseCategories,
-    taggedBy: string,
-    subCategory?: EAllSubCategories,
-    reason?: string,
-    confidence?: number,
+    rule: Omit<ICategoryRules, "tenantId" | "ruleId" | "createdAt">,
   ): Promise<void>;
   removeRule(tenantId: ETenantType, ruleId: string): void;
   mapClassificationToEnums(label: string): {
