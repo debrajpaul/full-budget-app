@@ -8,6 +8,7 @@ import {
 
 export class RuleEngine implements IRuleEngine {
   private readonly logger: ILogger;
+  private readonly taggedBy: string = "RULE_ENGINE";
 
   constructor(logger: ILogger) {
     this.logger = logger;
@@ -28,6 +29,7 @@ export class RuleEngine implements IRuleEngine {
     this.logger.info(`Categorizing transaction: ${txn.description}`);
     if (!txn.rules || txn.rules.length === 0) {
       return {
+        taggedBy: this.taggedBy,
         category: EBaseCategories.unclassified,
         reason: "No rules defined",
         confidence: 0.0,
@@ -41,6 +43,8 @@ export class RuleEngine implements IRuleEngine {
         : "ANY";
 
     for (const rule of txn.rules) {
+      // Skip if rule is not ANY
+      // Skip if rule is not for the same side
       if (rule.when && rule.when !== "ANY" && rule.when !== side) continue;
 
       // ICategoryRules.match is a RegExp; use test() directly
@@ -48,6 +52,7 @@ export class RuleEngine implements IRuleEngine {
 
       if (matched) {
         return {
+          taggedBy: this.taggedBy,
           category: rule.category,
           subCategory: rule.subCategory,
           reason: rule.reason,
@@ -56,6 +61,7 @@ export class RuleEngine implements IRuleEngine {
       }
     }
     return {
+      taggedBy: this.taggedBy,
       category: EBaseCategories.unclassified,
       reason: "No rule matched",
       confidence: 0.0,

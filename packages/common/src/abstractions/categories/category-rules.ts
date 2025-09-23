@@ -61,6 +61,7 @@ export interface ICategoryRules {
   match: RegExp;
   category: EBaseCategories;
   subCategory?: EAllSubCategories; // Optional detailed sub-category
+  taggedBy: string;
   when?: "CREDIT" | "DEBIT" | "ANY";
   reason?: string;
   confidence?: number;

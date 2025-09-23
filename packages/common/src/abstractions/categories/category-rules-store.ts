@@ -18,6 +18,7 @@ export interface ICategoryRulesStore {
     tenantId: ETenantType,
     match: RegExp,
     category: EBaseCategories,
+    taggedBy: string,
     subCategory?: EAllSubCategories,
     reason?: string,
     confidence?: number,

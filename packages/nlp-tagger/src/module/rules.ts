@@ -20,6 +20,7 @@ export const keywordBaseCategoryMap: Omit<
     subCategory: ESubInvestmentCategories.stocks,
     reason: "Broker/CDSL reference",
     confidence: 0.95,
+    taggedBy: "RULE_ENGINE",
   },
   {
     match: /dividend|interim\s+dividend/,
@@ -28,6 +29,7 @@ export const keywordBaseCategoryMap: Omit<
     subCategory: ESubIncomeCategories.investment,
     reason: "Dividend credit",
     confidence: 0.98,
+    taggedBy: "RULE_ENGINE",
   },
   {
     match: /sip|mutual\s*funds?/,
@@ -36,6 +38,25 @@ export const keywordBaseCategoryMap: Omit<
     subCategory: ESubInvestmentCategories.mutualFunds,
     reason: "MF/SIP",
     confidence: 0.9,
+    taggedBy: "RULE_ENGINE",
+  },
+  {
+    match: /indian\s*clearin/i,
+    when: "DEBIT",
+    category: EBaseCategories.investment,
+    subCategory: ESubInvestmentCategories.mutualFunds,
+    reason: "MF/SIP via Indian Clearing debit",
+    confidence: 0.9,
+    taggedBy: "RULE_ENGINE",
+  },
+  {
+    match: /indian\s*clearin/i,
+    when: "CREDIT",
+    category: EBaseCategories.income,
+    subCategory: ESubInvestmentCategories.mutualFunds,
+    reason: "MF/SIP via Indian Clearing credit",
+    confidence: 0.9,
+    taggedBy: "RULE_ENGINE",
   },
   {
     match: /nps|nsc|national\s*pension\s*scheme/,
@@ -44,6 +65,7 @@ export const keywordBaseCategoryMap: Omit<
     subCategory: ESubInvestmentCategories.mutualFunds,
     reason: "NPS/NSC",
     confidence: 0.9,
+    taggedBy: "RULE_ENGINE",
   },
 
   // --- SAVINGS / DEPOSIT PRODUCTS ---
@@ -54,6 +76,7 @@ export const keywordBaseCategoryMap: Omit<
     subCategory: ESubSavingCategories.emergency,
     reason: "RD contribution",
     confidence: 0.9,
+    taggedBy: "RULE_ENGINE",
   },
   {
     match: /credit\s+interest|int\s+cr|int\.\s*credit/,
@@ -62,6 +85,7 @@ export const keywordBaseCategoryMap: Omit<
     subCategory: ESubIncomeCategories.investment,
     reason: "Interest credit",
     confidence: 0.85,
+    taggedBy: "RULE_ENGINE",
   },
 
   // --- EXPENSES ---
@@ -72,6 +96,7 @@ export const keywordBaseCategoryMap: Omit<
     subCategory: ESubExpenseCategories.healthcare,
     reason: "Insurance premium",
     confidence: 0.85,
+    taggedBy: "RULE_ENGINE",
   },
   {
     match: /rent\b/,
@@ -80,6 +105,7 @@ export const keywordBaseCategoryMap: Omit<
     subCategory: ESubExpenseCategories.housing,
     reason: "Rent payment",
     confidence: 0.95,
+    taggedBy: "RULE_ENGINE",
   },
   {
     match: /maid\s+salary/,
@@ -88,6 +114,7 @@ export const keywordBaseCategoryMap: Omit<
     subCategory: ESubExpenseCategories.housing,
     reason: "Maid salary payment",
     confidence: 0.9,
+    taggedBy: "RULE_ENGINE",
   },
   {
     match: /billpay\s*dr.*hdfccs/,
@@ -96,6 +123,7 @@ export const keywordBaseCategoryMap: Omit<
     subCategory: ESubExpenseCategories.utilities,
     reason: "Credit card bill payment",
     confidence: 0.8,
+    taggedBy: "RULE_ENGINE",
   },
   {
     match: /goods\s+and\s+services\s+tax|[^a-z]gst[^a-z]|gst\s+payment/,
@@ -104,6 +132,7 @@ export const keywordBaseCategoryMap: Omit<
     subCategory: ESubExpenseCategories.utilities,
     reason: "GST/tax payment",
     confidence: 0.75,
+    taggedBy: "RULE_ENGINE",
   },
   {
     match: /swiggy|zomato|blinkit|bigbasket|grofers/,
@@ -112,6 +141,7 @@ export const keywordBaseCategoryMap: Omit<
     subCategory: ESubExpenseCategories.food,
     reason: "Food/grocery delivery",
     confidence: 0.9,
+    taggedBy: "RULE_ENGINE",
   },
   {
     // Include BMRCL (Bangalore Metro Rail Corporation Limited) to ensure metro
@@ -123,6 +153,7 @@ export const keywordBaseCategoryMap: Omit<
     subCategory: ESubExpenseCategories.transportation,
     reason: "Transportation expense",
     confidence: 0.85,
+    taggedBy: "RULE_ENGINE",
   },
   {
     match:
@@ -132,6 +163,7 @@ export const keywordBaseCategoryMap: Omit<
     subCategory: ESubExpenseCategories.utilities,
     reason: "Utility payment",
     confidence: 0.8,
+    taggedBy: "RULE_ENGINE",
   },
 
   // --- INCOME (payouts & salary-like) ---
@@ -143,6 +175,7 @@ export const keywordBaseCategoryMap: Omit<
     subCategory: ESubIncomeCategories.salary,
     reason: "ACH credit / payroll",
     confidence: 0.7,
+    taggedBy: "RULE_ENGINE",
   },
   {
     match: /cashfree|razorpay/,
@@ -151,6 +184,7 @@ export const keywordBaseCategoryMap: Omit<
     subCategory: ESubIncomeCategories.business,
     reason: "Gateway payout",
     confidence: 0.8,
+    taggedBy: "RULE_ENGINE",
   },
   {
     match: /upi\/cr|upi\s*credit|imps\/?cr|neft\s*cr/,
@@ -159,6 +193,7 @@ export const keywordBaseCategoryMap: Omit<
     subCategory: ESubIncomeCategories.freelance,
     reason: "Incoming transfer (likely earnings)",
     confidence: 0.6,
+    taggedBy: "RULE_ENGINE",
   },
   {
     match: /robosoft/,
@@ -167,6 +202,7 @@ export const keywordBaseCategoryMap: Omit<
     subCategory: ESubIncomeCategories.salary,
     reason: "Salary credit (Robosoft)",
     confidence: 0.9,
+    taggedBy: "RULE_ENGINE",
   },
 
   // --- FEES (treated as utilities unless you have a Fees subcategory) ---
@@ -177,16 +213,18 @@ export const keywordBaseCategoryMap: Omit<
     subCategory: ESubExpenseCategories.utilities,
     reason: "Bank fees/charges",
     confidence: 0.65,
+    taggedBy: "RULE_ENGINE",
   },
 
   // --- TRANSFERS / MOVES ---
-  {
-    // we keep them neutral as TRANSFER
-    match:
-      /(withdrawal\s+transfer|to\s+transfer|by\s+transfer|funds\s+transfer|imps|neft|upi|p2a|p2p|transfer-inb|rtgs|ecs)/,
-    when: "ANY",
-    category: EBaseCategories.transfer,
-    reason: "Generic transfer",
-    confidence: 0.5,
-  },
+  // {
+  //   // we keep them neutral as TRANSFER
+  //   match:
+  //     /(withdrawal\s+transfer|to\s+transfer|by\s+transfer|funds\s+transfer|imps|neft|upi|p2a|p2p|transfer-inb|rtgs|ecs)/,
+  //   when: "ANY",
+  //   category: EBaseCategories.transfer,
+  //   reason: "Generic transfer",
+  //   confidence: 0.5,
+  //   taggedBy: "RULE_ENGINE",
+  // },
 ];

@@ -30,6 +30,7 @@ export interface ITransactionStore {
     matchedSubCategory?: EAllSubCategories,
     taggedBy?: string,
     confidence?: number,
+    reason?: string,
     embedding?: number[],
   ): Promise<void>;
 }

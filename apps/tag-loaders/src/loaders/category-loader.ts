@@ -22,7 +22,18 @@ export class TransactionCategoryLoader {
         continue; // only process new or updated transactions
       }
       const newImage = record.dynamodb?.NewImage;
-      if (!newImage) continue;
+      if (!newImage) {
+        this.logger.debug("Skipping record without NewImage", {
+          eventID: record.eventID,
+        });
+        continue;
+      }
+      if (!newImage.description?.S) {
+        this.logger.debug("Skipping record without description", {
+          eventID: record.eventID,
+        });
+        continue;
+      }
       const request: ITransactionCategoryRequest = {
         tenantId: (newImage.tenantId?.S as ETenantType) ?? ETenantType.default,
         transactionId: newImage.transactionId?.S ?? "",

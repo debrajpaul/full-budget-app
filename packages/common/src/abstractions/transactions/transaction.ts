@@ -14,6 +14,7 @@ export interface ITransaction {
   subCategory?: string; // Optional detailed sub-category
   embedding?: number[];
   taggedBy?: string;
+  reason?: string;
   confidence?: number;
   type?: string;
   createdAt: string;

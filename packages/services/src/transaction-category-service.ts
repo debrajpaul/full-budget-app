@@ -39,14 +39,7 @@ export class TransactionCategoryService implements ITransactionCategoryService {
   public async process(request: ITransactionCategoryRequest): Promise<boolean> {
     this.logger.info("process started processing messages");
     try {
-      const {
-        tenantId,
-        transactionId,
-        description,
-        category,
-        taggedBy,
-        confidence,
-      } = request;
+      const { tenantId, transactionId, description, category } = request;
 
       if (!tenantId || !transactionId || !description) {
         this.logger.warn("Skipping record with missing required fields", {
@@ -67,8 +60,6 @@ export class TransactionCategoryService implements ITransactionCategoryService {
 
       // step 2: Match description against rules
       let matchedCategory = this.ruleEngine.categorize({ description, rules });
-      let finalTaggedBy = taggedBy ?? "RULE_ENGINE";
-      let finalConfidence: number | undefined = confidence ?? 1;
 
       // Fallback to Bedrock if still unclassified
       if (
@@ -94,11 +85,12 @@ export class TransactionCategoryService implements ITransactionCategoryService {
             ),
           );
           matchedCategory = {
+            taggedBy: "BEDROCK",
             category: aiResult.base as EBaseCategories,
             subCategory: (aiResult.sub as EAllSubCategories) ?? undefined,
+            reason: aiResult.reason ?? "AI fallback",
+            confidence: aiResult.confidence ?? 0.7,
           };
-          finalTaggedBy = "BEDROCK";
-          finalConfidence = aiResult.confidence || 0.7;
         } else {
           this.logger.debug(`No AI result for ${transactionId}`);
         }
@@ -109,8 +101,9 @@ export class TransactionCategoryService implements ITransactionCategoryService {
         transactionId,
         matchedCategory.category,
         matchedCategory.subCategory,
-        finalTaggedBy,
-        finalConfidence,
+        matchedCategory.taggedBy,
+        matchedCategory.confidence,
+        matchedCategory.reason,
         undefined,
       );
       this.logger.info(`Transaction ${transactionId} categorized`);

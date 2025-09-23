@@ -94,6 +94,7 @@ export class CategoryRulesStore implements ICategoryRulesStore {
           tenantId,
           rule.match,
           rule.category,
+          rule.taggedBy,
           rule.subCategory,
           rule.reason,
           rule.confidence,
@@ -107,6 +108,7 @@ export class CategoryRulesStore implements ICategoryRulesStore {
     tenantId: ETenantType,
     match: RegExp,
     category: EBaseCategories,
+    taggedBy: string,
     subCategory?: EAllSubCategories,
     reason?: string,
     confidence?: number,
@@ -117,6 +119,7 @@ export class CategoryRulesStore implements ICategoryRulesStore {
       match,
       category,
       subCategory,
+      taggedBy,
       reason,
       confidence,
     });
@@ -132,6 +135,7 @@ export class CategoryRulesStore implements ICategoryRulesStore {
       flags,
       category,
       subCategory,
+      taggedBy,
       reason,
       confidence,
       createdAt: new Date().toISOString(),
@@ -269,6 +273,7 @@ export class CategoryRulesStore implements ICategoryRulesStore {
         flags?: string;
         category: EBaseCategories;
         subCategory?: EAllSubCategories;
+        taggedBy: string;
         reason?: string;
         confidence?: number;
         createdAt: string;
@@ -296,6 +301,7 @@ export class CategoryRulesStore implements ICategoryRulesStore {
         match: new RegExp(pattern ?? "", flags),
         category: it.category,
         subCategory: it.subCategory,
+        taggedBy: it.taggedBy,
         reason: it.reason,
         confidence: it.confidence,
         createdAt: it.createdAt,
