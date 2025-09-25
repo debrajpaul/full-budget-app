@@ -181,6 +181,7 @@ export class TransactionStore implements ITransactionStore {
     matchedSubCategory?: EAllSubCategories,
     taggedBy?: string,
     confidence?: number,
+    reason?: string,
     embedding?: number[],
   ): Promise<void> {
     this.logger.info(`Updating transaction category`);
@@ -202,6 +203,11 @@ export class TransactionStore implements ITransactionStore {
     if (taggedBy !== undefined) {
       updateExpressions.push("taggedBy = :tagger");
       expressionAttributeValues[":tagger"] = taggedBy;
+    }
+
+    if (reason !== undefined) {
+      updateExpressions.push("reason = :reason");
+      expressionAttributeValues[":reason"] = reason;
     }
 
     if (confidence !== undefined) {

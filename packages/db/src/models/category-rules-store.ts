@@ -82,22 +82,16 @@ export class CategoryRulesStore implements ICategoryRulesStore {
 
   public async addRules(
     tenantId: ETenantType,
-    rules: ICategoryRules[],
+    rules: Omit<ICategoryRules, "tenantId" | "ruleId" | "createdAt">[],
   ): Promise<void> {
     this.logger.info("Saving rules to DynamoDB");
     this.logger.debug("Rules", { rules });
 
     const chunks = chunk(rules, 25);
     for (const chunk of chunks) {
-      const promises = chunk.map((rule: ICategoryRules) =>
-        this.addRule(
-          tenantId,
-          rule.match,
-          rule.category,
-          rule.subCategory,
-          rule.reason,
-          rule.confidence,
-        ),
+      const promises = chunk.map(
+        (rule: Omit<ICategoryRules, "tenantId" | "ruleId" | "createdAt">) =>
+          this.addRule(tenantId, rule),
       );
       await Promise.all(promises);
     }
@@ -105,25 +99,26 @@ export class CategoryRulesStore implements ICategoryRulesStore {
 
   public async addRule(
     tenantId: ETenantType,
-    match: RegExp,
-    category: EBaseCategories,
-    subCategory?: EAllSubCategories,
-    reason?: string,
-    confidence?: number,
+    rule: Omit<ICategoryRules, "tenantId" | "ruleId" | "createdAt">,
   ): Promise<void> {
     this.logger.info("Saving rule to DynamoDB");
+    const { match, category, taggedBy, subCategory, reason, confidence, when } =
+      rule;
     this.logger.debug("Rule", {
       tenantId,
       match,
       category,
       subCategory,
+      taggedBy,
       reason,
       confidence,
     });
     // Persist regex as pattern + flags to avoid marshalling class instances
     const pattern = match.source;
     const flags = match.flags;
-    const ruleId = `${tenantId}#/${pattern}/${flags}`;
+    const normalizedWhen = when ?? "ANY";
+    const baseRuleId = `${tenantId}#/${pattern}/${flags}`;
+    const ruleId = `${baseRuleId}#${normalizedWhen}`;
 
     const item = {
       ruleId,
@@ -132,15 +127,35 @@ export class CategoryRulesStore implements ICategoryRulesStore {
       flags,
       category,
       subCategory,
+      taggedBy,
       reason,
       confidence,
+      when: normalizedWhen,
       createdAt: new Date().toISOString(),
     } as const;
+
+    if (ruleId !== baseRuleId) {
+      await this.store.send(
+        new DeleteCommand({
+          TableName: this.tableName,
+          Key: {
+            tenantId,
+            ruleId: baseRuleId,
+          },
+        }),
+      );
+    }
 
     const command = new PutCommand({
       TableName: this.tableName,
       Item: item,
-      ConditionExpression: "attribute_not_exists(ruleId)",
+      ConditionExpression: "attribute_not_exists(ruleId) OR #when = :when",
+      ExpressionAttributeNames: {
+        "#when": "when",
+      },
+      ExpressionAttributeValues: {
+        ":when": normalizedWhen,
+      },
     });
     await this.store.send(command);
   }
@@ -258,7 +273,10 @@ export class CategoryRulesStore implements ICategoryRulesStore {
       KeyConditionExpression: "tenantId = :tid",
       ExpressionAttributeValues: { ":tid": tenantId },
       ProjectionExpression:
-        "ruleId, tenantId, pattern, flags, category, subCategory, reason, confidence, createdAt",
+        "ruleId, tenantId, pattern, flags, category, subCategory, taggedBy, reason, confidence, createdAt, #when",
+      ExpressionAttributeNames: {
+        "#when": "when",
+      },
     });
     const result = await this.store.send(command);
     const items =
@@ -269,9 +287,11 @@ export class CategoryRulesStore implements ICategoryRulesStore {
         flags?: string;
         category: EBaseCategories;
         subCategory?: EAllSubCategories;
+        taggedBy?: string;
         reason?: string;
         confidence?: number;
         createdAt: string;
+        when?: ICategoryRules["when"];
       }>) || [];
 
     return items.map((it) => {
@@ -296,8 +316,10 @@ export class CategoryRulesStore implements ICategoryRulesStore {
         match: new RegExp(pattern ?? "", flags),
         category: it.category,
         subCategory: it.subCategory,
+        taggedBy: it.taggedBy ?? "RULE_ENGINE",
         reason: it.reason,
         confidence: it.confidence,
+        when: it.when,
         createdAt: it.createdAt,
       } as ICategoryRules;
     });

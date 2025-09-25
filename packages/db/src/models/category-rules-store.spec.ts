@@ -35,8 +35,10 @@ describe("CategoryRulesStore", () => {
         match: /food/i,
         category: EBaseCategories.income,
         tenantId,
-        ruleId: `${tenantId}#${/food/i}`,
+        ruleId: `${tenantId}#/${/food/i.source}/${/food/i.flags}`,
+        taggedBy: "system",
         createdAt: "2025-08-12T00:00:00.000Z",
+        when: "ANY",
       },
     ];
     const globalRules: ICategoryRules[] = [
@@ -44,15 +46,19 @@ describe("CategoryRulesStore", () => {
         match: /fuel/i,
         category: EBaseCategories.expenses,
         tenantId: defaultTenant,
-        ruleId: `${defaultTenant}#${/fuel/i}`,
+        ruleId: `${defaultTenant}#/${/fuel/i.source}/${/fuel/i.flags}`,
+        taggedBy: "system",
         createdAt: "2025-08-12T00:00:00.000Z",
+        when: "ANY",
       },
       {
         match: /food/i,
         category: EBaseCategories.expenses,
         tenantId: defaultTenant,
-        ruleId: `${defaultTenant}#${/food/i}`,
+        ruleId: `${defaultTenant}#/${/food/i.source}/${/food/i.flags}`,
+        taggedBy: "system",
         createdAt: "2025-08-12T00:00:00.000Z",
+        when: "ANY",
       },
     ];
     const toDbItems = (arr: ICategoryRules[]) =>
@@ -62,7 +68,9 @@ describe("CategoryRulesStore", () => {
         pattern: r.match.source,
         flags: r.match.flags,
         category: r.category,
+        taggedBy: r.taggedBy,
         createdAt: r.createdAt,
+        when: r.when,
       }));
     storeMock.send
       .mockResolvedValueOnce({ Items: toDbItems(tenantRules) })
@@ -76,12 +84,24 @@ describe("CategoryRulesStore", () => {
     const rules: Array<
       Omit<ICategoryRules, "tenantId" | "ruleId" | "createdAt">
     > = [
-      { match: /saving/i, category: EBaseCategories.savings },
-      { match: /expenses/i, category: EBaseCategories.expenses },
-      { match: /income/i, category: EBaseCategories.income },
+      {
+        match: /saving/i,
+        category: EBaseCategories.savings,
+        taggedBy: "system",
+      },
+      {
+        match: /expenses/i,
+        category: EBaseCategories.expenses,
+        taggedBy: "system",
+      },
+      {
+        match: /income/i,
+        category: EBaseCategories.income,
+        taggedBy: "system",
+      },
     ];
     const addRuleSpy = jest.spyOn(rulesStore, "addRule").mockResolvedValue();
-    await rulesStore.addRules(tenantId, rules as unknown as ICategoryRules[]);
+    await rulesStore.addRules(tenantId, rules);
     expect(addRuleSpy).toHaveBeenCalledTimes(3);
     expect(loggerMock.info).toHaveBeenCalledWith("Saving rules to DynamoDB");
   });
@@ -89,19 +109,52 @@ describe("CategoryRulesStore", () => {
   it("adds a single rule", async () => {
     storeMock.send.mockResolvedValue({});
     const regex = /food/i;
-    await rulesStore.addRule(tenantId, regex, EBaseCategories.expenses);
-    expect(storeMock.send).toHaveBeenCalledWith(expect.any(PutCommand));
-    const calledCommand = storeMock.send.mock.calls[0][0];
-    expect(calledCommand.input).toMatchObject({
+    await rulesStore.addRule(tenantId, {
+      match: regex,
+      category: EBaseCategories.expenses,
+      taggedBy: "system",
+      subCategory: ESubExpenseCategories.food,
+      reason: "auto-tag",
+      confidence: 0.9,
+    });
+    expect(storeMock.send).toHaveBeenNthCalledWith(
+      1,
+      expect.any(DeleteCommand),
+    );
+    expect(storeMock.send).toHaveBeenNthCalledWith(2, expect.any(PutCommand));
+
+    const deleteCommand = storeMock.send.mock.calls[0][0];
+    expect(deleteCommand.input).toMatchObject({
+      TableName: tableName,
+      Key: {
+        tenantId,
+        ruleId: `${tenantId}#/${regex.source}/${regex.flags}`,
+      },
+    });
+
+    const putCommand = storeMock.send.mock.calls[1][0];
+    expect(putCommand.input).toMatchObject({
       TableName: tableName,
       Item: expect.objectContaining({
-        ruleId: `${tenantId}#${regex}`,
+        ruleId: `${tenantId}#/${regex.source}/${regex.flags}#ANY`,
         tenantId,
         pattern: regex.source,
         flags: regex.flags,
         category: EBaseCategories.expenses,
+        subCategory: ESubExpenseCategories.food,
+        taggedBy: "system",
+        reason: "auto-tag",
+        confidence: 0.9,
+        when: "ANY",
+        createdAt: expect.any(String),
       }),
-      ConditionExpression: "attribute_not_exists(ruleId)",
+      ConditionExpression: "attribute_not_exists(ruleId) OR #when = :when",
+      ExpressionAttributeNames: {
+        "#when": "when",
+      },
+      ExpressionAttributeValues: {
+        ":when": "ANY",
+      },
     });
     expect(loggerMock.info).toHaveBeenCalledWith("Saving rule to DynamoDB");
   });
@@ -130,14 +183,16 @@ describe("CategoryRulesStore", () => {
         match: /food/i,
         category: EBaseCategories.expenses,
         tenantId,
-        ruleId: `${tenantId}#${/food/i}`,
+        ruleId: `${tenantId}#/${/food/i.source}/${/food/i.flags}`,
+        taggedBy: "system",
         createdAt: "2025-08-12T00:00:00.000Z",
       },
       {
         match: /fuel/i,
         category: EBaseCategories.expenses,
         tenantId,
-        ruleId: `${tenantId}#${/fuel/i}`,
+        ruleId: `${tenantId}#/${/fuel/i.source}/${/fuel/i.flags}`,
+        taggedBy: "system",
         createdAt: "2025-08-12T00:00:00.000Z",
       },
     ];
@@ -147,6 +202,7 @@ describe("CategoryRulesStore", () => {
       pattern: r.match.source,
       flags: r.match.flags,
       category: r.category,
+      taggedBy: r.taggedBy,
       createdAt: r.createdAt,
     }));
     storeMock.send.mockResolvedValue({ Items });
@@ -161,14 +217,16 @@ describe("CategoryRulesStore", () => {
         match: /food/i,
         category: EBaseCategories.expenses,
         tenantId,
-        ruleId: `${tenantId}#${/food/i}`,
+        ruleId: `${tenantId}#/${/food/i.source}/${/food/i.flags}`,
+        taggedBy: "system",
         createdAt: "2025-08-12T00:00:00.000Z",
       },
       {
         match: /salary/i,
         category: EBaseCategories.income,
         tenantId,
-        ruleId: `${tenantId}#${/salary/i}`,
+        ruleId: `${tenantId}#/${/salary/i.source}/${/salary/i.flags}`,
+        taggedBy: "system",
         createdAt: "2025-08-12T00:00:00.000Z",
       },
     ];
@@ -177,7 +235,8 @@ describe("CategoryRulesStore", () => {
         match: /fuel/i,
         category: EBaseCategories.expenses,
         tenantId: defaultTenant,
-        ruleId: `${defaultTenant}#${/fuel/i}`,
+        ruleId: `${defaultTenant}#/${/fuel/i.source}/${/fuel/i.flags}`,
+        taggedBy: "system",
         createdAt: "2025-08-12T00:00:00.000Z",
       },
       {
@@ -185,7 +244,8 @@ describe("CategoryRulesStore", () => {
         match: /food/i,
         category: EBaseCategories.expenses,
         tenantId: defaultTenant,
-        ruleId: `${defaultTenant}#${/food/i}`,
+        ruleId: `${defaultTenant}#/${/food/i.source}/${/food/i.flags}`,
+        taggedBy: "system",
         createdAt: "2025-08-12T00:00:00.000Z",
       },
     ];
@@ -196,6 +256,7 @@ describe("CategoryRulesStore", () => {
         pattern: r.match.source,
         flags: r.match.flags,
         category: r.category,
+        taggedBy: r.taggedBy,
         createdAt: r.createdAt,
       }));
 

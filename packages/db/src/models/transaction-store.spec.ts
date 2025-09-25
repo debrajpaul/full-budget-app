@@ -28,7 +28,7 @@ describe("TransactionStore", () => {
     balance: 1000,
     category: EBaseCategories.unclassified,
     embedding: [0.1, 0.2],
-    taggedBy: "AI_TAGGER",
+    taggedBy: "RULE_ENGINE",
     confidence: 0.9,
     type: "credit",
     createdAt: "2025-08-07T00:00:00.000Z",
@@ -129,15 +129,16 @@ describe("TransactionStore", () => {
       txn.transactionId,
       EBaseCategories.expenses,
       undefined,
-      "AI_TAGGER",
+      "RULE_ENGINE",
       0.95,
+      undefined,
       [0.1, 0.2],
     );
     expect(storeMock.send).toHaveBeenCalled();
     const command = storeMock.send.mock.calls[0][0];
     expect(command.input.ExpressionAttributeValues).toMatchObject({
       ":cat": EBaseCategories.expenses,
-      ":tagger": "AI_TAGGER",
+      ":tagger": "RULE_ENGINE",
       ":conf": 0.95,
       ":emb": [0.1, 0.2],
     });
@@ -151,8 +152,9 @@ describe("TransactionStore", () => {
       txn.transactionId,
       EBaseCategories.expenses,
       ESubExpenseCategories.food,
-      "AI_TAGGER",
+      "RULE_ENGINE",
       0.88,
+      undefined,
       [0.3, 0.4],
     );
     const command = storeMock.send.mock.calls[0][0];
@@ -160,7 +162,7 @@ describe("TransactionStore", () => {
     expect(command.input.ExpressionAttributeValues).toMatchObject({
       ":cat": EBaseCategories.expenses,
       ":subCat": ESubExpenseCategories.food,
-      ":tagger": "AI_TAGGER",
+      ":tagger": "RULE_ENGINE",
       ":conf": 0.88,
       ":emb": [0.3, 0.4],
     });

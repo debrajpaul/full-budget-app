@@ -7,6 +7,7 @@ export interface ITransactionCategoryRequest {
   description?: string;
   category?: EBaseCategories;
   subCategory?: string; // Optional detailed sub-category
+  amount?: number | null; // positive for credits & negative for debits
   createdAt: string;
   embedding?: number[];
   taggedBy?: string;
