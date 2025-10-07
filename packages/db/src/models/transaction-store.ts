@@ -58,6 +58,7 @@ export class TransactionStore implements ITransactionStore {
         userId: txn.userId,
         transactionId: txn.transactionId,
         bankName: txn.bankName,
+        bankType: txn.bankType,
         txnDate: txn.txnDate,
         amount: txn.amount,
         createdAt: new Date().toISOString(),
