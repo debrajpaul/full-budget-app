@@ -1,5 +1,5 @@
 import { parse } from "csv-parse";
-import { IBankParser, ITransaction, EBankName } from "@common";
+import { IBankParser, ITransaction, EBankName, EBankType } from "@common";
 import { Readable } from "stream";
 
 export class HdfcBankParser implements IBankParser {
@@ -61,6 +61,7 @@ export class HdfcBankParser implements IBankParser {
         userId,
         transactionId: `${userId}#${txnDate.replace(/-/g, "")}#${txns.length}`,
         bankName: EBankName.hdfc,
+        bankType: EBankType.savings,
         txnDate,
         amount,
         balance,

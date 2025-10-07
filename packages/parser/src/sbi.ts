@@ -1,5 +1,5 @@
 import { parse } from "csv-parse";
-import { IBankParser, ITransaction, EBankName } from "@common";
+import { IBankParser, ITransaction, EBankName, EBankType } from "@common";
 import { Readable } from "stream";
 
 export class SbiBankParser implements IBankParser {
@@ -84,6 +84,7 @@ export class SbiBankParser implements IBankParser {
         userId,
         transactionId: `${userId}#${txnDate.replace(/-/g, "")}#${txns.length}`,
         bankName: EBankName.sbi,
+        bankType: EBankType.savings,
         amount,
         txnDate,
         balance,

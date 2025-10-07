@@ -1,11 +1,12 @@
 import { ETenantType } from "../users";
-import { EBankName } from "../bank-parser";
+import { EBankName, EBankType } from "../bank-parser";
 import { EBaseCategories } from "../categories";
 export interface ITransaction {
   tenantId: ETenantType;
   userId: string;
   transactionId: string;
   bankName: EBankName;
+  bankType: EBankType;
   amount: number;
   balance?: number;
   txnDate: string | undefined;

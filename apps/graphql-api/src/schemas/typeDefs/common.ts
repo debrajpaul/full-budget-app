@@ -6,7 +6,7 @@ export const commonTypeDefs = /* GraphQL */ `
     HDFC
     SBI
     # ICICI
-    # AXIS
+    AXIS
     # BOI
     # KOTAK
     # IDBI
