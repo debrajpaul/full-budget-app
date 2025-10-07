@@ -26,20 +26,24 @@ export class HdfcCreditCardParser implements IBankParser {
     // the points summary (which starts with `Opening Bal`).  Each
     // non‑empty line corresponds to a transaction entry.
     for (let i = headerIndex + 1; i < lines.length; i++) {
-      const line = lines[i];
-      if (!line || line.trim() === "") continue;
+      const rawLine = lines[i];
+      if (!rawLine) continue;
+
+      const line = rawLine.trim();
+      if (line === "") continue;
+
       // Stop when the rewards/points summary begins.
-      if (/^opening\s+bal/i.test(line.trim())) {
+      if (/^opening\s+bal/i.test(line)) {
         break;
       }
-      // Split the line on the `~` delimiter.  There should be at
-      // least 5 elements: type, name, date, description, amount and
-      // optionally credit indicator.
-      const parts = line.split("~");
-      if (parts.length < 5) continue;
-      // Trim each part to remove stray spaces.
-      const [dateRaw, descriptionRaw, amountRaw, indicatorRaw] =
-        parts.map((p) => p.trim());
+
+      const parts = line.split("~").map((p) => p.trim());
+      // Expecting: Transaction Type, Card Name, Transaction Date,
+      // Description, Amount, Credit/Debit indicator.
+      if (parts.length < 6) continue;
+
+      const [, , dateRaw, descriptionRaw, amountRaw, indicatorRaw] = parts;
+
       // Normalise and validate date.  Dates are dd/mm/yyyy but may
       // occasionally include 2‑digit years.
       const txnDate = this.formatDate(dateRaw);
