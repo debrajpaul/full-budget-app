@@ -1,4 +1,4 @@
-import { EBankName, ETenantType } from "@common";
+import { EBankName, ETenantType, EBankType } from "@common";
 import { z } from "zod";
 
 export const MonthlyReviewArgs = z.object({
@@ -39,6 +39,7 @@ export const ReclassifyTransactionArgs = z.object({
 
 export const UploadStatementArgs = z.object({
   bankName: z.nativeEnum(EBankName),
+  bankType: z.nativeEnum(EBankType),
   fileName: z.string().min(1, "File name is required"),
   contentBase64: z.string().min(1, "Content base64 is required"),
 });

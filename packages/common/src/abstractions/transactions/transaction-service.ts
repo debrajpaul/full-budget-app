@@ -1,6 +1,6 @@
 import { ITransaction } from "./transaction";
 import { EBankName } from "../bank-parser";
-import { ITransactionRequest } from "../clients/sqs-service";
+import { ITransactionSqsRequest } from "../clients/sqs-service";
 
 export interface IMonthlyReview {
   totalIncome: number;
@@ -26,7 +26,7 @@ export interface IAggregatedSummary {
 }
 export interface ITransactionService {
   processes(): Promise<boolean>;
-  process(request: ITransactionRequest): Promise<boolean>;
+  process(request: ITransactionSqsRequest): Promise<boolean>;
   monthlyReview(
     tenantId: string,
     userId: string,

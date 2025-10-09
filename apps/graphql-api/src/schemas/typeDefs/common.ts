@@ -16,6 +16,15 @@ export const commonTypeDefs = /* GraphQL */ `
     OTHER
   }
   """
+  Supported banks type for statement import and transaction parsing.
+  """
+  enum BankType {
+    SAVINGS
+    CURRENT
+    CREDIT_CARD
+    OTHER
+  }
+  """
   Tenant scope used for data segregation across users/clients.
   """
   enum TenantType {

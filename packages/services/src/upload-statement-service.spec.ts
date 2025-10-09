@@ -6,6 +6,7 @@ import {
   ISQSService,
   IUploadRequest,
   EBankName,
+  EBankType,
   ETenantType,
 } from "@common";
 
@@ -24,6 +25,7 @@ describe("UploadStatementService", () => {
 
   const validRequest: IUploadRequest = {
     bankName: EBankName.hdfc,
+    bankType: EBankType.savings,
     fileName: "statement.pdf",
     contentBase64: Buffer.from("test").toString("base64"),
     userId: "user1",
@@ -38,43 +40,35 @@ describe("UploadStatementService", () => {
     expect(sqs.sendFileMessage).toHaveBeenCalledWith(
       expect.objectContaining({
         bankName: validRequest.bankName,
+        bankType: validRequest.bankType,
         fileName: validRequest.fileName,
         userId: validRequest.userId,
         tenantId: validRequest.tenantId,
       }),
     );
     expect(logger.info).toHaveBeenCalledWith(
+      expect.stringContaining("Uploading statement for bank"),
+    );
+    expect(logger.info).toHaveBeenCalledWith(
       expect.stringContaining("Statement uploaded successfully"),
-      expect.objectContaining({
-        bankName: validRequest.bankName,
-        fileName: validRequest.fileName,
-        userId: validRequest.userId,
-      }),
     );
     expect(result).toBe(true);
   });
 
   it("should throw and log error if required params are missing", async () => {
-    await expect(service.uploadStatement({} as any)).rejects.toThrow(
-      "Failed to upload statement",
-    );
+    const result = await service.uploadStatement({} as any);
+    expect(result).toBe(false);
     expect(logger.error).toHaveBeenCalledWith(
       "Missing required parameters",
       expect.any(Error),
-      expect.objectContaining({
-        bankName: undefined,
-        fileName: undefined,
-        userId: undefined,
-        tenantId: undefined,
-      }),
+      {},
     );
   });
 
   it("should throw and log error if s3 or sqs fails", async () => {
     s3.putFile.mockRejectedValue(new Error("fail"));
-    await expect(service.uploadStatement(validRequest)).rejects.toThrow(
-      "Failed to upload statement",
-    );
+    const result = await service.uploadStatement(validRequest);
+    expect(result).toBe(false);
     expect(logger.error).toHaveBeenCalledWith(
       "Error uploading statement",
       expect.any(Error),

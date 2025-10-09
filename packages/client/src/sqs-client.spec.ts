@@ -1,6 +1,6 @@
 import { SQSService } from "./sqs-client";
 import { mock } from "jest-mock-extended";
-import { ILogger, ITransactionRequest, EBankName, ETenantType } from "@common";
+import { ILogger, ITransactionSqsRequest, EBankType, EBankName, ETenantType } from "@common";
 import { SQS } from "@aws-sdk/client-sqs";
 
 describe("SQSService", () => {
@@ -9,8 +9,9 @@ describe("SQSService", () => {
   let service: SQSService;
   const queueUrl =
     "https://sqs.us-east-1.amazonaws.com/123456789012/test-queue";
-  const messageBody: ITransactionRequest = {
+  const messageBody: ITransactionSqsRequest = {
     bankName: EBankName.hdfc,
+    bankType: EBankType.savings,
     fileName: "test.txt",
     fileKey: "test.txt",
     userId: "user123",
