@@ -17,16 +17,26 @@ export class UploadStatementService implements IUploadStatementService {
 
   public async uploadStatement(request: IUploadRequest): Promise<boolean> {
     try {
-      const { bankName, bankType, fileName, contentBase64, userId, tenantId } = request;
+      const { bankName, bankType, fileName, contentBase64, userId, tenantId } =
+        request;
       this.logger.info(
         `Uploading statement for bank: ${bankName}, bankType: ${bankType}, fileName: ${fileName}, userId: ${userId}`,
       );
-      if (!bankName || !bankType || !fileName || !contentBase64 || !userId || !tenantId) {
+      if (
+        !bankName ||
+        !bankType ||
+        !fileName ||
+        !contentBase64 ||
+        !userId ||
+        !tenantId
+      ) {
         const errorMessage = new Error(
           "Missing required parameters for uploading statement",
         );
-        this.logger.error("Missing required parameters", errorMessage, {...request});
-        return false
+        this.logger.error("Missing required parameters", errorMessage, {
+          ...request,
+        });
+        return false;
       }
       this.logger.debug("All parameters are valid", {
         bankName,
@@ -51,7 +61,7 @@ export class UploadStatementService implements IUploadStatementService {
       return true;
     } catch (error) {
       this.logger.error("Error uploading statement", error as Error, request);
-      return false
+      return false;
     }
   }
 }

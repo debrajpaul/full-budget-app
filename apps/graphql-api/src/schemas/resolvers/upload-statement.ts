@@ -16,9 +16,8 @@ export const uploadStatementResolvers = {
         `User ${ctx.userId} is uploading a statement for bank ${args.input.bankName}`,
       );
       ctx.logger.debug(`File name: ${args.input.fileName}`);
-      const { bankName, bankType, fileName, contentBase64 } = UploadStatementArgs.parse(
-        args.input,
-      );
+      const { bankName, bankType, fileName, contentBase64 } =
+        UploadStatementArgs.parse(args.input);
       const result =
         await ctx.dataSources.uploadStatementService.uploadStatement({
           bankName,

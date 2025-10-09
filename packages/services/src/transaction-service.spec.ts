@@ -8,7 +8,7 @@ import {
   ITransactionSqsRequest,
   ETenantType,
   EBankName,
-  EBankType
+  EBankType,
 } from "@common";
 
 describe("TransactionService", () => {
@@ -87,7 +87,12 @@ describe("TransactionService", () => {
     const result = await service.process(req);
     expect(result).toBe(true);
     expect(s3.getFile).toHaveBeenCalledWith("file.pdf");
-    expect(parseSpy).toHaveBeenCalledWith(buffer, req.bankName, req.bankType, req.userId);
+    expect(parseSpy).toHaveBeenCalledWith(
+      buffer,
+      req.bankName,
+      req.bankType,
+      req.userId,
+    );
     expect(store.saveTransactions).toHaveBeenCalledWith(req.tenantId, txns);
   });
 

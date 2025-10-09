@@ -16,7 +16,12 @@ import {
   EBaseCategories,
   EAllSubCategories,
 } from "@common";
-import { HdfcBankParser, SbiBankParser, AxisCreditCardParser, HdfcCreditCardParser } from "@parser";
+import {
+  HdfcBankParser,
+  SbiBankParser,
+  AxisCreditCardParser,
+  HdfcCreditCardParser,
+} from "@parser";
 
 export class TransactionService implements ITransactionService {
   private readonly logger: ILogger;
@@ -321,11 +326,11 @@ export class TransactionService implements ITransactionService {
         switch (bankType) {
           case EBankType.creditCard: {
             const axisCreditCardParser = new AxisCreditCardParser();
-            return axisCreditCardParser.parse(buffer, userId);;
+            return axisCreditCardParser.parse(buffer, userId);
           }
           case EBankType.savings: {
             const axisCreditCardParser = new AxisCreditCardParser();
-            return axisCreditCardParser.parse(buffer, userId);;
+            return axisCreditCardParser.parse(buffer, userId);
           }
           default: {
             console.warn(`No parser implemented for bank type: ${bankType}`);

@@ -1,6 +1,12 @@
 import { SQSService } from "./sqs-client";
 import { mock } from "jest-mock-extended";
-import { ILogger, ITransactionSqsRequest, EBankType, EBankName, ETenantType } from "@common";
+import {
+  ILogger,
+  ITransactionSqsRequest,
+  EBankType,
+  EBankName,
+  ETenantType,
+} from "@common";
 import { SQS } from "@aws-sdk/client-sqs";
 
 describe("SQSService", () => {
