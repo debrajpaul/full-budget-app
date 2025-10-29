@@ -1,5 +1,5 @@
 import { SQSRecord } from "aws-lambda";
-import { ILogger, ITransactionService, ITransactionRequest } from "@common";
+import { ILogger, ITransactionService, ITransactionSqsRequest } from "@common";
 
 export class TransactionLoader {
   constructor(
@@ -12,7 +12,7 @@ export class TransactionLoader {
     this.logger.debug("Loading records", { records });
     for (const record of records) {
       this.logger.info(`Processing loader record: ${record.messageId}`);
-      const body = JSON.parse(record.body) as ITransactionRequest;
+      const body = JSON.parse(record.body) as ITransactionSqsRequest;
       await this.transactionService.process(body);
     }
   }

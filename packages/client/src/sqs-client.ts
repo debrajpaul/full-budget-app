@@ -1,4 +1,4 @@
-import { ILogger, ISQSService, ITransactionRequest } from "@common";
+import { ILogger, ISQSService, ITransactionSqsRequest } from "@common";
 import {
   SQS,
   SQSClientConfig,
@@ -17,7 +17,7 @@ export class SQSService implements ISQSService {
   /**
    * Sends a message to the SQS queue (producer).
    */
-  async sendFileMessage(messageBody: ITransactionRequest): Promise<void> {
+  async sendFileMessage(messageBody: ITransactionSqsRequest): Promise<void> {
     this.logger.info("#SendingSQS");
     this.logger.debug("SendingSQS", { messageBody });
 
@@ -34,7 +34,7 @@ export class SQSService implements ISQSService {
    * Receives and deletes a message from the SQS queue (consumer).
    * Returns the parsed message body, or undefined if no messages.
    */
-  async receiveFileMessage(): Promise<ITransactionRequest | undefined> {
+  async receiveFileMessage(): Promise<ITransactionSqsRequest | undefined> {
     this.logger.info("###ReceivingSQS");
 
     const res = await this.sqs.receiveMessage({
@@ -49,6 +49,6 @@ export class SQSService implements ISQSService {
       QueueUrl: this.queueUrl,
       ReceiptHandle: message.ReceiptHandle!,
     });
-    return JSON.parse(message.Body!) as ITransactionRequest;
+    return JSON.parse(message.Body!) as ITransactionSqsRequest;
   }
 }

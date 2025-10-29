@@ -7,6 +7,7 @@ import {
   ITransaction,
   ETenantType,
   EBankName,
+  EBankType,
   EBaseCategories,
   ESubExpenseCategories,
 } from "@common";
@@ -22,6 +23,7 @@ describe("TransactionStore", () => {
     userId: "user1",
     transactionId: "txn1",
     bankName: EBankName.hdfc,
+    bankType: EBankType.savings,
     txnDate: "2025-08-07",
     amount: 100,
     description: "desc",

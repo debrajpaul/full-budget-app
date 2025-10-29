@@ -1,13 +1,15 @@
-import { EBankName } from "./bank-parser";
+import { EBankName, EBankType } from "./bank-parser";
 import { ETenantType } from "./users";
 
 export interface IStatementInput {
   bankName: EBankName;
+  bankType: EBankType;
   fileName: string;
   contentBase64: string;
 }
 export interface IUploadRequest {
   bankName: EBankName;
+  bankType: EBankType;
   fileName: string;
   contentBase64: string;
   userId: string;

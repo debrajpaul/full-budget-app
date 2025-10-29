@@ -1,13 +1,14 @@
 import {
   ILogger,
   EBankName,
+  EBankType,
   IS3Service,
   ISQSService,
   ETenantType,
   ITransaction,
   ITransactionStore,
   ITransactionService,
-  ITransactionRequest,
+  ITransactionSqsRequest,
   IMonthlyReview,
   IAnnualReview,
   IcategoryGroup,
@@ -15,7 +16,12 @@ import {
   EBaseCategories,
   EAllSubCategories,
 } from "@common";
-import { HdfcBankParser, SbiBankParser } from "@parser";
+import {
+  HdfcBankParser,
+  SbiBankParser,
+  AxisCreditCardParser,
+  HdfcCreditCardParser,
+} from "@parser";
 
 export class TransactionService implements ITransactionService {
   private readonly logger: ILogger;
@@ -65,7 +71,7 @@ export class TransactionService implements ITransactionService {
     return flag;
   }
 
-  public async process(request: ITransactionRequest): Promise<boolean> {
+  public async process(request: ITransactionSqsRequest): Promise<boolean> {
     this.logger.info("process started processing messages");
     try {
       const fileBuffer = await this.s3Service.getFile(request.fileKey);
@@ -73,6 +79,7 @@ export class TransactionService implements ITransactionService {
       const transactions = await this.parseTransactions(
         fileBuffer,
         request.bankName,
+        request.bankType,
         request.userId,
       );
       this.logger.debug(`###transactions. -->`, { data: transactions });
@@ -287,6 +294,7 @@ export class TransactionService implements ITransactionService {
   private async parseTransactions(
     buffer: Buffer,
     bank: EBankName,
+    bankType: EBankType,
     userId: string,
   ): Promise<Omit<ITransaction, "createdAt" | "tenantId">[]> {
     switch (bank) {
@@ -295,12 +303,45 @@ export class TransactionService implements ITransactionService {
         return sbiBankParser.parse(buffer, userId);
       }
       case EBankName.hdfc: {
-        const hdfcBankParser = new HdfcBankParser();
-        return hdfcBankParser.parse(buffer, userId);
+        switch (bankType) {
+          case EBankType.creditCard: {
+            const hdfcCreditCardParser = new HdfcCreditCardParser();
+            return hdfcCreditCardParser.parse(buffer, userId);
+          }
+          case EBankType.current: {
+            const hdfcBankParser = new HdfcBankParser();
+            return hdfcBankParser.parse(buffer, userId);
+          }
+          case EBankType.savings: {
+            const hdfcBankParser = new HdfcBankParser();
+            return hdfcBankParser.parse(buffer, userId);
+          }
+          default: {
+            console.warn(`No parser implemented for bank type: ${bankType}`);
+            return [];
+          }
+        }
       }
-      default:
+      case EBankName.axis: {
+        switch (bankType) {
+          case EBankType.creditCard: {
+            const axisCreditCardParser = new AxisCreditCardParser();
+            return axisCreditCardParser.parse(buffer, userId);
+          }
+          case EBankType.savings: {
+            const axisCreditCardParser = new AxisCreditCardParser();
+            return axisCreditCardParser.parse(buffer, userId);
+          }
+          default: {
+            console.warn(`No parser implemented for bank type: ${bankType}`);
+            return [];
+          }
+        }
+      }
+      default: {
         console.warn(`No parser implemented for bank: ${bank}`);
         return [];
+      }
     }
   }
 }

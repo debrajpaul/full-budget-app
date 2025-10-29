@@ -6,13 +6,22 @@ export const commonTypeDefs = /* GraphQL */ `
     HDFC
     SBI
     # ICICI
-    # AXIS
+    AXIS
     # BOI
     # KOTAK
     # IDBI
     # UBI
     # YES
     # CANARA
+    OTHER
+  }
+  """
+  Supported banks type for statement import and transaction parsing.
+  """
+  enum BankType {
+    SAVINGS
+    CURRENT
+    CREDIT_CARD
     OTHER
   }
   """

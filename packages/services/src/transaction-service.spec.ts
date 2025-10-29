@@ -5,9 +5,10 @@ import {
   IS3Service,
   ISQSService,
   ITransactionStore,
-  ITransactionRequest,
+  ITransactionSqsRequest,
   ETenantType,
   EBankName,
+  EBankType,
 } from "@common";
 
 describe("TransactionService", () => {
@@ -33,10 +34,11 @@ describe("TransactionService", () => {
   });
 
   it("should process a valid SQS message", async () => {
-    const msg: ITransactionRequest = {
+    const msg: ITransactionSqsRequest = {
       fileKey: "file.pdf",
       fileName: "file.pdf",
       bankName: EBankName.hdfc,
+      bankType: EBankType.savings,
       userId: "user1",
       tenantId: ETenantType.default,
     };
@@ -55,10 +57,11 @@ describe("TransactionService", () => {
   });
 
   it("should process a file and save transactions", async () => {
-    const req: ITransactionRequest = {
+    const req: ITransactionSqsRequest = {
       fileKey: "file.pdf",
       fileName: "file.pdf",
       bankName: EBankName.hdfc,
+      bankType: EBankType.savings,
       userId: "user1",
       tenantId: ETenantType.default,
     };
@@ -77,20 +80,29 @@ describe("TransactionService", () => {
       },
     ];
     s3.getFile.mockResolvedValue(buffer);
-    jest.spyOn(service as any, "parseTransactions").mockResolvedValue(txns);
+    const parseSpy = jest
+      .spyOn(service as any, "parseTransactions")
+      .mockResolvedValue(txns);
     store.saveTransactions.mockResolvedValue();
     const result = await service.process(req);
     expect(result).toBe(true);
     expect(s3.getFile).toHaveBeenCalledWith("file.pdf");
+    expect(parseSpy).toHaveBeenCalledWith(
+      buffer,
+      req.bankName,
+      req.bankType,
+      req.userId,
+    );
     expect(store.saveTransactions).toHaveBeenCalledWith(req.tenantId, txns);
   });
 
   it("should return false if process throws", async () => {
     s3.getFile.mockRejectedValue(new Error("fail"));
-    const req: ITransactionRequest = {
+    const req: ITransactionSqsRequest = {
       fileKey: "file.pdf",
       fileName: "file.pdf",
       bankName: EBankName.hdfc,
+      bankType: EBankType.savings,
       userId: "user1",
       tenantId: ETenantType.default,
     };
