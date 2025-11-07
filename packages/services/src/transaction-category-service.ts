@@ -39,7 +39,7 @@ export class TransactionCategoryService implements ITransactionCategoryService {
   public async process(request: ITransactionCategoryRequest): Promise<boolean> {
     this.logger.info("process started processing messages");
     try {
-      const { tenantId, transactionId, description, category, amount } =
+      const { tenantId, transactionId, description, category, credit, debit } =
         request;
 
       if (!tenantId || !transactionId || !description) {
@@ -63,7 +63,8 @@ export class TransactionCategoryService implements ITransactionCategoryService {
       let matchedCategory = this.ruleEngine.categorize({
         description,
         rules,
-        amount,
+        credit,
+        debit,
       });
 
       // Fallback to Bedrock if still unclassified

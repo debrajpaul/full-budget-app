@@ -4,6 +4,7 @@ import {
   IRawTxn,
   CategorizeResult,
   IRuleEngine,
+  ERawTxnType,
 } from "@common";
 
 export class RuleEngine implements IRuleEngine {
@@ -14,11 +15,13 @@ export class RuleEngine implements IRuleEngine {
     this.logger = logger;
   }
 
-  private isCreditOrDebit = (t: IRawTxn): "CREDIT" | "DEBIT" | "ANY" => {
-    if (t.amount === undefined || t.amount === null || t.amount === 0) {
-      return "ANY";
-    }
-    return t.amount > 0 ? "CREDIT" : "DEBIT";
+  private isCreditOrDebit = (t: IRawTxn): ERawTxnType => {
+    const hasCredit = typeof t.credit === "number" && t.credit > 0;
+    const hasDebit = typeof t.debit === "number" && t.debit > 0;
+
+    if (hasCredit && !hasDebit) return ERawTxnType.credit;
+    if (hasDebit && !hasCredit) return ERawTxnType.debit;
+    return ERawTxnType.any;
   };
 
   private normalizeDescription = (raw: string): string =>
@@ -40,12 +43,12 @@ export class RuleEngine implements IRuleEngine {
       };
     }
     const desc = this.normalizeDescription(txn.description || "");
-    const side: "CREDIT" | "DEBIT" | "ANY" = this.isCreditOrDebit(txn);
+    const side: ERawTxnType = this.isCreditOrDebit(txn);
 
     for (const rule of txn.rules) {
       // Skip if rule is not ANY
       // Skip if rule is not for the same side
-      if (rule.when && rule.when !== "ANY" && rule.when !== side) continue;
+      if (rule.when && rule.when !== ERawTxnType.any && rule.when !== side) continue;
 
       // ICategoryRules.match is a RegExp; use test() directly
       const matched = rule.match.test(desc);
