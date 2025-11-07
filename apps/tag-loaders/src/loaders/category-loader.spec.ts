@@ -1,5 +1,5 @@
 import { DynamoDBRecord } from "aws-lambda";
-import { mock } from "jest-mock-extended";
+import { mock, MockProxy } from "jest-mock-extended";
 import {
   ILogger,
   ITransactionCategoryService,
@@ -9,11 +9,21 @@ import {
 import { TransactionCategoryLoader } from "./category-loader";
 
 describe("TransactionCategoryLoader", () => {
-  it("should map record to request with createdAt and AI metadata", async () => {
-    const logger = mock<ILogger>();
-    const service = mock<ITransactionCategoryService>();
-    const loader = new TransactionCategoryLoader(logger, service);
+  let logger: MockProxy<ILogger>;
+  let service: MockProxy<ITransactionCategoryService>;
+  let loader: TransactionCategoryLoader;
 
+  beforeEach(() => {
+    logger = mock<ILogger>();
+    service = mock<ITransactionCategoryService>();
+    loader = new TransactionCategoryLoader(logger, service);
+  });
+
+  afterEach(() => {
+    jest.useRealTimers();
+  });
+
+  it("maps debit/credit values and AI metadata", async () => {
     const record = {
       eventID: "1",
       eventName: "INSERT",
@@ -22,8 +32,9 @@ describe("TransactionCategoryLoader", () => {
           tenantId: { S: ETenantType.default },
           transactionId: { S: "t1" },
           description: { S: "desc" },
-          category: { S: "" },
-          amount: { N: "12.34" },
+          category: { S: EBaseCategories.expenses },
+          debit: { N: "12.34" },
+          credit: { N: "4.56" },
           createdAt: { S: "2024-01-01T00:00:00.000Z" },
           embedding: { L: [{ N: "0.1" }, { N: "0.2" }] },
           taggedBy: { S: "RULE_ENGINE" },
@@ -38,8 +49,9 @@ describe("TransactionCategoryLoader", () => {
       tenantId: ETenantType.default,
       transactionId: "t1",
       description: "desc",
-      category: "",
-      amount: 12.34,
+      category: EBaseCategories.expenses,
+      debit: 12.34,
+      credit: 4.56,
       createdAt: "2024-01-01T00:00:00.000Z",
       embedding: [0.1, 0.2],
       taggedBy: "RULE_ENGINE",
@@ -47,13 +59,10 @@ describe("TransactionCategoryLoader", () => {
     });
   });
 
-  it("should default createdAt and omit AI metadata when missing", async () => {
-    const logger = mock<ILogger>();
-    const service = mock<ITransactionCategoryService>();
-    const loader = new TransactionCategoryLoader(logger, service);
-
+  it("defaults createdAt, tenant, and monetary fields when missing", async () => {
     const fixedDate = new Date("2024-02-02T03:04:05.000Z");
-    jest.useFakeTimers().setSystemTime(fixedDate);
+    jest.useFakeTimers();
+    jest.setSystemTime(fixedDate);
 
     const record = {
       eventID: "2",
@@ -74,23 +83,71 @@ describe("TransactionCategoryLoader", () => {
       transactionId: "t2",
       description: "no meta",
       category: EBaseCategories.unclassified,
-      amount: undefined,
+      debit: 0,
+      credit: 0,
       createdAt: fixedDate.toISOString(),
       embedding: undefined,
       taggedBy: undefined,
       confidence: undefined,
     });
-
-    jest.useRealTimers();
   });
 
-  it("should skip records missing description", async () => {
-    const logger = mock<ILogger>();
-    const service = mock<ITransactionCategoryService>();
-    const loader = new TransactionCategoryLoader(logger, service);
-
+  it("processes MODIFY events", async () => {
     const record = {
       eventID: "3",
+      eventName: "MODIFY",
+      dynamodb: {
+        NewImage: {
+          tenantId: { S: ETenantType.default },
+          transactionId: { S: "t3" },
+          description: { S: "updated" },
+        },
+      },
+    } as unknown as DynamoDBRecord;
+
+    await loader.loader([record]);
+
+    expect(service.process).toHaveBeenCalledWith(
+      expect.objectContaining({
+        transactionId: "t3",
+        description: "updated",
+      }),
+    );
+  });
+
+  it("skips records with unsupported event names", async () => {
+    const record = {
+      eventID: "4",
+      eventName: "REMOVE",
+      dynamodb: {
+        NewImage: {
+          tenantId: { S: ETenantType.default },
+          transactionId: { S: "t4" },
+          description: { S: "should skip" },
+        },
+      },
+    } as unknown as DynamoDBRecord;
+
+    await loader.loader([record]);
+
+    expect(service.process).not.toHaveBeenCalled();
+  });
+
+  it("skips records without a NewImage payload", async () => {
+    const record = {
+      eventID: "5",
+      eventName: "INSERT",
+      dynamodb: {},
+    } as unknown as DynamoDBRecord;
+
+    await loader.loader([record]);
+
+    expect(service.process).not.toHaveBeenCalled();
+  });
+
+  it("skips records missing description", async () => {
+    const record = {
+      eventID: "6",
       eventName: "INSERT",
       dynamodb: {
         NewImage: {
@@ -104,13 +161,9 @@ describe("TransactionCategoryLoader", () => {
     expect(service.process).not.toHaveBeenCalled();
   });
 
-  it("should skip records with blank description", async () => {
-    const logger = mock<ILogger>();
-    const service = mock<ITransactionCategoryService>();
-    const loader = new TransactionCategoryLoader(logger, service);
-
+  it("skips records with blank description", async () => {
     const record = {
-      eventID: "4",
+      eventID: "7",
       eventName: "INSERT",
       dynamodb: {
         NewImage: {

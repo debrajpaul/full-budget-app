@@ -9,6 +9,7 @@ import {
   ETenantType,
   ICategoryRules,
   ILogger,
+  ERawTxnType,
 } from "@common";
 
 describe("RuleEngine.categorize", () => {
@@ -46,13 +47,14 @@ describe("RuleEngine.categorize", () => {
   const makeTxn = (overrides: Partial<IRawTxn> = {}): IRawTxn => ({
     description: overrides.description ?? "",
     rules: overrides.rules ?? rules,
-    amount: overrides.amount,
+    credit: overrides.credit ?? null,
+    debit: overrides.debit ?? null,
   });
 
   it("returns category object for known keywords (credit-side)", () => {
     const engine = new RuleEngine(logger);
     const res = engine.categorize(
-      makeTxn({ description: "Salary credited via ACH", amount: 1000 }),
+      makeTxn({ description: "Salary credited via ACH", credit: 1000 }),
     );
     expect(res.taggedBy).toBe("RULE_ENGINE");
     expect(res.category).toBe(EBaseCategories.income);
@@ -64,7 +66,7 @@ describe("RuleEngine.categorize", () => {
   it("returns unclassified when transfer rule is disabled", () => {
     const engine = new RuleEngine(logger);
     const res = engine.categorize(
-      makeTxn({ description: "Paid using UPI at store" }),
+      makeTxn({ description: "Paid using UPI at store", debit: 750 }),
     );
     expect(res.taggedBy).toBe("RULE_ENGINE");
     expect(res.category).toBe(EBaseCategories.unclassified);
@@ -77,7 +79,7 @@ describe("RuleEngine.categorize", () => {
     const res = engine.categorize(
       makeTxn({
         description:
-          "BY TRANSFER-NEFT*YESB0000001*YESB40930207163*ZERODHA BROKING L--",
+          "BY TRANSFER-NEFT*YESB0000001*YESB40000007163*ZERODHA BROKING L--",
       }),
     );
     expect(res.taggedBy).toBe("RULE_ENGINE");
@@ -87,14 +89,14 @@ describe("RuleEngine.categorize", () => {
   it("matches case-insensitively on description", () => {
     const engine = new RuleEngine(logger);
     const res1 = engine.categorize(
-      makeTxn({ description: "DIVIDEND CREDITED", amount: 10 }),
+      makeTxn({ description: "DIVIDEND CREDITED", credit: 10 }),
     );
     expect(res1.taggedBy).toBe("RULE_ENGINE");
     expect(res1.category).toBe(EBaseCategories.income);
     expect(res1.subCategory).toBe(ESubIncomeCategories.investment);
 
     const res2 = engine.categorize(
-      makeTxn({ description: "rent paid for flat", amount: -1000 }),
+      makeTxn({ description: "rent paid for flat", debit: 1000 }),
     );
     expect(res2.taggedBy).toBe("RULE_ENGINE");
     expect(res2.category).toBe(EBaseCategories.expenses);
@@ -104,7 +106,7 @@ describe("RuleEngine.categorize", () => {
   it("returns unclassified when no rule matches", () => {
     const engine = new RuleEngine(logger);
     const res = engine.categorize(
-      makeTxn({ description: "No rule applies here" }),
+      makeTxn({ description: "No rule applies here", debit: 123 }),
     );
     expect(res.taggedBy).toBe("RULE_ENGINE");
     expect(res.category).toBe(EBaseCategories.unclassified);
@@ -115,7 +117,7 @@ describe("RuleEngine.categorize", () => {
   it("returns unclassified when there are no rules to evaluate", () => {
     const engine = new RuleEngine(logger);
     const res = engine.categorize(
-      makeTxn({ description: "anything here", rules: [] }),
+      makeTxn({ description: "anything here", credit: 10, rules: [] }),
     );
     expect(res.taggedBy).toBe("RULE_ENGINE");
     expect(res.category).toBe(EBaseCategories.unclassified);
@@ -127,17 +129,72 @@ describe("RuleEngine.categorize", () => {
     const engine = new RuleEngine(logger);
     // 'dividend' is CREDIT-side rule; should not match on DEBIT
     const resDebitSide = engine.categorize(
-      makeTxn({ description: "interim dividend posted", amount: -50 }),
+      makeTxn({ description: "interim dividend posted", debit: 50 }),
     );
     expect(resDebitSide.taggedBy).toBe("RULE_ENGINE");
     expect(resDebitSide.category).toBe(EBaseCategories.unclassified);
 
     // 'rent' is DEBIT-side rule; should not match on CREDIT
     const resCreditSide = engine.categorize(
-      makeTxn({ description: "monthly rent", amount: 5000 }),
+      makeTxn({ description: "monthly rent", credit: 5000 }),
     );
     expect(resCreditSide.taggedBy).toBe("RULE_ENGINE");
     expect(resCreditSide.category).toBe(EBaseCategories.unclassified);
+  });
+
+  it("derives the transaction side from credit/debit columns only", () => {
+    const engine = new RuleEngine(logger);
+    const customRules = [
+      buildRule({
+        match: /side\s+check/,
+        when: ERawTxnType.credit,
+        category: EBaseCategories.income,
+        reason: "Credit derived",
+      }),
+      buildRule({
+        match: /side\s+check/,
+        when: ERawTxnType.debit,
+        category: EBaseCategories.expenses,
+        reason: "Debit derived",
+      }),
+      buildRule({
+        match: /side\s+check/,
+        when: ERawTxnType.any,
+        category: EBaseCategories.unclassified,
+        reason: "Any derived",
+      }),
+    ];
+
+    const debitHit = engine.categorize(
+      makeTxn({
+        description: "Side check debit derived",
+        rules: customRules,
+        debit: 999,
+      }),
+    );
+    expect(debitHit.reason).toBe("Debit derived");
+    expect(debitHit.category).toBe(EBaseCategories.expenses);
+
+    const creditHit = engine.categorize(
+      makeTxn({
+        description: "Side check credit derived",
+        rules: customRules,
+        credit: 999,
+      }),
+    );
+    expect(creditHit.reason).toBe("Credit derived");
+    expect(creditHit.category).toBe(EBaseCategories.income);
+
+    const anyHit = engine.categorize(
+      makeTxn({
+        description: "Side check both sides",
+        rules: customRules,
+        credit: 500,
+        debit: 500,
+      }),
+    );
+    expect(anyHit.reason).toBe("Any derived");
+    expect(anyHit.category).toBe(EBaseCategories.unclassified);
   });
 
   it("normalizes punctuation noise before matching", () => {
@@ -145,7 +202,7 @@ describe("RuleEngine.categorize", () => {
     const customRules = [
       buildRule({
         match: /rent\s+payment/,
-        when: "DEBIT",
+        when: ERawTxnType.debit,
         category: EBaseCategories.expenses,
         subCategory: ESubExpenseCategories.housing,
         reason: "Normalized rent payment",
@@ -154,7 +211,7 @@ describe("RuleEngine.categorize", () => {
     const res = engine.categorize(
       makeTxn({
         description: "  RENT***PAYMENT!!!  #Apartment ",
-        amount: -25000,
+        debit: 25000,
         rules: customRules,
       }),
     );
@@ -164,18 +221,18 @@ describe("RuleEngine.categorize", () => {
     expect(res.reason).toBe("Normalized rent payment");
   });
 
-  it("treats zero or missing amount as ANY-side and skips credit/debit rules", () => {
+  it("treats missing credit/debit values as ANY-side and skips credit/debit rules", () => {
     const engine = new RuleEngine(logger);
     const customRules = [
       buildRule({
         match: /sip\s+investment/,
-        when: "CREDIT",
+        when: ERawTxnType.credit,
         category: EBaseCategories.income,
         reason: "Credit-only SIP",
       }),
       buildRule({
         match: /sip\s+investment/,
-        when: "ANY",
+        when: ERawTxnType.any,
         category: EBaseCategories.investment,
         reason: "Neutral SIP",
       }),
@@ -183,7 +240,6 @@ describe("RuleEngine.categorize", () => {
     const res = engine.categorize(
       makeTxn({
         description: "SIP investment",
-        amount: 0,
         rules: customRules,
       }),
     );
@@ -197,7 +253,7 @@ describe("RuleEngine.categorize", () => {
     const customRules = [
       buildRule({
         match: /unique\s+match/,
-        when: "CREDIT",
+        when: ERawTxnType.credit,
         category: EBaseCategories.income,
         reason: "Missing confidence rule",
       }),
@@ -205,7 +261,7 @@ describe("RuleEngine.categorize", () => {
     const res = engine.categorize(
       makeTxn({
         description: "Unique match case",
-        amount: 150,
+        credit: 150,
         rules: customRules,
       }),
     );

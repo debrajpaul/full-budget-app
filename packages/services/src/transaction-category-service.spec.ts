@@ -28,7 +28,8 @@ describe("TransactionCategoryService", () => {
     transactionId: "txn-123",
     description: "Netflix subscription",
     category: EBaseCategories.unclassified,
-    amount: -120.55,
+    credit: null,
+    debit: 120.55,
     createdAt: new Date().toISOString(),
     ...overrides,
   });
@@ -109,7 +110,8 @@ describe("TransactionCategoryService", () => {
       expect(ruleEngine.categorize).toHaveBeenCalledWith({
         description: request.description,
         rules,
-        amount: request.amount,
+        credit: request.credit,
+        debit: request.debit,
       });
       expect(transactionStore.updateTransactionCategory).toHaveBeenCalledWith(
         request.tenantId,

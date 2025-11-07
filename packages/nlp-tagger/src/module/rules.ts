@@ -1,4 +1,5 @@
 import {
+  ERawTxnType,
   EBaseCategories,
   ICategoryRules,
   ESubInvestmentCategories,
@@ -15,7 +16,7 @@ export const keywordBaseCategoryMap: Omit<
   // --- INVESTMENTS ---
   {
     match: /zerodha|central\s+depository|cdsl|hdfcsec|icici\s*direct/,
-    when: "CREDIT",
+    when: ERawTxnType.credit,
     category: EBaseCategories.income,
     subCategory: ESubInvestmentCategories.stocks,
     reason: "Broker/CDSL reference",
@@ -24,7 +25,7 @@ export const keywordBaseCategoryMap: Omit<
   },
   {
     match: /zerodha|central\s+depository|cdsl|hdfcsec|icici\s*direct/,
-    when: "DEBIT",
+    when: ERawTxnType.debit,
     category: EBaseCategories.investment,
     subCategory: ESubInvestmentCategories.stocks,
     reason: "Broker/CDSL reference",
@@ -33,7 +34,7 @@ export const keywordBaseCategoryMap: Omit<
   },
   {
     match: /dividend|interim\s+dividend/,
-    when: "CREDIT",
+    when: ERawTxnType.credit,
     category: EBaseCategories.income,
     subCategory: ESubIncomeCategories.investment,
     reason: "Dividend credit",
@@ -42,7 +43,7 @@ export const keywordBaseCategoryMap: Omit<
   },
   {
     match: /sip|mutual\s*funds?/,
-    when: "ANY",
+    when: ERawTxnType.any,
     category: EBaseCategories.investment,
     subCategory: ESubInvestmentCategories.mutualFunds,
     reason: "MF/SIP",
@@ -51,7 +52,7 @@ export const keywordBaseCategoryMap: Omit<
   },
   {
     match: /indian\s*clearin/i,
-    when: "DEBIT",
+    when: ERawTxnType.debit,
     category: EBaseCategories.investment,
     subCategory: ESubInvestmentCategories.mutualFunds,
     reason: "MF/SIP via Indian Clearing debit",
@@ -60,7 +61,7 @@ export const keywordBaseCategoryMap: Omit<
   },
   {
     match: /indian\s*clearin/i,
-    when: "CREDIT",
+    when: ERawTxnType.credit,
     category: EBaseCategories.income,
     subCategory: ESubInvestmentCategories.mutualFunds,
     reason: "MF/SIP via Indian Clearing credit",
@@ -69,7 +70,7 @@ export const keywordBaseCategoryMap: Omit<
   },
   {
     match: /nps|nsc|national\s*pension\s*scheme/,
-    when: "ANY",
+    when: ERawTxnType.any,
     category: EBaseCategories.investment,
     subCategory: ESubInvestmentCategories.mutualFunds,
     reason: "NPS/NSC",
@@ -80,7 +81,7 @@ export const keywordBaseCategoryMap: Omit<
   // --- SAVINGS / DEPOSIT PRODUCTS ---
   {
     match: /rd\s*installment|recurring\s*deposit|^rd\b/,
-    when: "DEBIT",
+    when: ERawTxnType.debit,
     category: EBaseCategories.savings,
     subCategory: ESubSavingCategories.emergency,
     reason: "RD contribution",
@@ -89,7 +90,7 @@ export const keywordBaseCategoryMap: Omit<
   },
   {
     match: /credit\s+interest|int\s+cr|int\.\s*credit/,
-    when: "CREDIT",
+    when: ERawTxnType.credit,
     category: EBaseCategories.income,
     subCategory: ESubIncomeCategories.investment,
     reason: "Interest credit",
@@ -100,7 +101,7 @@ export const keywordBaseCategoryMap: Omit<
   // --- EXPENSES ---
   {
     match: /tata\s*aia|insurance|policybazaar|lic|mediclaim/,
-    when: "DEBIT",
+    when: ERawTxnType.debit,
     category: EBaseCategories.expenses,
     subCategory: ESubExpenseCategories.healthcare,
     reason: "Insurance premium",
@@ -109,7 +110,7 @@ export const keywordBaseCategoryMap: Omit<
   },
   {
     match: /rent\b/,
-    when: "DEBIT",
+    when: ERawTxnType.debit,
     category: EBaseCategories.expenses,
     subCategory: ESubExpenseCategories.housing,
     reason: "Rent payment",
@@ -118,7 +119,7 @@ export const keywordBaseCategoryMap: Omit<
   },
   {
     match: /maid\s+salary/,
-    when: "DEBIT",
+    when: ERawTxnType.debit,
     category: EBaseCategories.expenses,
     subCategory: ESubExpenseCategories.housing,
     reason: "Maid salary payment",
@@ -127,7 +128,7 @@ export const keywordBaseCategoryMap: Omit<
   },
   {
     match: /billpay\s*dr.*hdfccs/,
-    when: "DEBIT",
+    when: ERawTxnType.debit,
     category: EBaseCategories.expenses,
     subCategory: ESubExpenseCategories.utilities,
     reason: "Credit card bill payment",
@@ -136,7 +137,7 @@ export const keywordBaseCategoryMap: Omit<
   },
   {
     match: /goods\s+and\s+services\s+tax|[^a-z]gst[^a-z]|gst\s+payment/,
-    when: "DEBIT",
+    when: ERawTxnType.debit,
     category: EBaseCategories.expenses,
     subCategory: ESubExpenseCategories.utilities,
     reason: "GST/tax payment",
@@ -145,7 +146,7 @@ export const keywordBaseCategoryMap: Omit<
   },
   {
     match: /swiggy|zomato|blinkit|bigbasket|grofers/,
-    when: "DEBIT",
+    when: ERawTxnType.debit,
     category: EBaseCategories.expenses,
     subCategory: ESubExpenseCategories.food,
     reason: "Food/grocery delivery",
@@ -157,7 +158,7 @@ export const keywordBaseCategoryMap: Omit<
     // payments from HDFC statements are captured as transportation expenses.
     match:
       /uber|ola|bmrcl|irctc|railway|metro|flight|airways|petrol|diesel|fuel/,
-    when: "DEBIT",
+    when: ERawTxnType.debit,
     category: EBaseCategories.expenses,
     subCategory: ESubExpenseCategories.transportation,
     reason: "Transportation expense",
@@ -167,7 +168,7 @@ export const keywordBaseCategoryMap: Omit<
   {
     match:
       /bescom|torrent\s*power|electricity|broadband|jio|airtel|\bvi\b|bsnl|internet|water\s+bill/,
-    when: "DEBIT",
+    when: ERawTxnType.debit,
     category: EBaseCategories.expenses,
     subCategory: ESubExpenseCategories.utilities,
     reason: "Utility payment",
@@ -179,7 +180,7 @@ export const keywordBaseCategoryMap: Omit<
   {
     // ACH credits from companies often are salary/vendor payouts (seen: KPIT, etc.)
     match: /achcr|bulk\s+posting-?achcr|salary|payroll/,
-    when: "CREDIT",
+    when: ERawTxnType.credit,
     category: EBaseCategories.income,
     subCategory: ESubIncomeCategories.salary,
     reason: "ACH credit / payroll",
@@ -188,7 +189,7 @@ export const keywordBaseCategoryMap: Omit<
   },
   {
     match: /cashfree|razorpay/,
-    when: "CREDIT",
+    when: ERawTxnType.credit,
     category: EBaseCategories.income,
     subCategory: ESubIncomeCategories.business,
     reason: "Gateway payout",
@@ -197,7 +198,7 @@ export const keywordBaseCategoryMap: Omit<
   },
   {
     match: /upi\/cr|upi\s*credit|imps\/?cr|neft\s*cr/,
-    when: "CREDIT",
+    when: ERawTxnType.credit,
     category: EBaseCategories.income,
     subCategory: ESubIncomeCategories.freelance,
     reason: "Incoming transfer (likely earnings)",
@@ -206,7 +207,7 @@ export const keywordBaseCategoryMap: Omit<
   },
   {
     match: /robosoft/,
-    when: "CREDIT",
+    when: ERawTxnType.credit,
     category: EBaseCategories.income,
     subCategory: ESubIncomeCategories.salary,
     reason: "Salary credit (Robosoft)",
@@ -217,7 +218,7 @@ export const keywordBaseCategoryMap: Omit<
   // --- FEES (treated as utilities unless you have a Fees subcategory) ---
   {
     match: /charge|fee|sms\s+charge|annual\s+fee|atm\s+withdrawal|penalty/,
-    when: "DEBIT",
+    when: ERawTxnType.debit,
     category: EBaseCategories.expenses,
     subCategory: ESubExpenseCategories.utilities,
     reason: "Bank fees/charges",
@@ -230,7 +231,7 @@ export const keywordBaseCategoryMap: Omit<
   //   // we keep them neutral as TRANSFER
   //   match:
   //     /(withdrawal\s+transfer|to\s+transfer|by\s+transfer|funds\s+transfer|imps|neft|upi|p2a|p2p|transfer-inb|rtgs|ecs)/,
-  //   when: "ANY",
+  //   when: ERawTxnType.any,
   //   category: EBaseCategories.transfer,
   //   reason: "Generic transfer",
   //   confidence: 0.5,

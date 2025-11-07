@@ -1,9 +1,15 @@
 import { ICategoryRules } from "./category-rules";
 
+export enum ERawTxnType {
+  credit = "CREDIT",
+  debit = "DEBIT",
+  any = "ANY",
+}
 export interface IRawTxn {
   description: string;
   rules: ICategoryRules[];
-  amount?: number | null; // positive for credits & negative for debits
+  credit: number | null;
+  debit: number | null;
   // ... your other fields (date, ref, amount, etc.)
 }
 
