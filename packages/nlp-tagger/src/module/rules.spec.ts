@@ -9,10 +9,7 @@ import {
 } from "@common";
 
 // Small helper to find the first matching rule for a normalized description
-const findRule = (
-  description: string,
-  when: ERawTxnType = ERawTxnType.any,
-) => {
+const findRule = (description: string, when: ERawTxnType = ERawTxnType.any) => {
   const desc = description.toLowerCase();
   return keywordBaseCategoryMap.find(
     (r) =>

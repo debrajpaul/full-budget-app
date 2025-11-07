@@ -48,7 +48,8 @@ export class RuleEngine implements IRuleEngine {
     for (const rule of txn.rules) {
       // Skip if rule is not ANY
       // Skip if rule is not for the same side
-      if (rule.when && rule.when !== ERawTxnType.any && rule.when !== side) continue;
+      if (rule.when && rule.when !== ERawTxnType.any && rule.when !== side)
+        continue;
 
       // ICategoryRules.match is a RegExp; use test() directly
       const matched = rule.match.test(desc);
