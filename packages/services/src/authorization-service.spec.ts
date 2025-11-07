@@ -33,7 +33,7 @@ describe("AuthorizationService", () => {
     const result = await service.verifyToken("sometoken");
     expect(verifyToken).toHaveBeenCalledWith("sometoken", jwtSecret);
     expect(result).toEqual({ email: "user@example.com" });
-    expect(loggerMock.info).toHaveBeenCalledWith("Verifying token");
+    expect(loggerMock.debug).toHaveBeenCalledWith("Verifying token");
   });
 
   it("should throw if token is missing", async () => {
@@ -78,8 +78,12 @@ describe("AuthorizationService", () => {
       success: true,
       message: "User registered successfully",
     });
-    expect(loggerMock.info).toHaveBeenCalledWith(
-      "User registration successful",
+    expect(loggerMock.debug).toHaveBeenCalledWith(
+      "User registered successfully",
+      {
+        email: input.email,
+        tenantId: input.tenantId,
+      },
     );
   });
 
@@ -145,7 +149,10 @@ describe("AuthorizationService", () => {
         isActive: true,
       },
     });
-    expect(loggerMock.info).toHaveBeenCalledWith("User login successful");
+    expect(loggerMock.debug).toHaveBeenCalledWith(
+      "User logged in successfully",
+      { email: input.email },
+    );
   });
 
   it("should throw if user not found on login", async () => {

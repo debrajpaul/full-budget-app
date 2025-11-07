@@ -30,7 +30,7 @@ export class RuleEngine implements IRuleEngine {
       .trim();
 
   public categorize(txn: IRawTxn): CategorizeResult {
-    this.logger.info(`Categorizing transaction: ${txn.description}`);
+    this.logger.debug(`Categorizing transaction: ${txn.description}`);
     if (!txn.rules || txn.rules.length === 0) {
       return {
         taggedBy: this.taggedBy,

@@ -57,13 +57,14 @@ export class HdfcCreditCardParser implements IBankParser {
       // indicator column.  Any value starting with `cr` is treated as
       // credit; otherwise debit.
       const indicator = (indicatorRaw || "").toLowerCase();
-      const signedAmount = indicator.startsWith("cr") ? numeric : -numeric;
       txns.push({
         userId,
         transactionId: `${userId}#${txnDate.replace(/-/g, "")}#${txns.length}`,
         bankName: EBankName.hdfc,
         bankType: EBankType.creditCard,
-        amount: signedAmount,
+        credit: indicator.startsWith("cr") ? numeric : 0,
+        debit: !indicator.startsWith("cr") ? numeric : 0,
+        balance: 0,
         txnDate,
         description: descriptionRaw.trim(),
       });

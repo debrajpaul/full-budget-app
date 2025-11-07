@@ -46,10 +46,10 @@ describe("UploadStatementService", () => {
         tenantId: validRequest.tenantId,
       }),
     );
-    expect(logger.info).toHaveBeenCalledWith(
+    expect(logger.debug).toHaveBeenCalledWith(
       expect.stringContaining("Uploading statement for bank"),
     );
-    expect(logger.info).toHaveBeenCalledWith(
+    expect(logger.debug).toHaveBeenCalledWith(
       expect.stringContaining("Statement uploaded successfully"),
     );
     expect(result).toBe(true);

@@ -1,5 +1,5 @@
 import { HdfcBankParser } from "./hdfc";
-import { EBankName } from "@common";
+import { EBankName, EBankType } from "@common";
 
 describe("HdfcBankParser", () => {
   const parser = new HdfcBankParser();
@@ -20,13 +20,26 @@ describe("HdfcBankParser", () => {
     expect(txns[0]).toMatchObject({
       userId,
       bankName: EBankName.hdfc,
-      amount: 10000,
+      bankType: EBankType.savings,
+      credit: 10000,
+      debit: 0,
       txnDate: "2025-08-01",
       balance: 10000,
       description: "Salary",
     });
-    expect(txns[1].amount).toBe(-500);
-    expect(txns[3].amount).toBe(50);
+    expect(txns[1]).toMatchObject({
+      credit: 0,
+      debit: 500,
+      txnDate: "2025-08-02",
+    });
+    expect(txns[3]).toMatchObject({
+      credit: 50,
+      debit: 0,
+      txnDate: "2025-08-04",
+    });
+    expect(new Set(txns.map((txn) => txn.transactionId)).size).toBe(
+      txns.length,
+    );
   });
 
   it("should throw error if header not found", async () => {
@@ -41,13 +54,22 @@ describe("HdfcBankParser", () => {
       "Date,Narration,Withdrawal Amt.,Deposit Amt.,Closing Balance",
       ",MissingDate,100,,1000",
       "05/08/25,Valid,100,,900",
-      "06/08/25,NoBalance,100,,900",
+      "06/08/25,InvalidBalance,100,,NaNValue",
+      "07/08/25,ValidCredit,,250,1200",
     ].join("\n");
     const buffer = Buffer.from(csv, "utf-8");
     const txns = await parser.parse(buffer, userId);
     expect(txns.length).toBe(2);
-    expect(txns[0].txnDate).toBe("2025-08-05");
-    expect(txns[1].txnDate).toBe("2025-08-06");
+    expect(txns[0]).toMatchObject({
+      txnDate: "2025-08-05",
+      debit: 100,
+      credit: 0,
+    });
+    expect(txns[1]).toMatchObject({
+      txnDate: "2025-08-07",
+      credit: 250,
+      debit: 0,
+    });
   });
 
   it("should skip junk description rows", async () => {

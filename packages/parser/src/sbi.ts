@@ -71,11 +71,11 @@ export class SbiBankParser implements IBankParser {
 
       if (!dateRaw || isNaN(balance)) continue;
 
-      let amount = 0;
-      if (!isNaN(deposit) && deposit > 0) amount = deposit;
-      else if (!isNaN(withdrawal) && withdrawal > 0) amount = -withdrawal;
+      // let amount = 0;
+      // if (!isNaN(deposit) && deposit > 0) amount = deposit;
+      // else if (!isNaN(withdrawal) && withdrawal > 0) amount = -withdrawal;
 
-      if (amount === 0 || isNaN(amount)) continue;
+      // if (amount === 0 || isNaN(amount)) continue;
 
       const txnDate = this.formatDate(dateRaw);
       if (!txnDate) continue;
@@ -85,7 +85,8 @@ export class SbiBankParser implements IBankParser {
         transactionId: `${userId}#${txnDate.replace(/-/g, "")}#${txns.length}`,
         bankName: EBankName.sbi,
         bankType: EBankType.savings,
-        amount,
+        credit: deposit,
+        debit: withdrawal,
         txnDate,
         balance,
         description: description.trim(),

@@ -14,10 +14,10 @@ export class TransactionCategoryLoader {
   ) {}
 
   public async loader(records: DynamoDBRecord[]) {
-    this.logger.info(`Loader ${records.length} records`);
+    this.logger.debug(`Loader ${records.length} records`);
     this.logger.debug("Loader records", { records });
     for (const record of records) {
-      this.logger.info(`Processing record: ${record.eventID}`);
+      this.logger.debug(`Processing record: ${record.eventID}`);
       if (record.eventName !== "INSERT" && record.eventName !== "MODIFY") {
         this.logger.debug("Skipping record with eventName", {
           eventID: record.eventID,

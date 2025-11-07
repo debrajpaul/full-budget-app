@@ -52,7 +52,7 @@ export class BudgetStore implements IBudgetStore {
       updatedAt: now,
     };
 
-    this.logger.info("Upserting budget", { tenantId, budgetId, amount });
+    this.logger.debug("Upserting budget", { tenantId, budgetId, amount });
     const command = new PutCommand({ TableName: this.tableName, Item: item });
     await this.store.send(command);
     return item;
@@ -66,7 +66,7 @@ export class BudgetStore implements IBudgetStore {
   ): Promise<Record<string, number>> {
     const keyMonth = String(month).padStart(2, "0");
     const prefix = `${userId}#${year}-${keyMonth}#`;
-    this.logger.info("Fetching budgets by period", {
+    this.logger.debug("Fetching budgets by period", {
       tenantId,
       userId,
       month,

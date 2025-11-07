@@ -22,12 +22,21 @@ describe("HdfcCreditCardParser", () => {
     expect(txns[0]).toMatchObject({
       userId,
       bankName: EBankName.hdfc,
-      amount: -3200.5,
+      debit: 3200.5,
+      credit: 0,
       txnDate: "2025-08-12",
       description: "Amazon Marketplace",
     });
-    expect(txns[1]).toMatchObject({ amount: 400, txnDate: "2025-08-13" });
-    expect(txns[2]).toMatchObject({ amount: -1000, txnDate: "2025-08-14" });
+    expect(txns[1]).toMatchObject({
+      credit: 400,
+      debit: 0,
+      txnDate: "2025-08-13",
+    });
+    expect(txns[2]).toMatchObject({
+      debit: 1000,
+      credit: 0,
+      txnDate: "2025-08-14",
+    });
     expect(new Set(txns.map((t) => t.transactionId)).size).toBe(3);
   });
 
@@ -57,7 +66,11 @@ describe("HdfcCreditCardParser", () => {
     const txns = await parser.parse(Buffer.from(statement, "utf-8"), userId);
 
     expect(txns).toHaveLength(1);
-    expect(txns[0]).toMatchObject({ amount: -800, txnDate: "2025-08-15" });
+    expect(txns[0]).toMatchObject({
+      debit: 800,
+      credit: 0,
+      txnDate: "2025-08-15",
+    });
   });
 
   it("should format dd/mm/yy and dd/mm/yyyy dates", () => {

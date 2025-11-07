@@ -7,7 +7,8 @@ export const transactionTypeDefs = /* GraphQL */ `
     userId: String!
     transactionId: String!
     bankName: BankName!
-    amount: Float!
+    credit: Float!
+    debit: Float!
     balance: Float
     txnDate: String!
     description: String
@@ -24,7 +25,8 @@ export const transactionTypeDefs = /* GraphQL */ `
     id: String!
     date: String!
     description: String
-    amount: Float!
+    credit: Float!
+    debit: Float!
     currency: String!
     category: String
     taggedBy: String

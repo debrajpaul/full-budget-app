@@ -27,6 +27,7 @@ export class TransactionCategoryStack extends Stack {
       handler: 'index.handler',
       code: lambda.Code.fromAsset(path.resolve(__dirname, '../../apps/tag-loaders/dist')),
       timeout: Duration.seconds(30),
+      logRetentionRetryOptions: { base: Duration.hours(8), maxRetries: 10 },
       environment: props.environment,
     });
 

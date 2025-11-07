@@ -34,7 +34,7 @@ new GraphQLApiStack(app, 'GraphQLApiStack', {
   jwtParameter: ssmParamStack.parameter,
   environment: {
     NODE_ENV: 'dev',
-    LOG_LEVEL: 'debug',
+    LOG_LEVEL: 'info', //'info'
     DYNAMO_CATEGORY_RULES_TABLE: transactionsCategoryTableStack.transactionsCategoryTable.tableName,
     DYNAMO_TRANSACTION_TABLE: transactionsTableStack.transactionsTable.tableName,
     DYNAMO_RECURRING_TABLE: recurringTransactionsTableStack.recurringTransactionsTable.tableName,
@@ -53,7 +53,7 @@ new TransactionLoaderStack(app, 'TransactionLoaderStack', {
   transactionTableArn: transactionsTableStack.transactionsTable.tableArn,
   environment: {
     NODE_ENV: 'dev',
-    LOG_LEVEL: 'debug',
+    LOG_LEVEL: 'info', //'info'
     DYNAMO_TRANSACTION_TABLE: transactionsTableStack.transactionsTable.tableName,
     SQS_QUEUE_URL: queueStack.statementProcessingQueue.queueUrl,
     AWS_S3_BUCKET: storageStack.uploadBucket.bucketName,
@@ -67,7 +67,7 @@ new TransactionCategoryStack(app, 'TransactionCategoryStack', {
   transactionsCategoryTable: transactionsCategoryTableStack.transactionsCategoryTable,
   environment: {
     NODE_ENV: 'dev',
-    LOG_LEVEL: 'debug',
+    LOG_LEVEL: 'info', //'info'
     DYNAMO_TRANSACTION_TABLE: transactionsTableStack.transactionsTable.tableName,
     DYNAMO_CATEGORY_RULES_TABLE: transactionsCategoryTableStack.transactionsCategoryTable.tableName,
     AI_TAGGING_ENABLED: 'false',

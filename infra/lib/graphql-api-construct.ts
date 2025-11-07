@@ -33,6 +33,7 @@ export class GraphQLApiConstruct extends Construct {
       code: lambda.Code.fromAsset(path.resolve(__dirname, '../../apps/graphql-api/dist')), // Adjust to match your output dir
       memorySize: 1024,
       timeout: Duration.seconds(15),
+      logRetentionRetryOptions: { base: Duration.hours(8), maxRetries: 10 },
       environment: props.environment,
     });
     graphqlFunction.addEnvironment(

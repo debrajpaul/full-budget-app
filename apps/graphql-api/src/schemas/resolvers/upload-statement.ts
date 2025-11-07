@@ -12,10 +12,9 @@ export const uploadStatementResolvers = {
       if (!ctx.userId) throw new CustomError("Unauthorized", "UNAUTHORIZED");
       if (!ctx.tenantId)
         throw new CustomError("Tenant ID is required", "TENANT_ID_REQUIRED");
-      ctx.logger.info(
-        `User ${ctx.userId} is uploading a statement for bank ${args.input.bankName}`,
+      ctx.logger.debug(
+        `User ${ctx.userId} is uploading a statement for bank ${args.input.bankName} and file name: ${args.input.fileName}`,
       );
-      ctx.logger.debug(`File name: ${args.input.fileName}`);
       const { bankName, bankType, fileName, contentBase64 } =
         UploadStatementArgs.parse(args.input);
       const result =

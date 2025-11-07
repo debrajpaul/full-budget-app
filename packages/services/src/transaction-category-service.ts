@@ -34,7 +34,7 @@ export class TransactionCategoryService implements ITransactionCategoryService {
     this.ruleEngine = ruleEngine;
     this.bedrockClassifierService = bedrockClassifierService;
     this.aiTaggingEnabled = aiTaggingEnabled;
-    this.logger.info("ProcessService initialized");
+    this.logger.debug("ProcessService initialized");
   }
   public async process(request: ITransactionCategoryRequest): Promise<boolean> {
     this.logger.info("process started processing messages");
@@ -111,7 +111,7 @@ export class TransactionCategoryService implements ITransactionCategoryService {
         matchedCategory.reason,
         undefined,
       );
-      this.logger.info(`Transaction ${transactionId} categorized`);
+      this.logger.debug(`Transaction ${transactionId} categorized`);
       return true;
     } catch (err) {
       this.logger.error("Error processing message", err as Error);
@@ -122,7 +122,7 @@ export class TransactionCategoryService implements ITransactionCategoryService {
   public async addRulesByTenant(
     tenantId: ETenantType = ETenantType.default,
   ): Promise<void> {
-    this.logger.info(`Adding rules for tenant ${tenantId}`);
+    this.logger.debug(`Adding rules for tenant ${tenantId}`);
     return await this.categoryRulesStore.addRules(
       tenantId,
       keywordBaseCategoryMap,
