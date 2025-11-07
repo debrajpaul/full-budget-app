@@ -39,7 +39,7 @@ describe("S3Service", () => {
     });
     const result = await service.getFile(key);
     expect(s3Client.send).toHaveBeenCalled();
-    expect(loggerMock.info).toHaveBeenCalledWith("###GettingS3");
+    expect(loggerMock.debug).toHaveBeenCalledWith("###GettingS3", { key });
     expect(Buffer.isBuffer(result)).toBe(true);
     expect(result.toString()).toBe("chunk1chunk2");
   });

@@ -17,9 +17,7 @@ const { transactionCategoryLoader } = setupLoaders(
 );
 
 export const handler = async (event: DynamoDBStreamEvent) => {
-  logger.info(`#handler`);
   logger.debug(`handler event: ${JSON.stringify(event)}`);
   const result = await transactionCategoryLoader.loader(event.Records);
-  logger.info(`handler result: ${JSON.stringify(result)}`);
   return result;
 };

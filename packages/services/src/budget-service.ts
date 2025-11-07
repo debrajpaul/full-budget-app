@@ -31,7 +31,7 @@ export class BudgetService implements IBudgetService {
     input: ISetBudgetInput,
   ): Promise<IBudget> {
     const { month, year, category, amount, subCategory } = input;
-    this.logger.info("Setting budget", {
+    this.logger.debug("Setting budget", {
       tenantId,
       userId,
       month,
@@ -73,7 +73,7 @@ export class BudgetService implements IBudgetService {
     month: number,
     year: number,
   ): Promise<ICategoryDeviation[]> {
-    this.logger.info("Analyzing spend vs. budget", {
+    this.logger.debug("Analyzing spend vs. budget", {
       tenantId,
       userId,
       month,
@@ -132,7 +132,7 @@ export class BudgetService implements IBudgetService {
     userId: string,
     year: number,
   ): Promise<ICategoryDeviation[]> {
-    this.logger.info("Analyzing annual spend vs. budget", {
+    this.logger.debug("Analyzing annual spend vs. budget", {
       tenantId,
       userId,
       year,

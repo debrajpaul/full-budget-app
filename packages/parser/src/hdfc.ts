@@ -12,7 +12,7 @@ export class HdfcBankParser implements IBankParser {
     const rawText = buffer.toString("utf-8");
     const lines = rawText.split(/\r?\n/);
 
-    // 🔍 Find the first line that contains the header like "Date,Narration,..."
+    // Find the first line that contains the header like "Date,Narration,..."
     const headerIndex = lines.findIndex(
       (line) =>
         line.toLowerCase().includes("date") &&
@@ -48,8 +48,8 @@ export class HdfcBankParser implements IBankParser {
 
       if (!dateRaw || isNaN(balance)) continue;
 
-      const amount = deposit || -withdrawal;
-      if (amount === 0 || isNaN(amount)) continue;
+      // const amount = deposit || -withdrawal;
+      // if (amount === 0 || isNaN(amount)) continue;
 
       const txnDate = this.formatDate(dateRaw);
       if (!txnDate) continue;
@@ -63,7 +63,8 @@ export class HdfcBankParser implements IBankParser {
         bankName: EBankName.hdfc,
         bankType: EBankType.savings,
         txnDate,
-        amount,
+        credit: deposit,
+        debit: withdrawal,
         balance,
         description: description.trim(),
       });

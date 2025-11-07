@@ -53,6 +53,10 @@ describe("TransactionCategoryService", () => {
     transactionStore.updateTransactionCategory.mockResolvedValue();
   });
 
+  it("logs a debug message when initialized", () => {
+    expect(logger.debug).toHaveBeenCalledWith("ProcessService initialized");
+  });
+
   describe("process", () => {
     it("returns false when required fields are missing", async () => {
       const request = makeRequest({ description: undefined });
@@ -116,6 +120,9 @@ describe("TransactionCategoryService", () => {
         categorizeResult.confidence,
         categorizeResult.reason,
         undefined,
+      );
+      expect(logger.debug).toHaveBeenCalledWith(
+        `Transaction ${request.transactionId} categorized`,
       );
     });
 
@@ -213,6 +220,9 @@ describe("TransactionCategoryService", () => {
     expect(rulesStore.addRules).toHaveBeenCalledWith(
       ETenantType.default,
       keywordBaseCategoryMap,
+    );
+    expect(logger.debug).toHaveBeenCalledWith(
+      `Adding rules for tenant ${ETenantType.default}`,
     );
   });
 

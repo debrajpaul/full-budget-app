@@ -103,7 +103,7 @@ describe("CategoryRulesStore", () => {
     const addRuleSpy = jest.spyOn(rulesStore, "addRule").mockResolvedValue();
     await rulesStore.addRules(tenantId, rules);
     expect(addRuleSpy).toHaveBeenCalledTimes(3);
-    expect(loggerMock.info).toHaveBeenCalledWith("Saving rules to DynamoDB");
+    expect(loggerMock.debug).toHaveBeenCalledWith("Saving rules to DynamoDB");
   });
 
   it("adds a single rule", async () => {
@@ -156,7 +156,7 @@ describe("CategoryRulesStore", () => {
         ":when": "ANY",
       },
     });
-    expect(loggerMock.info).toHaveBeenCalledWith("Saving rule to DynamoDB");
+    expect(loggerMock.debug).toHaveBeenCalledWith("Saving rule to DynamoDB");
   });
 
   it("should remove a rule", () => {
@@ -171,7 +171,7 @@ describe("CategoryRulesStore", () => {
         ruleId: `${tenantId}#food`,
       },
     });
-    expect(loggerMock.info).toHaveBeenCalledWith("Rule removed successfully", {
+    expect(loggerMock.debug).toHaveBeenCalledWith("Rule removed successfully", {
       tenantId,
       ruleId: `${tenantId}#food`,
     });

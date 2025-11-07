@@ -45,7 +45,8 @@ export const transactionResolvers = {
       const dailyMap: Record<string, number> = {};
       review.transactions.forEach((txn) => {
         const date = new Date(txn.txnDate || "").toISOString().split("T")[0];
-        dailyMap[date] = (dailyMap[date] || 0) + Number(txn.amount);
+        dailyMap[date] =
+          (dailyMap[date] || 0) + Number(txn.credit) - Number(txn.debit);
       });
       const series = Object.entries(dailyMap)
         .sort(([a], [b]) => a.localeCompare(b))
@@ -168,7 +169,8 @@ export const transactionResolvers = {
         id: t.transactionId,
         date: t.txnDate,
         description: t.description,
-        amount: t.amount,
+        debit: t.debit,
+        credit: t.credit,
         currency: "INR",
         category: t.category,
         taggedBy: t.taggedBy,

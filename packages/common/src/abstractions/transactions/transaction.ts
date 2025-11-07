@@ -7,7 +7,8 @@ export interface ITransaction {
   transactionId: string;
   bankName: EBankName;
   bankType: EBankType;
-  amount: number;
+  credit: number;
+  debit: number;
   balance?: number;
   txnDate: string | undefined;
   description?: string;

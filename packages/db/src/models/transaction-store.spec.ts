@@ -25,7 +25,8 @@ describe("TransactionStore", () => {
     bankName: EBankName.hdfc,
     bankType: EBankType.savings,
     txnDate: "2025-08-07",
-    amount: 100,
+    credit: 100,
+    debit: 0,
     description: "desc",
     balance: 1000,
     category: EBaseCategories.unclassified,
@@ -55,7 +56,7 @@ describe("TransactionStore", () => {
     expect(callArg.input.Item.embedding).toEqual(txn.embedding);
     expect(callArg.input.Item.taggedBy).toEqual(txn.taggedBy);
     expect(callArg.input.Item.confidence).toEqual(txn.confidence);
-    expect(loggerMock.info).toHaveBeenCalledWith(
+    expect(loggerMock.debug).toHaveBeenCalledWith(
       `Saving transaction: ${txn.transactionId}`,
     );
   });
@@ -192,19 +193,22 @@ describe("TransactionStore", () => {
       {
         ...txn,
         transactionId: "txnA",
-        amount: -50,
+        credit: 0,
+        debit: 50,
         category: EBaseCategories.expenses,
       },
       {
         ...txn,
         transactionId: "txnB",
-        amount: -100,
+        credit: 0,
+        debit: 100,
         category: EBaseCategories.expenses,
       },
       {
         ...txn,
         transactionId: "txnC",
-        amount: 200,
+        credit: 200,
+        debit: 0,
         category: EBaseCategories.income,
       },
     ];

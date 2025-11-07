@@ -84,7 +84,7 @@ export class CategoryRulesStore implements ICategoryRulesStore {
     tenantId: ETenantType,
     rules: Omit<ICategoryRules, "tenantId" | "ruleId" | "createdAt">[],
   ): Promise<void> {
-    this.logger.info("Saving rules to DynamoDB");
+    this.logger.debug("Saving rules to DynamoDB");
     this.logger.debug("Rules", { rules });
 
     const chunks = chunk(rules, 25);
@@ -101,7 +101,7 @@ export class CategoryRulesStore implements ICategoryRulesStore {
     tenantId: ETenantType,
     rule: Omit<ICategoryRules, "tenantId" | "ruleId" | "createdAt">,
   ): Promise<void> {
-    this.logger.info("Saving rule to DynamoDB");
+    this.logger.debug("Saving rule to DynamoDB");
     const { match, category, taggedBy, subCategory, reason, confidence, when } =
       rule;
     this.logger.debug("Rule", {
@@ -161,7 +161,7 @@ export class CategoryRulesStore implements ICategoryRulesStore {
   }
 
   public removeRule(tenantId: ETenantType, ruleId: string): void {
-    this.logger.info("Removing rule from DynamoDB");
+    this.logger.debug("Removing rule from DynamoDB");
     this.logger.debug("Rule", { tenantId, ruleId });
     const command = new DeleteCommand({
       TableName: this.tableName,
@@ -171,7 +171,7 @@ export class CategoryRulesStore implements ICategoryRulesStore {
       },
     });
     this.store.send(command);
-    this.logger.info("Rule removed successfully", { tenantId, ruleId });
+    this.logger.debug("Rule removed successfully", { tenantId, ruleId });
   }
 
   /**

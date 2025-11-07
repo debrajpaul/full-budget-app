@@ -19,12 +19,12 @@ export class AuthorizationService implements IAuthorizationService {
     this.logger = logger;
     this.jwtSecret = jwtSecret;
     this.userStore = userStore;
-    this.logger.info("AuthorizationService initialized");
+    this.logger.debug("AuthorizationService initialized");
   }
 
   public async verifyToken(token: string): Promise<{ email: string }> {
     try {
-      this.logger.info("Verifying token");
+      this.logger.debug("Verifying token");
       if (!token) throw new Error("Token is required");
       this.logger.debug("Token provided", { token });
       if (!this.jwtSecret) throw new Error("JWT secret is not configured");
@@ -48,7 +48,7 @@ export class AuthorizationService implements IAuthorizationService {
     registerInput: IRegisterInput,
   ): Promise<IRegisterResponse> {
     const { email, name, tenantId, password } = registerInput;
-    this.logger.info("Registering user", { email });
+    this.logger.debug("Registering user", { email });
     if (!email || !tenantId || !name || !password) {
       this.logger.error("Invalid are required for registration");
       throw new Error("Invalid are required");
@@ -71,13 +71,12 @@ export class AuthorizationService implements IAuthorizationService {
     await this.userStore.saveUser(user);
 
     this.logger.debug("User registered successfully", { email, tenantId });
-    this.logger.info("User registration successful");
     return { success: true, message: "User registered successfully" };
   }
 
   public async login(loginInput: ILoginInput): Promise<ILoginResponse> {
     const { email, tenantId, password } = loginInput;
-    this.logger.info("Logging in user", { email });
+    this.logger.debug("Logging in user", { email });
     const user = await this.userStore.getUser(tenantId, email);
     if (!user) {
       this.logger.error("User not found");
@@ -92,7 +91,6 @@ export class AuthorizationService implements IAuthorizationService {
       this.jwtSecret,
     );
     this.logger.debug("User logged in successfully", { email });
-    this.logger.info("User login successful");
     return {
       token,
       user: {

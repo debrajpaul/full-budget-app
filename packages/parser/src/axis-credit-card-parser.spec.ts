@@ -24,13 +24,16 @@ describe("AxisCreditCardParser", () => {
     expect(txns[0]).toMatchObject({
       userId,
       bankName: EBankName.axis,
-      amount: -1234.56,
+      debit: 1234.56,
+      credit: 0,
       txnDate: "2025-08-01",
       description: "Amazon Purchase",
     });
-    expect(txns[1].amount).toBe(500);
+    expect(txns[1].credit).toBe(500);
+    expect(txns[1].debit).toBe(0);
     expect(txns[1].txnDate).toBe("2025-08-02");
-    expect(txns[2].amount).toBe(-750);
+    expect(txns[2].debit).toBe(750);
+    expect(txns[2].credit).toBe(0);
     expect(txns[2].txnDate).toBe("2025-08-03");
     expect(new Set(txns.map((t) => t.transactionId)).size).toBe(3);
   });
@@ -57,11 +60,13 @@ describe("AxisCreditCardParser", () => {
 
     expect(txns).toHaveLength(2);
     expect(txns[0]).toMatchObject({
-      amount: -300,
+      debit: 300,
+      credit: 0,
       txnDate: "2025-08-05",
     });
     expect(txns[1]).toMatchObject({
-      amount: 400,
+      credit: 400,
+      debit: 0,
       txnDate: "2025-08-06",
     });
   });

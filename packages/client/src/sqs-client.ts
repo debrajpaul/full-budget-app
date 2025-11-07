@@ -18,7 +18,6 @@ export class SQSService implements ISQSService {
    * Sends a message to the SQS queue (producer).
    */
   async sendFileMessage(messageBody: ITransactionSqsRequest): Promise<void> {
-    this.logger.info("#SendingSQS");
     this.logger.debug("SendingSQS", { messageBody });
 
     const params: SendMessageCommandInput = {
@@ -27,7 +26,6 @@ export class SQSService implements ISQSService {
     };
     const res = await this.sqs.sendMessage(params);
     this.logger.debug("SQS message sent", { messageBody, res });
-    this.logger.info("SQS message sent successfully");
   }
 
   /**
@@ -35,7 +33,7 @@ export class SQSService implements ISQSService {
    * Returns the parsed message body, or undefined if no messages.
    */
   async receiveFileMessage(): Promise<ITransactionSqsRequest | undefined> {
-    this.logger.info("###ReceivingSQS");
+    this.logger.debug("###ReceivingSQS");
 
     const res = await this.sqs.receiveMessage({
       QueueUrl: this.queueUrl,

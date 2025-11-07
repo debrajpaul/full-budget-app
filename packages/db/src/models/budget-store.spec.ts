@@ -67,6 +67,12 @@ describe("BudgetStore", () => {
     expect(result.userId).toBe(userId);
     expect(result.category).toBe(category);
     expect(result.amount).toBe(amount);
+
+    expect(loggerMock.debug).toHaveBeenCalledWith("Upserting budget", {
+      tenantId,
+      budgetId: expectedBudgetId,
+      amount,
+    });
   });
 
   it("should get budgets by period and return category -> amount map", async () => {
@@ -119,6 +125,16 @@ describe("BudgetStore", () => {
       ":tenantId": tenantId,
       ":prefix": `${userId}#${year}-08#`,
     });
+
+    expect(loggerMock.debug).toHaveBeenCalledWith(
+      "Fetching budgets by period",
+      {
+        tenantId,
+        userId,
+        month,
+        year,
+      },
+    );
 
     // Validates aggregation
     expect(map).toEqual({

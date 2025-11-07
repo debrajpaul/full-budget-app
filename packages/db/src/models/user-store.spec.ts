@@ -14,6 +14,7 @@ describe("UserStore", () => {
     name: "Test User",
     passwordHash: "hashedpw",
     createdAt: new Date().toISOString(),
+    updatedAt: new Date().toISOString(),
     isActive: true,
   };
 
@@ -40,7 +41,7 @@ describe("UserStore", () => {
     storeMock.send = jest.fn().mockResolvedValue({});
     await userStore.saveUser(user);
     expect(storeMock.send).toHaveBeenCalled();
-    expect(loggerMock.info).toHaveBeenCalledWith("Saving user to DynamoDB");
+    expect(loggerMock.debug).toHaveBeenCalledWith("Saving user to DynamoDB");
   });
 
   it("should update a user in DynamoDB", async () => {
@@ -50,7 +51,7 @@ describe("UserStore", () => {
       name: "New Name",
     });
     expect(storeMock.send).toHaveBeenCalled();
-    expect(loggerMock.info).toHaveBeenCalledWith("Updating user in DynamoDB");
+    expect(loggerMock.debug).toHaveBeenCalledWith("Updating user in DynamoDB");
   });
 
   it("should not update if no fields provided", async () => {

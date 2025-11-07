@@ -23,14 +23,13 @@ describe("SQSService", () => {
     userId: "user123",
     tenantId: ETenantType.default,
   };
+  const sendResponse = { MessageId: "msgid123" };
 
   beforeEach(() => {
     loggerMock = mock<ILogger>();
     sqsClient = new SQS({});
     // Cast to any to avoid TS type errors for mocking
-    (sqsClient as any).sendMessage = jest
-      .fn()
-      .mockResolvedValue({ MessageId: "msgid123" });
+    (sqsClient as any).sendMessage = jest.fn().mockResolvedValue(sendResponse);
     (sqsClient as any).receiveMessage = jest.fn().mockResolvedValue({
       Messages: [{ Body: JSON.stringify(messageBody), ReceiptHandle: "rh123" }],
     });
@@ -44,10 +43,13 @@ describe("SQSService", () => {
       QueueUrl: queueUrl,
       MessageBody: JSON.stringify(messageBody),
     });
-    expect(loggerMock.info).toHaveBeenCalledWith("#SendingSQS");
-    expect(loggerMock.info).toHaveBeenCalledWith(
-      "SQS message sent successfully",
-    );
+    expect(loggerMock.debug).toHaveBeenNthCalledWith(1, "SendingSQS", {
+      messageBody,
+    });
+    expect(loggerMock.debug).toHaveBeenNthCalledWith(2, "SQS message sent", {
+      messageBody,
+      res: sendResponse,
+    });
   });
 
   it("should receive and delete a message from SQS", async () => {
@@ -61,6 +63,16 @@ describe("SQSService", () => {
       QueueUrl: queueUrl,
       ReceiptHandle: "rh123",
     });
+    expect(loggerMock.debug).toHaveBeenCalledWith("###ReceivingSQS");
+    expect(loggerMock.debug).toHaveBeenCalledWith(
+      "####SQS message received -->",
+      expect.objectContaining({
+        message: {
+          Body: JSON.stringify(messageBody),
+          ReceiptHandle: "rh123",
+        },
+      }),
+    );
     expect(result).toEqual(messageBody);
   });
 

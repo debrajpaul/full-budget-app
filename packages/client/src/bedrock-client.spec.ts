@@ -23,7 +23,7 @@ describe("BedrockClient", () => {
   it("logs initialization and config on construction", () => {
     // Called during beforeEach constructor
     expect(loggerMock.info).toHaveBeenCalledWith("BedrockClient initialized");
-    expect(loggerMock.debug).toHaveBeenCalledWith("BedrockClient config", {
+    expect(loggerMock.info).toHaveBeenCalledWith("BedrockClient config", {
       bedrockClientConfig: config,
     });
   });

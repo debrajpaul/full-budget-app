@@ -109,14 +109,15 @@ export class AxisCreditCardParser implements IBankParser {
       // default to negative if the indicator is anything other than
       // "credit" to handle fees and unknown values conservatively.
       const indicator = String(typeRaw).trim().toLowerCase();
-      const signedAmount = indicator.startsWith("credit") ? numeric : -numeric;
 
       txns.push({
         userId,
         transactionId: `${userId}#${txnDate.replace(/-/g, "")}#${txns.length}`,
         bankName: EBankName.axis,
         bankType: EBankType.creditCard,
-        amount: signedAmount,
+        credit: indicator.startsWith("credit") ? numeric : 0,
+        debit: indicator.startsWith("debit") ? numeric : 0,
+        balance: 0,
         txnDate,
         description: String(desc).trim(),
       });

@@ -22,7 +22,7 @@ export class BedrockClient implements IBedrockClient {
     private readonly bedrockClientConfig: IBedrockClientConfig,
   ) {
     this.logger.info("BedrockClient initialized");
-    this.logger.debug("BedrockClient config", { bedrockClientConfig });
+    this.logger.info("BedrockClient config", { bedrockClientConfig });
   }
 
   private buildPrompt(description: string): string {
@@ -72,9 +72,11 @@ export class BedrockClient implements IBedrockClient {
   async invokeModel(description: string): Promise<any> {
     this.logger.info(`Invoking model with description: ${description}`);
     const prompt = this.buildPrompt(description);
+    this.logger.info(`Prompt: ${prompt}`);
     const input = this.buildInput(prompt);
+    this.logger.info(`Input: ${JSON.stringify(input)}`);
     const command = this.buildCommand(input);
-
+    this.logger.info(`Command: ${JSON.stringify(command)}`);
     return await this.bedrock.send(command);
   }
 }

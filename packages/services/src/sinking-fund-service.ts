@@ -16,7 +16,7 @@ export class SinkingFundService implements ISinkingFundService {
     tenantId: ETenantType,
     userId: string,
   ): Promise<ISinkingFund[]> {
-    this.logger.info("Fetching sinking funds", { tenantId, userId });
+    this.logger.debug("Fetching sinking funds", { tenantId, userId });
     // Placeholder implementation
     const today = new Date().toISOString().split("T")[0];
     return [

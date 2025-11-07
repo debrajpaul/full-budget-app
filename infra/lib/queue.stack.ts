@@ -12,7 +12,7 @@ export class QueueStack extends Stack {
     this.statementProcessingQueue = new Queue(this, 'StatementProcessingQueue', {
         queueName: 'statement-processing-queue',
         visibilityTimeout: cdk.Duration.seconds(300),
-        retentionPeriod: cdk.Duration.days(2),
+        retentionPeriod: cdk.Duration.days(1),
         removalPolicy: RemovalPolicy.DESTROY, // for dev only; change for prod
     });
 

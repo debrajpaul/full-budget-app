@@ -3,13 +3,16 @@ import { IBedrockClientConfig } from "@common";
 import { WinstonLogger } from "@logger";
 import { S3 } from "@aws-sdk/client-s3";
 import { SQS } from "@aws-sdk/client-sqs";
-import { DynamoDBClient } from "@aws-sdk/client-dynamodb";
+import { DynamoDBClient, DynamoDBClientConfig } from "@aws-sdk/client-dynamodb";
 import { DynamoDBDocumentClient } from "@aws-sdk/lib-dynamodb";
 import { BedrockRuntimeClient } from "@aws-sdk/client-bedrock-runtime";
 import { BedrockClient } from "@client";
 
 export function setupDependency() {
-  const client = new DynamoDBClient({ region: config.awsRegion });
+  const dynamoDbClientConfig: DynamoDBClientConfig = {
+    region: config.awsRegion,
+  };
+  const client = new DynamoDBClient(dynamoDbClientConfig);
   const dynamoDBDocumentClient = DynamoDBDocumentClient.from(client);
   const logger = WinstonLogger.getInstance(config.logLevel);
   const s3Client = new S3({

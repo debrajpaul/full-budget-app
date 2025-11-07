@@ -39,11 +39,11 @@ export class TransactionService implements ITransactionService {
     this.s3Service = s3Service;
     this.sqsService = sqsService;
     this.transactionStore = transactionStore;
-    this.logger.info("ProcessService initialized");
+    this.logger.debug("ProcessService initialized");
   }
 
   public async processes(): Promise<boolean> {
-    this.logger.info("processes started processing messages");
+    this.logger.debug("processes started processing messages");
     // Process the job...
     this.logger.debug("SQS Service initialized", {
       sqsService: this.sqsService,
@@ -63,7 +63,7 @@ export class TransactionService implements ITransactionService {
       this.logger.error("Invalid message body:");
       return false;
     }
-    this.logger.info(
+    this.logger.debug(
       `Processing fileKey: ${messageData.fileKey}, bank: ${messageData.bankName}, userId: ${messageData.userId}, tenantId: ${messageData.tenantId}`,
     );
     let flag: boolean = await this.process(messageData);
@@ -72,10 +72,10 @@ export class TransactionService implements ITransactionService {
   }
 
   public async process(request: ITransactionSqsRequest): Promise<boolean> {
-    this.logger.info("process started processing messages");
+    this.logger.debug("process started processing messages");
     try {
       const fileBuffer = await this.s3Service.getFile(request.fileKey);
-      this.logger.info(`fileBuffer length: ${fileBuffer.length}`);
+      this.logger.debug(`fileBuffer length: ${fileBuffer.length}`);
       const transactions = await this.parseTransactions(
         fileBuffer,
         request.bankName,
@@ -87,7 +87,7 @@ export class TransactionService implements ITransactionService {
         request.tenantId,
         transactions,
       );
-      this.logger.info(`Processed ${transactions.length} transactions.`);
+      this.logger.debug(`Processed ${transactions.length} transactions.`);
       return true;
     } catch (err) {
       this.logger.error("Error processing message", err as Error);
@@ -101,34 +101,33 @@ export class TransactionService implements ITransactionService {
     month: number,
     year: number,
   ): Promise<IMonthlyReview> {
-    this.logger.info(`Getting monthlyReview for user`);
+    this.logger.debug(`Getting monthlyReview for user`);
     this.logger.debug("User ID, month & year", { userId, month, year });
     const startDate = new Date(year, month - 1, 1).toISOString(); // start of prev month
     const endDate = new Date(year, month, 1).toISOString(); // start of this month
-    const transactions = await this.transactionStore.getTransactionsByDateRange(
+    const txns = await this.transactionStore.getTransactionsByDateRange(
       tenantId,
       userId,
       startDate,
       endDate,
     );
     this.logger.debug(`MonthlyReview transactions`, {
-      count: transactions.length,
+      count: txns.length,
     });
     // Calculate totals
     let totalIncome = 0;
     let totalExpense = 0;
 
-    transactions.forEach((txn) => {
-      const amount = Number(txn.amount);
-      if (amount > 0) totalIncome += amount;
-      else totalExpense += Math.abs(amount);
+    txns.forEach((txn) => {
+      totalExpense += Number(txn.debit);
+      totalIncome += Number(txn.credit);
     });
 
     return {
       totalIncome,
       totalExpense,
       netSavings: totalIncome - totalExpense,
-      transactions,
+      transactions: txns,
     };
   }
 
@@ -137,7 +136,7 @@ export class TransactionService implements ITransactionService {
     userId: string,
     year: number,
   ): Promise<IAnnualReview> {
-    this.logger.info(`Getting annualReview for user`);
+    this.logger.debug(`Getting annualReview for user`);
     this.logger.debug("User ID, year", { userId, year });
     const startDate = new Date(year, 0, 1).toISOString(); // Jan 1
     const endDate = new Date(year + 1, 0, 1).toISOString(); // Jan 1 next year
@@ -153,9 +152,8 @@ export class TransactionService implements ITransactionService {
     let totalExpense = 0;
 
     txns.forEach((txn) => {
-      const amount = Number(txn.amount);
-      if (amount > 0) totalIncome += amount;
-      else totalExpense += Math.abs(amount);
+      totalExpense += Number(txn.debit);
+      totalIncome += Number(txn.credit);
     });
 
     return {
@@ -172,7 +170,7 @@ export class TransactionService implements ITransactionService {
     month: number,
     year: number,
   ): Promise<IcategoryGroup[]> {
-    this.logger.info(`Getting categoryBreakDown for user`);
+    this.logger.debug(`Getting categoryBreakDown for user`);
     this.logger.debug("User ID, month & year", { userId, month, year });
     const startDate = new Date(year, month - 1, 1).toISOString(); // start of prev month
     const endDate = new Date(year, month, 0).toISOString(); // start of this month
@@ -193,7 +191,8 @@ export class TransactionService implements ITransactionService {
       if (!categoryMap[category]) {
         categoryMap[category] = { totalAmount: 0, transactions: [] };
       }
-      categoryMap[category].totalAmount += txn.amount;
+      categoryMap[category].totalAmount += Number(txn.credit);
+      categoryMap[category].totalAmount -= Number(txn.debit);
       categoryMap[category].transactions.push(txn);
     }
 
@@ -210,7 +209,7 @@ export class TransactionService implements ITransactionService {
     year: number,
     month?: number,
   ): Promise<IAggregatedSummary> {
-    this.logger.info(`Getting aggregateSummary for user`);
+    this.logger.debug(`Getting aggregateSummary for user`);
     this.logger.debug("User ID, month & year", { userId, month, year });
     let startDate: string, endDate: string;
 
@@ -233,9 +232,8 @@ export class TransactionService implements ITransactionService {
     let totalIncome = 0;
     let totalExpense = 0;
     txns.forEach((txn) => {
-      const amount = Number(txn.amount);
-      if (amount > 0) totalIncome += amount;
-      else totalExpense += Math.abs(amount);
+      totalExpense += Number(txn.debit);
+      totalIncome += Number(txn.credit);
     });
     return {
       totalIncome,
@@ -252,7 +250,7 @@ export class TransactionService implements ITransactionService {
     bankName?: EBankName,
     category?: string,
   ): Promise<ITransaction[]> {
-    this.logger.info(`Getting filteredTransactions for user`);
+    this.logger.debug(`Getting filteredTransactions for user`);
     this.logger.debug("User ID, month & year", { userId, month, year });
     const startDate = new Date(year, month - 1, 1).toISOString(); // start of prev month
     const endDate = new Date(year, month, 0).toISOString(); // start of this month

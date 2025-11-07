@@ -33,7 +33,7 @@ export class TransactionStore implements ITransactionStore {
     tenantId: ETenantType,
     txns: Omit<ITransaction, "createdAt" | "tenantId">[],
   ): Promise<void> {
-    this.logger.info("Saving transactions to DynamoDB");
+    this.logger.debug("Saving transactions to DynamoDB");
     this.logger.debug("Transactions", { txns });
 
     const batches = chunk(txns, 25);
@@ -42,7 +42,7 @@ export class TransactionStore implements ITransactionStore {
       await Promise.all(promises);
     }
 
-    this.logger.info(`Finished processing ${txns.length} transactions.`);
+    this.logger.debug(`Finished processing ${txns.length} transactions.`);
   }
 
   async saveTransaction(
@@ -50,7 +50,7 @@ export class TransactionStore implements ITransactionStore {
     txn: Omit<ITransaction, "createdAt" | "tenantId">,
   ): Promise<void> {
     try {
-      this.logger.info(`Saving transaction: ${txn.transactionId}`);
+      this.logger.debug(`Saving transaction: ${txn.transactionId}`);
       this.logger.debug("Transaction", { txn });
 
       const item: ITransaction = {
@@ -60,7 +60,8 @@ export class TransactionStore implements ITransactionStore {
         bankName: txn.bankName,
         bankType: txn.bankType,
         txnDate: txn.txnDate,
-        amount: txn.amount,
+        credit: txn.credit,
+        debit: txn.debit,
         createdAt: new Date().toISOString(),
         description: txn.description || "NONE",
         balance: txn.balance,
@@ -79,7 +80,7 @@ export class TransactionStore implements ITransactionStore {
       });
 
       await this.store.send(command);
-      this.logger.info(`Saved transaction: ${txn.transactionId}`);
+      this.logger.debug(`Saved transaction: ${txn.transactionId}`);
     } catch (error: any) {
       if (error.name === "ConditionalCheckFailedException") {
         this.logger.warn(`Duplicate transaction: ${txn.transactionId}`);
@@ -99,7 +100,7 @@ export class TransactionStore implements ITransactionStore {
     tenantId: ETenantType,
     userId: string,
   ): Promise<ITransaction[]> {
-    this.logger.info(`Getting transactions for user`);
+    this.logger.debug(`Getting transactions for user`);
     this.logger.debug("User ID", { userId });
 
     const command = new QueryCommand({
@@ -122,7 +123,7 @@ export class TransactionStore implements ITransactionStore {
     startDate: string,
     endDate: string,
   ): Promise<ITransaction[]> {
-    this.logger.info(`Getting transactions by date range`);
+    this.logger.debug(`Getting transactions by date range`);
     this.logger.debug("User ID, start date & end date", {
       userId,
       startDate,
@@ -167,8 +168,7 @@ export class TransactionStore implements ITransactionStore {
     return items.reduce(
       (acc, txn) => {
         const cat = txn.category || EBaseCategories.unclassified;
-        const amount = Number(txn.amount) || 0;
-        acc[cat] = (acc[cat] || 0) + amount;
+        acc[cat] = (acc[cat] || 0) + Number(txn.credit) - Number(txn.debit);
         return acc;
       },
       {} as Record<string, number>,
@@ -185,7 +185,7 @@ export class TransactionStore implements ITransactionStore {
     reason?: string,
     embedding?: number[],
   ): Promise<void> {
-    this.logger.info(`Updating transaction category`);
+    this.logger.debug(`Updating transaction category`);
     this.logger.debug("Transaction ID & Category", {
       transactionId,
       matchedCategory,
@@ -234,6 +234,6 @@ export class TransactionStore implements ITransactionStore {
       ExpressionAttributeValues: expressionAttributeValues,
     });
     await this.store.send(command);
-    this.logger.info(`Updated category for transaction: ${transactionId}`);
+    this.logger.debug(`Updated category for transaction: ${transactionId}`);
   }
 }

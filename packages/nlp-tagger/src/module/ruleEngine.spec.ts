@@ -20,6 +20,24 @@ describe("RuleEngine.categorize", () => {
   }));
 
   let logger: ReturnType<typeof mock<ILogger>>;
+  let ruleCounter = 0;
+
+  const buildRule = (
+    overrides: Partial<ICategoryRules> & { match: RegExp },
+  ): ICategoryRules => ({
+    ruleId: overrides.ruleId ?? `custom-rule-${ruleCounter++}`,
+    tenantId: overrides.tenantId ?? ETenantType.default,
+    match: overrides.match,
+    category: overrides.category ?? EBaseCategories.income,
+    subCategory: overrides.subCategory,
+    taggedBy: overrides.taggedBy ?? "RULE_ENGINE",
+    when: overrides.when,
+    reason: overrides.reason,
+    confidence: overrides.confidence,
+    createdAt: overrides.createdAt ?? new Date(0).toISOString(),
+    updatedAt: overrides.updatedAt,
+    deletedAt: overrides.deletedAt,
+  });
 
   beforeEach(() => {
     logger = mock<ILogger>();
@@ -120,5 +138,80 @@ describe("RuleEngine.categorize", () => {
     );
     expect(resCreditSide.taggedBy).toBe("RULE_ENGINE");
     expect(resCreditSide.category).toBe(EBaseCategories.unclassified);
+  });
+
+  it("normalizes punctuation noise before matching", () => {
+    const engine = new RuleEngine(logger);
+    const customRules = [
+      buildRule({
+        match: /rent\s+payment/,
+        when: "DEBIT",
+        category: EBaseCategories.expenses,
+        subCategory: ESubExpenseCategories.housing,
+        reason: "Normalized rent payment",
+      }),
+    ];
+    const res = engine.categorize(
+      makeTxn({
+        description: "  RENT***PAYMENT!!!  #Apartment ",
+        amount: -25000,
+        rules: customRules,
+      }),
+    );
+    expect(res.taggedBy).toBe("RULE_ENGINE");
+    expect(res.category).toBe(EBaseCategories.expenses);
+    expect(res.subCategory).toBe(ESubExpenseCategories.housing);
+    expect(res.reason).toBe("Normalized rent payment");
+  });
+
+  it("treats zero or missing amount as ANY-side and skips credit/debit rules", () => {
+    const engine = new RuleEngine(logger);
+    const customRules = [
+      buildRule({
+        match: /sip\s+investment/,
+        when: "CREDIT",
+        category: EBaseCategories.income,
+        reason: "Credit-only SIP",
+      }),
+      buildRule({
+        match: /sip\s+investment/,
+        when: "ANY",
+        category: EBaseCategories.investment,
+        reason: "Neutral SIP",
+      }),
+    ];
+    const res = engine.categorize(
+      makeTxn({
+        description: "SIP investment",
+        amount: 0,
+        rules: customRules,
+      }),
+    );
+    expect(res.taggedBy).toBe("RULE_ENGINE");
+    expect(res.category).toBe(EBaseCategories.investment);
+    expect(res.reason).toBe("Neutral SIP");
+  });
+
+  it("falls back to default confidence when rule omits it", () => {
+    const engine = new RuleEngine(logger);
+    const customRules = [
+      buildRule({
+        match: /unique\s+match/,
+        when: "CREDIT",
+        category: EBaseCategories.income,
+        reason: "Missing confidence rule",
+      }),
+    ];
+    const res = engine.categorize(
+      makeTxn({
+        description: "Unique match case",
+        amount: 150,
+        rules: customRules,
+      }),
+    );
+    expect(res.taggedBy).toBe("RULE_ENGINE");
+    expect(res.category).toBe(EBaseCategories.income);
+    expect(res.reason).toBe("Missing confidence rule");
+    expect(res.confidence).toBe(0.8);
   });
 });

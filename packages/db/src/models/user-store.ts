@@ -26,7 +26,7 @@ export class UserStore implements IUserStore {
     tenantId: ETenantType,
     email: string,
   ): Promise<IUser | undefined> {
-    this.logger.info("Getting user from DynamoDB");
+    this.logger.debug("Getting user from DynamoDB");
     this.logger.debug("User", { email, tenantId });
     const result = await this.store.send(
       new GetCommand({
@@ -38,7 +38,7 @@ export class UserStore implements IUserStore {
   }
 
   public async saveUser(user: IUser): Promise<void> {
-    this.logger.info("Saving user to DynamoDB");
+    this.logger.debug("Saving user to DynamoDB");
     this.logger.debug("User", { user });
     const item: IUser = {
       tenantId: user.tenantId,
@@ -64,7 +64,7 @@ export class UserStore implements IUserStore {
     tenantId: ETenantType,
     input: IUserUpdate,
   ): Promise<void> {
-    this.logger.info("Updating user in DynamoDB");
+    this.logger.debug("Updating user in DynamoDB");
     this.logger.debug("User", { input, tenantId });
     const { email, ...rest } = input;
 

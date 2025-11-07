@@ -19,7 +19,7 @@ export class UploadStatementService implements IUploadStatementService {
     try {
       const { bankName, bankType, fileName, contentBase64, userId, tenantId } =
         request;
-      this.logger.info(
+      this.logger.debug(
         `Uploading statement for bank: ${bankName}, bankType: ${bankType}, fileName: ${fileName}, userId: ${userId}`,
       );
       if (
@@ -57,7 +57,7 @@ export class UploadStatementService implements IUploadStatementService {
       };
       await this.s3Service.putFile(fileKey, buffer);
       await this.sqsService.sendFileMessage(transactionRequest);
-      this.logger.info(`Statement uploaded successfully: ${fileKey}`);
+      this.logger.debug(`Statement uploaded successfully: ${fileKey}`);
       return true;
     } catch (error) {
       this.logger.error("Error uploading statement", error as Error, request);

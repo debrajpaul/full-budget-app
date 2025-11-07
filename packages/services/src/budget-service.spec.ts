@@ -4,9 +4,133 @@ import {
   ETenantType,
   ITransactionStore,
   EBaseCategories,
+  IBudget,
 } from "@common";
 import { BudgetService } from "./budget-service";
 import { BudgetStore } from "@db";
+
+describe("BudgetService - setBudget validations", () => {
+  const tenantId = ETenantType.default;
+  const userId = "user-1";
+  let logger: ReturnType<typeof mock<ILogger>>;
+  let budgetStore: Pick<BudgetStore, "setBudget" | "getBudgetsByPeriod">;
+  let transactionStore: Pick<ITransactionStore, "aggregateSpendByCategory">;
+  const baseBudget: IBudget = {
+    tenantId,
+    budgetId: "budget-123",
+    userId,
+    year: 2024,
+    month: 5,
+    category: EBaseCategories.expenses,
+    amount: 100,
+    createdAt: new Date().toISOString(),
+  };
+
+  beforeEach(() => {
+    logger = mock<ILogger>();
+    budgetStore = {
+      getBudgetsByPeriod: jest.fn(),
+      setBudget: jest.fn().mockResolvedValue(baseBudget),
+    } as any;
+    transactionStore = {
+      aggregateSpendByCategory: jest.fn(),
+    } as any;
+  });
+
+  it("persists a valid budget", async () => {
+    const svc = new BudgetService(
+      logger,
+      budgetStore as BudgetStore,
+      transactionStore as ITransactionStore,
+    );
+
+    const response = await svc.setBudget(tenantId, userId, {
+      month: 5,
+      year: 2024,
+      category: EBaseCategories.expenses,
+      subCategory: "groceries",
+      amount: 250,
+    });
+
+    expect(budgetStore.setBudget).toHaveBeenCalledWith(
+      tenantId,
+      userId,
+      2024,
+      5,
+      EBaseCategories.expenses,
+      250,
+    );
+    expect(response).toEqual(baseBudget);
+  });
+
+  it("validates month boundaries", async () => {
+    const svc = new BudgetService(
+      logger,
+      budgetStore as BudgetStore,
+      transactionStore as ITransactionStore,
+    );
+
+    await expect(
+      svc.setBudget(tenantId, userId, {
+        month: 13,
+        year: 2024,
+        category: EBaseCategories.expenses,
+        amount: 100,
+      }),
+    ).rejects.toThrow("month must be an integer between 1 and 12");
+  });
+
+  it("validates year boundaries", async () => {
+    const svc = new BudgetService(
+      logger,
+      budgetStore as BudgetStore,
+      transactionStore as ITransactionStore,
+    );
+
+    await expect(
+      svc.setBudget(tenantId, userId, {
+        month: 5,
+        year: 1800,
+        category: EBaseCategories.expenses,
+        amount: 100,
+      }),
+    ).rejects.toThrow("year must be a reasonable integer (1900-3000)");
+  });
+
+  it("requires a category", async () => {
+    const svc = new BudgetService(
+      logger,
+      budgetStore as BudgetStore,
+      transactionStore as ITransactionStore,
+    );
+
+    await expect(
+      svc.setBudget(tenantId, userId, {
+        month: 5,
+        year: 2024,
+        category: "   " as EBaseCategories,
+        amount: 100,
+      }),
+    ).rejects.toThrow("category is required");
+  });
+
+  it("requires numeric amount", async () => {
+    const svc = new BudgetService(
+      logger,
+      budgetStore as BudgetStore,
+      transactionStore as ITransactionStore,
+    );
+
+    await expect(
+      svc.setBudget(tenantId, userId, {
+        month: 5,
+        year: 2024,
+        category: EBaseCategories.expenses,
+        amount: "100" as any,
+      }),
+    ).rejects.toThrow("amount must be a number");
+  });
+});
 
 describe("BudgetService - default recommended budgets", () => {
   const tenantId = ETenantType.default;

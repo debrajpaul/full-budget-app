@@ -34,7 +34,7 @@ export class RecurringTransactionStore implements IRecurringTransactionStore {
       tenantId,
       createdAt: new Date().toISOString(),
     };
-    this.logger.info(`Creating recurring transaction: ${item.recurringId}`);
+    this.logger.debug(`Creating recurring transaction: ${item.recurringId}`);
     const command = new PutCommand({
       TableName: this.tableName,
       Item: item,
@@ -49,7 +49,7 @@ export class RecurringTransactionStore implements IRecurringTransactionStore {
     tenantId: ETenantType,
     userId: string,
   ): Promise<IRecurringTransaction[]> {
-    this.logger.info(`Listing recurring transactions for user`);
+    this.logger.debug(`Listing recurring transactions for user`);
     const command = new QueryCommand({
       TableName: this.tableName,
       KeyConditionExpression:

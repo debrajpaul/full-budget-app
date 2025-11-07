@@ -68,6 +68,9 @@ describe("RecurringTransactionStore", () => {
     );
     expect(created.recurringId).toBe(baseRecurring.recurringId);
     expect(created.createdAt).toBeDefined();
+    expect(loggerMock.debug).toHaveBeenCalledWith(
+      `Creating recurring transaction: ${baseRecurring.recurringId}`,
+    );
   });
 
   it("lists recurring transactions by user with prefix query", async () => {
@@ -89,6 +92,9 @@ describe("RecurringTransactionStore", () => {
       ":prefix": `${baseRecurring.userId}#`,
     });
     expect(result).toEqual([item]);
+    expect(loggerMock.debug).toHaveBeenCalledWith(
+      "Listing recurring transactions for user",
+    );
   });
 
   it("returns empty list when no items", async () => {
@@ -98,5 +104,8 @@ describe("RecurringTransactionStore", () => {
       baseRecurring.userId,
     );
     expect(result).toEqual([]);
+    expect(loggerMock.debug).toHaveBeenCalledWith(
+      "Listing recurring transactions for user",
+    );
   });
 });
