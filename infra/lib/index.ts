@@ -11,3 +11,4 @@ export * from "./transaction-category-loader.stack";
 export * from "./transaction-category-table.stack";
 export * from "./recurring-transactions-table.stack";
 export * from "./budgets-table.stack";
+export * from "./xray.stack";

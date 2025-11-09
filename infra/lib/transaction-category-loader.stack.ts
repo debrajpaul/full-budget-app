@@ -28,8 +28,14 @@ export class TransactionCategoryStack extends Stack {
       code: lambda.Code.fromAsset(path.resolve(__dirname, '../../apps/tag-loaders/dist')),
       timeout: Duration.seconds(30),
       logRetentionRetryOptions: { base: Duration.hours(8), maxRetries: 10 },
+      tracing: lambda.Tracing.ACTIVE,
       environment: props.environment,
     });
+
+    // Allow the function to write trace segments to X‑Ray
+    transactionCategoryLambda.role?.addManagedPolicy(
+      iam.ManagedPolicy.fromAwsManagedPolicyName('AWSXRayWriteOnlyAccess'),
+    );
 
     // Attach queue trigger
     transactionCategoryLambda.addEventSource(
