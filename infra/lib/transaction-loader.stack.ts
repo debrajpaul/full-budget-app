@@ -30,8 +30,14 @@ export class TransactionLoaderStack extends Stack {
       code: lambda.Code.fromAsset(path.resolve(__dirname, '../../apps/txn-loaders/dist')),
       timeout: Duration.seconds(30),
       logRetentionRetryOptions: { base: Duration.hours(8), maxRetries: 10 },
+      tracing: lambda.Tracing.ACTIVE,
       environment: props.environment,
     });
+  
+    // Allow the function to write trace segments to X‑Ray
+    transactionLambda.role?.addManagedPolicy(
+      iam.ManagedPolicy.fromAwsManagedPolicyName('AWSXRayWriteOnlyAccess'),
+    );
 
     // Attach queue trigger
     transactionLambda.addEventSource(
