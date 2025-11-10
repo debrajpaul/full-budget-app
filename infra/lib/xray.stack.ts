@@ -7,7 +7,7 @@ import { Construct } from 'constructs';
 
 export class XRayStack extends Stack {
 
-  constructor(scope: Construct, id:string, props:StackProps) {
+  constructor(scope: Construct, id:string, props?:StackProps) {
     super(scope, id, props);
 
     // The code that defines your stack goes here
@@ -31,6 +31,8 @@ export class XRayStack extends Stack {
     // Define an X‑Ray group to logically group all traces for the application.
     new xray.CfnGroup(this, 'FullBudgetAppXRayGroup', {
       groupName: 'FullBudgetAppGroup',
+      // Capture all traces produced by the application (service name is defined by the telemetry SDKs).
+      filterExpression: 'service("FullBudgetApp")',
     });
   }
 }
