@@ -31,8 +31,6 @@ export class XRayStack extends Stack {
     // Define an X‑Ray group to logically group all traces for the application.
     new xray.CfnGroup(this, 'FullBudgetAppXRayGroup', {
       groupName: 'FullBudgetAppGroup',
-      // Capture all traces produced by the application (service name is defined by the telemetry SDKs).
-      filterExpression: 'service("FullBudgetApp")',
     });
   }
 }
