@@ -11,12 +11,14 @@ import {
   TransactionsCategoryTableStack,
   RecurringTransactionsTableStack,
   BudgetsTableStack,
+  XRayStack,
 } from '../lib';
 
 const app = new App();
 const ssmParamStack = new SsmParamStack(app, 'SsmParamStack');
 const storageStack = new StorageStack(app, 'StorageStack');
 const queueStack = new QueueStack(app, 'QueueStack');
+const xRayStack = new XRayStack(app,'XRayStack');
 const transactionsTableStack = new TransactionsTableStack(app, 'TransactionsTableStack');
 const transactionsCategoryTableStack = new TransactionsCategoryTableStack(app, 'TransactionsCategoryTableStack');
 const recurringTransactionsTableStack = new RecurringTransactionsTableStack(app, 'RecurringTransactionsTableStack');
@@ -34,7 +36,7 @@ new GraphQLApiStack(app, 'GraphQLApiStack', {
   jwtParameter: ssmParamStack.parameter,
   environment: {
     NODE_ENV: 'dev',
-    LOG_LEVEL: 'info', //'info'
+    LOG_LEVEL: 'debug', //'info'
     DYNAMO_CATEGORY_RULES_TABLE: transactionsCategoryTableStack.transactionsCategoryTable.tableName,
     DYNAMO_TRANSACTION_TABLE: transactionsTableStack.transactionsTable.tableName,
     DYNAMO_RECURRING_TABLE: recurringTransactionsTableStack.recurringTransactionsTable.tableName,
@@ -53,7 +55,7 @@ new TransactionLoaderStack(app, 'TransactionLoaderStack', {
   transactionTableArn: transactionsTableStack.transactionsTable.tableArn,
   environment: {
     NODE_ENV: 'dev',
-    LOG_LEVEL: 'info', //'info'
+    LOG_LEVEL: 'debug', //'info'
     DYNAMO_TRANSACTION_TABLE: transactionsTableStack.transactionsTable.tableName,
     SQS_QUEUE_URL: queueStack.statementProcessingQueue.queueUrl,
     AWS_S3_BUCKET: storageStack.uploadBucket.bucketName,
@@ -67,7 +69,7 @@ new TransactionCategoryStack(app, 'TransactionCategoryStack', {
   transactionsCategoryTable: transactionsCategoryTableStack.transactionsCategoryTable,
   environment: {
     NODE_ENV: 'dev',
-    LOG_LEVEL: 'info', //'info'
+    LOG_LEVEL: 'debug', //'info'
     DYNAMO_TRANSACTION_TABLE: transactionsTableStack.transactionsTable.tableName,
     DYNAMO_CATEGORY_RULES_TABLE: transactionsCategoryTableStack.transactionsCategoryTable.tableName,
     AI_TAGGING_ENABLED: 'false',

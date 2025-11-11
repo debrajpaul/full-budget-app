@@ -64,6 +64,7 @@
     "clean": "rimraf apps/*/dist && rimraf packages/*/dist",
     "build": "pnpm clean && node esbuild.config.js",
     "dev": "pnpm clean && node esbuild.config.js --watch",
+    "bootstrap":"pnpm --filter ./infra cdk:bootstrap",
     "synth": "pnpm build && pnpm --filter ./infra cdk:synth",
     "deploy:all": "pnpm build && pnpm --filter ./infra cdk:deploy:all",
     "destroy:all": "pnpm --filter ./infra cdk:destroy:all"

@@ -4,6 +4,7 @@ export const uploadStatementTypeDefs = /* GraphQL */ `
   """
   input StatementInput {
     bankName: BankName!
+    bankType: BankType!
     fileName: String!
     contentBase64: String!
   }
