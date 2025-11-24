@@ -1,4 +1,9 @@
-import { DynamoDBRecord, AttributeValue } from "aws-lambda";
+import {
+  DynamoDBRecord,
+  AttributeValue,
+  DynamoDBBatchResponse,
+  DynamoDBBatchItemFailure,
+} from "aws-lambda";
 import {
   ILogger,
   ITransactionCategoryService,
@@ -13,53 +18,68 @@ export class TransactionCategoryLoader {
     private readonly transactionCategoryService: ITransactionCategoryService,
   ) {}
 
-  public async loader(records: DynamoDBRecord[]) {
+  public async loader(
+    records: DynamoDBRecord[],
+  ): Promise<DynamoDBBatchResponse> {
     this.logger.debug(`Loader ${records.length} records`);
     this.logger.debug("Loader records", { records });
+    const failures: DynamoDBBatchItemFailure[] = [];
     for (const record of records) {
-      this.logger.debug(`Processing record: ${record.eventID}`);
-      if (record.eventName !== "INSERT" && record.eventName !== "MODIFY") {
-        this.logger.debug("Skipping record with eventName", {
-          eventID: record.eventID,
-          eventName: record.eventName,
-        });
-        continue; // only process new or updated transactions
+      try {
+        this.logger.debug(`Processing record: ${record.eventID}`);
+        if (record.eventName !== "INSERT" && record.eventName !== "MODIFY") {
+          this.logger.debug("Skipping record with eventName", {
+            eventID: record.eventID,
+            eventName: record.eventName,
+          });
+          continue; // only process new or updated transactions
+        }
+        const newImage = record.dynamodb?.NewImage;
+        if (!newImage) {
+          this.logger.debug("Skipping record without NewImage", {
+            eventID: record.eventID,
+            newImage: newImage,
+          });
+          continue;
+        }
+        const description = newImage.description?.S;
+        if (!description || description.trim().length === 0) {
+          this.logger.debug("Skipping record without description", {
+            eventID: record.eventID,
+            description: newImage?.description?.S,
+          });
+          continue;
+        }
+        const request: ITransactionCategoryRequest = {
+          tenantId:
+            (newImage.tenantId?.S as ETenantType) ?? ETenantType.default,
+          transactionId: newImage.transactionId?.S ?? "",
+          description,
+          category:
+            (newImage.category?.S as EBaseCategories) ??
+            EBaseCategories.unclassified,
+          debit: newImage.debit?.N ? Number(newImage.debit.N) : 0,
+          credit: newImage.credit?.N ? Number(newImage.credit.N) : 0,
+          createdAt: newImage.createdAt?.S ?? new Date().toISOString(),
+          embedding:
+            newImage.embedding?.L?.map((e: AttributeValue) =>
+              Number(e.N || 0),
+            ) ?? undefined,
+          taggedBy: newImage.taggedBy?.S,
+          confidence: newImage.confidence?.N
+            ? Number(newImage.confidence.N)
+            : undefined,
+        };
+        await this.transactionCategoryService.process(request);
+      } catch (error) {
+        this.logger.error(
+          "[transaction worker] failed to process message",
+          error as Error,
+          { messageId: record.eventID },
+        );
+        failures.push({ itemIdentifier: record.eventID || "unknown" });
       }
-      const newImage = record.dynamodb?.NewImage;
-      if (!newImage) {
-        this.logger.debug("Skipping record without NewImage", {
-          eventID: record.eventID,
-          newImage: newImage,
-        });
-        continue;
-      }
-      const description = newImage.description?.S;
-      if (!description || description.trim().length === 0) {
-        this.logger.debug("Skipping record without description", {
-          eventID: record.eventID,
-          description: newImage?.description?.S,
-        });
-        continue;
-      }
-      const request: ITransactionCategoryRequest = {
-        tenantId: (newImage.tenantId?.S as ETenantType) ?? ETenantType.default,
-        transactionId: newImage.transactionId?.S ?? "",
-        description,
-        category:
-          (newImage.category?.S as EBaseCategories) ??
-          EBaseCategories.unclassified,
-        debit: newImage.debit?.N ? Number(newImage.debit.N) : 0,
-        credit: newImage.credit?.N ? Number(newImage.credit.N) : 0,
-        createdAt: newImage.createdAt?.S ?? new Date().toISOString(),
-        embedding:
-          newImage.embedding?.L?.map((e: AttributeValue) => Number(e.N || 0)) ??
-          undefined,
-        taggedBy: newImage.taggedBy?.S,
-        confidence: newImage.confidence?.N
-          ? Number(newImage.confidence.N)
-          : undefined,
-      };
-      await this.transactionCategoryService.process(request);
     }
+    return { batchItemFailures: failures };
   }
 }
