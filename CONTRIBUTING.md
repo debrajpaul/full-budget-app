@@ -17,12 +17,13 @@ Thanks for helping improve `full-budget-app`. This guide outlines how to get set
    git checkout -b feat/<short-description>
    ```
 4. Copy `.env.example` (if present) or create a `.env` with the variables listed in `README.md` (JWT secret, table/bucket names, Bedrock model ID, etc.).
-5. For local emulation set `USE_LOCALSTACK=true` (plus `LOCALSTACK_HOST` and `LOCALSTACK_EDGE_PORT`), then run `./create_localstack_resources.sh` to seed S3/SQS/Dynamo/SSM; deploy CDK locally with `pnpm --filter ./infra cdklocal:deploy:all`.
+5. For local emulation set `USE_LOCALSTACK=true` (plus `LOCALSTACK_HOST` and `LOCALSTACK_EDGE_PORT`), then run `./scripts/create_localstack_resources.sh` to seed S3/SQS/Dynamo/SSM; deploy CDK locally with `pnpm --filter ./infra cdklocal:deploy:all`.
 6. Make your changes with matching tests where possible (`apps/*` or `packages/*`).
 7. Run `pnpm lint`, `pnpm test`, `pnpm typecheck`, and optionally `pnpm build` before committing.
 8. Commit using Conventional Commits and open a pull request describing behaviour changes and any setup steps.
 
 Minor improvements can be made directly from the GitHub web editor—open the file, click the pencil icon, and submit a pull request with your edits.
+Postman collection/environment files for manual testing live in `docs/postman/`.
 
 ## Pull Request Checklist
 - Include context in the description: what changed, why, any rollout concerns, and whether LocalStack was exercised.

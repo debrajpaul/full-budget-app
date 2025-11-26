@@ -8,12 +8,7 @@ import pluginPrettier from "eslint-plugin-prettier/recommended";
 /** @type {import("eslint").FlatConfig[]} */
 export default [
   {
-    ignores: [
-      "**/data/**",
-      "**/dist/**",
-      "**/node_modules/**",
-      "infra/**",
-    ],
+    ignores: ["**/data/**", "**/dist/**", "**/node_modules/**", "infra/**"],
   },
   js.configs.recommended,
   {
