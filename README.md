@@ -25,7 +25,7 @@
 | `infra/lib` | AWS CDK stacks | Separate stacks for queues, S3 buckets, DynamoDB tables, Lambda workers, SSM parameters, alarms, X-Ray sampling/group, and GraphQL API |
 | `docs/` | Architecture notes | `ARCHITECTURE.md` (high-level design) and GraphQL SDL |
 | `artifacts/` | Sample data | `training.csv` demo dataset for the tagging pipeline |
-| `postman/` | API collection | Ready-made Postman collection & environment for manual testing |
+| `docs/postman/` | API collection | Ready-made Postman collection & environment for manual testing |
 | `data/` | Local datastore | MongoDB/WiredTiger scratch directory used during local experimentation |
 
 ## Flow at a Glance
@@ -111,7 +111,7 @@ Set `AI_TAGGING_ENABLED=false` (or omit the Bedrock fields) if you want to rely 
    pnpm --filter @app/tag-loaders dev   # Categorisation worker (triggered by Dynamo stream)
    pnpm --filter @app/txn-loaders dev   # Statement ingestion worker
    ```
-5. For LocalStack, set `USE_LOCALSTACK=true`, run `./create_localstack_resources.sh` to seed S3/SQS/Dynamo/SSM, and deploy CDK locally with:
+5. For LocalStack, set `USE_LOCALSTACK=true`, run `./scripts/create_localstack_resources.sh` to seed S3/SQS/Dynamo/SSM, and deploy CDK locally with:
    ```bash
    pnpm --filter ./infra cdklocal:deploy:all
    ```
@@ -157,10 +157,10 @@ CDK helper scripts:
 - `apps/` – Runtime Lambdas (`graphql-api`, `txn-loaders`, `tag-loaders`)
 - `packages/` – Shared libraries for auth, logging, parsing, NLP, AWS clients, and domain services
 - `infra/` – CDK application defining S3/SQS/DynamoDB/Lambda/SSM resources
-- `scripts/` – Reserved for ad-hoc tooling (currently empty)
+- `scripts/` – Helper scripts (e.g., `create_localstack_resources.sh`, `destroy_localstack_resources.sh`)
 - `artifacts/` – Sample training data and exports
 - `docs/` – Design docs and schema definitions
-- `postman/` – Postman collection and environment for manual API exploration
+- `docs/postman/` – Postman collection and environment for manual API exploration
 - `data/` – Local MongoDB data directory (handy for experimentation; safe to delete if unused)
 
 ## Troubleshooting
@@ -174,7 +174,7 @@ CDK helper scripts:
 - `docs/ARCHITECTURE.md` – deep dive into data flow, training loop, and workspace layout
 - `docs/finance-budget.sdl.graphql` – canonical GraphQL schema served by the API
 - `packages/services/src/**/*.spec.ts` – reference tests demonstrating service usage
-- `postman/collection.finance-budget.json` – API playground for manual workflows
+- `docs/postman/collection.finance-budget.json` – API playground for manual workflows
 
 ## Contributing
 See `CONTRIBUTING.md` for the full contribution guide and pull request checklist.

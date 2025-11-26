@@ -126,13 +126,14 @@ build, while `pnpm synth` produces the CloudFormation templates for review.
   with `pnpm --filter @app/<service> dev`.
 - Tests live alongside their packages (`*.spec.ts`); execute
   `pnpm test`, `pnpm lint`, and `pnpm typecheck` before shipping changes.
-- Postman collections (`postman/`) and sample data (`artifacts/training.csv`)
+- Postman collections (`docs/postman/`) and sample data (`artifacts/training.csv`)
   support manual verification.
 - For LocalStack, export `USE_LOCALSTACK=true` (and `LOCALSTACK_HOST`,
-  `LOCALSTACK_EDGE_PORT`), run `./create_localstack_resources.sh` to seed S3/SQS
-  tables/SSM locally, and use `pnpm --filter ./infra cdklocal:deploy:all` to
-  deploy CDK stacks against the emulator. Use `destroy_localstack_resources.sh`
-  to clean up the local emulated resources.
+  `LOCALSTACK_EDGE_PORT`), run `./scripts/create_localstack_resources.sh` to
+  seed S3/SQS tables/SSM locally, and use
+  `pnpm --filter ./infra cdklocal:deploy:all` to deploy CDK stacks against the
+  emulator. Use `./scripts/destroy_localstack_resources.sh` to clean up the
+  local emulated resources.
 
 ## Extending the Platform
 - **Add a new bank parser** by implementing it in `packages/parser` and exporting
