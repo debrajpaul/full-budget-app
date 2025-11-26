@@ -1,4 +1,4 @@
-import { SQSEvent } from "aws-lambda";
+import { SQSEvent, SQSBatchResponse } from "aws-lambda";
 import { setupDependency } from "./setup-dependency";
 import { setupServices } from "./setup-services";
 import { setupLoaders } from "./setup-loaders";
@@ -15,7 +15,7 @@ const { transactionService } = setupServices(
 
 const { transactionLoader } = setupLoaders(logger, transactionService);
 
-export const handler = async (event: SQSEvent) => {
+export const handler = async (event: SQSEvent): Promise<SQSBatchResponse> => {
   logger.debug(`#handler event: ${JSON.stringify(event)}`);
   const result = await transactionLoader.loader(event.Records);
   return result;

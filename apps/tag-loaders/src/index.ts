@@ -1,4 +1,4 @@
-import { DynamoDBStreamEvent } from "aws-lambda";
+import { DynamoDBStreamEvent, DynamoDBBatchResponse } from "aws-lambda";
 import { setupDependency } from "./setup-dependency";
 import { setupServices } from "./setup-services";
 import { setupLoaders } from "./setup-loaders";
@@ -16,7 +16,9 @@ const { transactionCategoryLoader } = setupLoaders(
   transactionCategoryService,
 );
 
-export const handler = async (event: DynamoDBStreamEvent) => {
+export const handler = async (
+  event: DynamoDBStreamEvent,
+): Promise<DynamoDBBatchResponse> => {
   logger.debug(`handler event: ${JSON.stringify(event)}`);
   const result = await transactionCategoryLoader.loader(event.Records);
   return result;
