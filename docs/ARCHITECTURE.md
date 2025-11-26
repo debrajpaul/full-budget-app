@@ -10,6 +10,9 @@ staying deployable as independent AWS Lambda functions.
 Key principles:
 - **Serverless first** – Lambda, DynamoDB, S3, and SQS supply elastic scale without
   maintaining servers.
+- **Local-first parity** – All SDK clients can point at LocalStack via
+  `USE_LOCALSTACK=true`, and helper scripts/CDK targets create buckets, queues,
+  tables, and SSM params locally.
 - **Shared domain services** – Business logic (budgets, categorisation, savings,
   recurring transactions) lives in `packages/services` and is imported by any
   runtime needing the functionality.
@@ -22,31 +25,35 @@ Key principles:
 ## Runtime Services (apps/)
 - **`graphql-api`** – Apollo Server running on Lambda (with Express support for
   local dev). Resolves queries/mutations by delegating to service layer modules,
-  wires multi-tenant context, and exposes a `/metrics` endpoint for Prometheus
-  scrapers.
+  wires multi-tenant auth context (JWT-backed register/login), enqueues upload
+  jobs, and exposes a `/metrics` endpoint for Prometheus scrapers.
 - **`txn-loaders`** – SQS-triggered Lambda that reads ingestion jobs, pulls the
   corresponding bank statement from S3, normalises it with parsers from
   `@parser`, and persists canonical transactions through `TransactionStore`.
-- **`tag-loaders`** – Worker Lambda that consumes categorisation jobs, runs the
-  rule engine, optionally calls Bedrock, and writes enriched categories and
-  confidence scores back to DynamoDB.
+- **`tag-loaders`** – DynamoDB stream-driven Lambda subscribed to the
+  transactions table. Runs the rule engine on inserts/updates, optionally calls
+  Bedrock, and writes enriched categories + confidence back to DynamoDB.
 
 Each service bundles with esbuild for fast cold starts and provides a
 `dev` script powered by `ts-node-dev` for local iteration.
 
 ## Shared Packages (packages/)
-- **`services`** – Domain orchestrators such as `TransactionCategoryService`,
-  `BudgetService`, `ForecastService`, and the Bedrock integration.
+- **`services`** – Domain orchestrators such as `AuthorizationService`
+  (register/login), `UploadStatementService` (S3 + SQS producer),
+  `TransactionService` (ingestion + analytics), `TransactionCategoryService`,
+  `BudgetService`, `ForecastService`, `RecurringTransactionService`,
+  `SavingsGoalService`, `SinkingFundService`, and the Bedrock integration.
 - **`client`** – Thin wrappers around AWS SDK clients (S3, SQS, BedrockRuntime)
-  exposing typed helpers used by the services.
-- **`parser`** – HDFC and SBI CSV parsers plus abstractions for introducing new
-  banks or formats.
+  exposing typed helpers used by the services and supporting LocalStack
+  endpoints.
+- **`parser`** – Parsers for HDFC, SBI, Axis credit cards, and HDFC credit cards
+  plus abstractions for introducing new banks or formats.
 - **`nlp-tagger`** – Deterministic keyword tagging rules, rule store, and
   utilities for testing or extending the tagging logic.
 - **`db`** – DynamoDB repositories that encapsulate table access patterns and
   time-window queries.
-- **`auth`, `common`, `logger`** – Shared DTOs, JWT helpers, error contracts,
-  logging abstractions, and cross-cutting utilities.
+- **`auth`, `common`, `logger`** – Shared DTOs, JWT helpers + password hashing,
+  error contracts, logging abstractions, and cross-cutting utilities.
 
 Workspaces share TypeScript configuration and leverage path aliases so services
 import package code directly (e.g. `import { BudgetService } from "@services"`).
@@ -61,29 +68,32 @@ AWS CDK stacks provision the platform. Key stacks include:
   capacity.
 - **Functions** (`transaction-loader.stack.ts`,
   `transaction-category-loader.stack.ts`, `graphql-api.stack.ts`) – Lambda
-  definitions wired to the deployed bundles.
-- **Parameters & alarms** (`ssm-param.stack.ts`, `lambda-alarms-construct.ts`) –
-  Stores shared secrets/flags in SSM Parameter Store and configures CloudWatch
-  alarms for error budgets.
+  definitions wired to the deployed bundles, pre-configured with X-Ray tracing.
+- **Parameters, alarms, tracing** (`ssm-param.stack.ts`,
+  `lambda-alarms-construct.ts`, `xray.stack.ts`) – Stores shared secrets/flags
+  (e.g., JWT secret) in SSM Parameter Store, configures CloudWatch alarms, and
+  sets up an X-Ray sampling rule/group for trace collection.
 
 `pnpm --filter ./infra cdk:deploy:all` deploys every stack after a monorepo
 build, while `pnpm synth` produces the CloudFormation templates for review.
 
 ## Data Flow
-1. **Upload & queue** – Tenants upload statements to S3 and enqueue ingestion
-   jobs in the SQS statement queue.
-2. **Ingest** – `txn-loaders` fetches the file, parses rows into canonical
-   transactions, and persists them to the transactions table.
-3. **Categorise** – Transaction records requiring tagging emit jobs that the
-   `tag-loaders` worker consumes. Keyword rules run first; unresolved entries
-   trigger Bedrock classification when `AI_TAGGING_ENABLED` permits it.
-4. **Persist insights** – Categorised transactions, budgets, recurring
-   transactions, and savings goals live in dedicated DynamoDB tables via stores
-   in `@db`.
-5. **Serve API** – `graphql-api` combines data from the stores and domain
+1. **Authenticate & scope** – Users register/login via GraphQL; JWT secrets are
+   sourced from SSM and decoded in the request context to attach `tenantId`,
+   `userId`, and `email` to every operation.
+2. **Upload & queue** – `uploadStatement` writes the file to S3 and pushes an
+   SQS message describing the bank/tenant/user to kick off ingestion.
+3. **Ingest** – `txn-loaders` is triggered by SQS, fetches the file, parses rows
+   into canonical transactions, and persists them to the transactions table.
+4. **Auto-categorise** – The transactions table stream triggers `tag-loaders`,
+   which runs keyword rules first, then Bedrock when enabled, and writes the
+   category/confidence back to DynamoDB (plus per-tenant category rules).
+5. **Persist insights** – Budgets, recurring transactions, savings goals, and
+   sinking funds live in dedicated DynamoDB tables via stores in `@db`.
+6. **Serve API** – `graphql-api` combines data from the stores and domain
    services to power dashboards (reviews, forecasts, budgeting tools).
-6. **Observe** – Structured logs flow through the shared logger, and metrics are
-   exposed via `/metrics` for alerting and dashboards.
+7. **Observe** – Structured logs flow through the shared logger, metrics are
+   exposed via `/metrics`, and traces are sampled by X-Ray.
 
 ## AI-Assisted Categorisation
 - **Rule engine first** – `TransactionCategoryService` executes deterministic
@@ -103,6 +113,8 @@ build, while `pnpm synth` produces the CloudFormation templates for review.
   service. Logs include tenant, request, and correlation metadata.
 - **Metrics** – The GraphQL service exports Prometheus metrics; extend collectors
   under `apps/graphql-api/src/utils` to expose new counters or histograms.
+- **Tracing** – Lambdas ship with active X-Ray tracing and a default sampling
+  rule via `xray.stack.ts` plus `AWSXRayWriteOnlyAccess` on each role.
 - **Alarms** – CDK constructs create CloudWatch alarms for key Lambdas. DLQ and
   retry policies can be tuned per queue.
 - **Configuration** – Runtime configuration comes from environment variables,
@@ -116,6 +128,11 @@ build, while `pnpm synth` produces the CloudFormation templates for review.
   `pnpm test`, `pnpm lint`, and `pnpm typecheck` before shipping changes.
 - Postman collections (`postman/`) and sample data (`artifacts/training.csv`)
   support manual verification.
+- For LocalStack, export `USE_LOCALSTACK=true` (and `LOCALSTACK_HOST`,
+  `LOCALSTACK_EDGE_PORT`), run `./create_localstack_resources.sh` to seed S3/SQS
+  tables/SSM locally, and use `pnpm --filter ./infra cdklocal:deploy:all` to
+  deploy CDK stacks against the emulator. Use `destroy_localstack_resources.sh`
+  to clean up the local emulated resources.
 
 ## Extending the Platform
 - **Add a new bank parser** by implementing it in `packages/parser` and exporting
