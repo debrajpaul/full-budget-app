@@ -1,12 +1,16 @@
-"""
-Indicates exactly one field must be supplied and this field must not be `null`.
-"""
-directive @oneOf on INPUT_OBJECT
-
 """Supported banks for statement import and transaction parsing."""
 enum BankName {
   HDFC
   SBI
+  AXIS
+  OTHER
+}
+
+"""Supported bank account types for statement import and transaction parsing."""
+enum BankType {
+  SAVINGS
+  CURRENT
+  CREDIT_CARD
   OTHER
 }
 
@@ -15,36 +19,6 @@ enum TenantType {
   PERSONAL
   CLIENT
   DEFAULT
-}
-
-"""Root query operations for the Finance Budget API."""
-type Query {
-  """API version of the GraphQL service."""
-  apiVersion: String
-  """Simple health check; returns a status string if the API is up."""
-  healthCheck: String
-  """Returns yearly income, expenses, net savings, and transactions."""
-  annualReview(year: Int!): AnnualReview!
-  """Returns monthly income, expenses, savings, category breakdown, and series."""
-  monthlyReview(month: Int!, year: Int!): MonthlyReview!
-  """Returns income, expense, and net savings for the given period."""
-  aggregateSummary(year: Int!, month: Int): AggregatedSummary!
-  """Groups transactions by category with totals for the month."""
-  categoryBreakdown(month: Int!, year: Int!): [CategoryGroup!]!
-  """Lists transactions filtered by month/year (paged by cursor)."""
-  transactions(filters: TransactionsFilter!, cursor: String): TransactionsPage!
-  """Lists categories grouped by base type (INCOME/EXPENSES/SAVINGS)."""
-  categoriesByBase: [CategoriesByBase!]!
-  """Lists supported tenant types available in the system."""
-  tenants: [Tenant!]!
-  """Lists savings goals with current progress and history."""
-  savingsGoals: [SavingsGoal!]!
-  """Lists sinking funds, balances, and history for the tenant."""
-  sinkingFunds: [SinkingFund!]!
-  """Forecasts daily cash flow for the specified month with optional rules."""
-  forecastMonth(year: Int!, month: Int!, options: ForecastOptionsInput): ForecastResult!
-  """Lists all recurring transactions for the current tenant/user."""
-  recurringTransactions: [RecurringTransaction!]!
 }
 
 """Input payload to register a new user account."""
@@ -82,33 +56,14 @@ type LoginResponse {
   token: String!
 }
 
-"""Root mutation operations for the Finance Budget API."""
-type Mutation {
-  """Creates a new user account for the given tenant."""
-  register(input: RegisterInput!): RegisterResponse!
-  """Authenticates a user and returns a login token."""
-  login(input: LoginInput!): LoginResponse!
-  """Adds or syncs transaction category rules for the current tenant."""
-  addTransactionCategory: Boolean!
-  """Reclassifies a transaction to a new category and returns the updated item."""
-  reclassifyTransaction(id: String!, category: String!): ReclassifiedTransaction!
-  """Uploads a bank statement file (base64) for processing and import."""
-  uploadStatement(input: StatementInput!): Boolean!
-  """Creates a recurring transaction definition."""
-  createRecurringTransaction(input: CreateRecurringTransactionInput!): RecurringTransaction!
-  """Materializes recurring transactions for the given month and returns the count."""
-  generateRecurringTransactions(month: Int!, year: Int!): Int!
-  """Sets the budget amount for a category in the specified month/year."""
-  setBudget(period: PeriodInput!, category: String!, amount: Float!): Budget!
-}
-
 """Normalized bank transaction record as imported and processed."""
 type Transaction {
   tenantId: TenantType!
   userId: String!
   transactionId: String!
   bankName: BankName!
-  amount: Float!
+  credit: Float!
+  debit: Float!
   balance: Float
   txnDate: String!
   description: String
@@ -124,7 +79,8 @@ type TransactionItem {
   id: String!
   date: String!
   description: String
-  amount: Float!
+  credit: Float!
+  debit: Float!
   currency: String!
   category: String
   taggedBy: String
@@ -212,6 +168,7 @@ type AggregatedSummary {
 """Payload to upload a bank statement (base64 content)."""
 input StatementInput {
   bankName: BankName!
+  bankType: BankType!
   fileName: String!
   contentBase64: String!
 }
@@ -345,4 +302,54 @@ type Budget {
 input PeriodInput {
   month: Int!
   year: Int!
+}
+
+"""Root query operations for the Finance Budget API."""
+type Query {
+  """API version of the GraphQL service."""
+  apiVersion: String
+  """Simple health check; returns a status string if the API is up."""
+  healthCheck: String
+  """Returns yearly income, expenses, net savings, and transactions."""
+  annualReview(year: Int!): AnnualReview!
+  """Returns monthly income, expenses, savings, category breakdown, and series."""
+  monthlyReview(month: Int!, year: Int!): MonthlyReview!
+  """Returns income, expense, and net savings for the given period."""
+  aggregateSummary(year: Int!, month: Int): AggregatedSummary!
+  """Groups transactions by category with totals for the month."""
+  categoryBreakdown(month: Int!, year: Int!): [CategoryGroup!]!
+  """Lists transactions filtered by month/year (paged by cursor)."""
+  transactions(filters: TransactionsFilter!, cursor: String): TransactionsPage!
+  """Lists categories grouped by base type (INCOME/EXPENSES/SAVINGS)."""
+  categoriesByBase: [CategoriesByBase!]!
+  """Lists supported tenant types available in the system."""
+  tenants: [Tenant!]!
+  """Lists savings goals with current progress and history."""
+  savingsGoals: [SavingsGoal!]!
+  """Lists sinking funds, balances, and history for the tenant."""
+  sinkingFunds: [SinkingFund!]!
+  """Forecasts daily cash flow for the specified month with optional rules."""
+  forecastMonth(year: Int!, month: Int!, options: ForecastOptionsInput): ForecastResult!
+  """Lists all recurring transactions for the current tenant/user."""
+  recurringTransactions: [RecurringTransaction!]!
+}
+
+"""Root mutation operations for the Finance Budget API."""
+type Mutation {
+  """Creates a new user account for the given tenant."""
+  register(input: RegisterInput!): RegisterResponse!
+  """Authenticates a user and returns a login token."""
+  login(input: LoginInput!): LoginResponse!
+  """Adds or syncs transaction category rules for the current tenant."""
+  addTransactionCategory: Boolean!
+  """Reclassifies a transaction to a new category and returns the updated item."""
+  reclassifyTransaction(id: String!, category: String!): ReclassifiedTransaction!
+  """Uploads a bank statement file (base64) for processing and import."""
+  uploadStatement(input: StatementInput!): Boolean!
+  """Creates a recurring transaction definition."""
+  createRecurringTransaction(input: CreateRecurringTransactionInput!): RecurringTransaction!
+  """Materializes recurring transactions for the given month and returns the count."""
+  generateRecurringTransactions(month: Int!, year: Int!): Int!
+  """Sets the budget amount for a category in the specified month/year."""
+  setBudget(period: PeriodInput!, category: String!, amount: Float!): Budget!
 }
