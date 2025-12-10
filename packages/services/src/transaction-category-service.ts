@@ -26,7 +26,7 @@ export class TransactionCategoryService implements ITransactionCategoryService {
     categoryRulesStore: ICategoryRulesStore,
     ruleEngine: IRuleEngine,
     bedrockClassifierService: IBedrockClassifierService,
-    aiTaggingEnabled: boolean,
+    aiTaggingEnabled: boolean
   ) {
     this.logger = logger;
     this.transactionStore = transactionStore;
@@ -39,23 +39,8 @@ export class TransactionCategoryService implements ITransactionCategoryService {
   public async process(request: ITransactionCategoryRequest): Promise<boolean> {
     this.logger.info("process started processing messages");
     try {
-      const { tenantId, transactionId, description, category, credit, debit } =
-        request;
+      const { tenantId, transactionId, description, credit, debit } = request;
 
-      if (!tenantId || !transactionId || !description) {
-        this.logger.warn("Skipping record with missing required fields", {
-          tenantId,
-          transactionId,
-        });
-        return false;
-      }
-      // Skip if category already set
-      if (category && category !== EBaseCategories.unclassified) {
-        this.logger.info(
-          `Skipping transaction ${transactionId} — already categorized`,
-        );
-        return false;
-      }
       // step 1: Fetch rules for tenant
       const rules = await this.categoryRulesStore.getRulesByTenant(tenantId);
 
@@ -73,7 +58,7 @@ export class TransactionCategoryService implements ITransactionCategoryService {
         this.aiTaggingEnabled
       ) {
         this.logger.info(
-          `Rules returned UNCLASSIFIED for ${transactionId}; invoking Bedrock`,
+          `Rules returned UNCLASSIFIED for ${transactionId}; invoking Bedrock`
         );
         const aiResult =
           await this.bedrockClassifierService.classifyWithBedrock(description);
@@ -87,8 +72,8 @@ export class TransactionCategoryService implements ITransactionCategoryService {
                 aiSub: aiResult.sub,
                 aiConfidence: aiResult.confidence,
               },
-              aiResult.reason ? { aiReason: aiResult.reason } : {},
-            ),
+              aiResult.reason ? { aiReason: aiResult.reason } : {}
+            )
           );
           matchedCategory = {
             taggedBy: "BEDROCK",
@@ -110,7 +95,7 @@ export class TransactionCategoryService implements ITransactionCategoryService {
         matchedCategory.taggedBy,
         matchedCategory.confidence,
         matchedCategory.reason,
-        undefined,
+        undefined
       );
       this.logger.debug(`Transaction ${transactionId} categorized`);
       return true;
@@ -121,23 +106,23 @@ export class TransactionCategoryService implements ITransactionCategoryService {
   }
 
   public async addRulesByTenant(
-    tenantId: ETenantType = ETenantType.default,
+    tenantId: ETenantType = ETenantType.default
   ): Promise<void> {
     this.logger.debug(`Adding rules for tenant ${tenantId}`);
     return await this.categoryRulesStore.addRules(
       tenantId,
-      keywordBaseCategoryMap,
+      keywordBaseCategoryMap
     );
   }
 
   public async getCategoriesByTenant(
-    tenantId: ETenantType,
+    tenantId: ETenantType
   ): Promise<Record<string, string[]>> {
     const grouped =
       await this.categoryRulesStore.listCategoriesByBase(tenantId);
     // Return as Record<string, string[]> to keep GraphQL layer simple
     return Object.fromEntries(
-      Object.entries(grouped).map(([k, v]) => [k, v as string[]]),
+      Object.entries(grouped).map(([k, v]) => [k, v as string[]])
     );
   }
 }

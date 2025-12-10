@@ -14,7 +14,7 @@ export class UserStore implements IUserStore {
   constructor(
     logger: ILogger,
     tableName: string,
-    store: DynamoDBDocumentClient,
+    store: DynamoDBDocumentClient
   ) {
     this.logger = logger;
     this.tableName = tableName;
@@ -24,7 +24,7 @@ export class UserStore implements IUserStore {
 
   public async getUser(
     tenantId: ETenantType,
-    email: string,
+    email: string
   ): Promise<IUser | undefined> {
     this.logger.debug("Getting user from DynamoDB");
     this.logger.debug("User", { email, tenantId });
@@ -32,7 +32,7 @@ export class UserStore implements IUserStore {
       new GetCommand({
         TableName: this.tableName,
         Key: { email, tenantId },
-      }),
+      })
     );
     return result.Item as IUser | undefined;
   }
@@ -56,13 +56,13 @@ export class UserStore implements IUserStore {
         Item: item,
         ConditionExpression:
           "attribute_not_exists(email) AND attribute_not_exists(tenantId)",
-      }),
+      })
     );
   }
 
   public async updateUser(
     tenantId: ETenantType,
-    input: IUserUpdate,
+    input: IUserUpdate
   ): Promise<void> {
     this.logger.debug("Updating user in DynamoDB");
     this.logger.debug("User", { input, tenantId });
@@ -96,7 +96,7 @@ export class UserStore implements IUserStore {
         UpdateExpression: "SET " + updateExpressions.join(", "),
         ExpressionAttributeNames: expressionAttributeNames,
         ExpressionAttributeValues: expressionAttributeValues,
-      }),
+      })
     );
   }
 }

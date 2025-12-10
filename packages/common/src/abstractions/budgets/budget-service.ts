@@ -15,20 +15,20 @@ export interface IBudgetService {
   setBudget(
     tenantId: ETenantType,
     userId: string,
-    input: ISetBudgetInput,
+    input: ISetBudgetInput
   ): Promise<IBudget>;
 
   analyzeSpend(
     tenantId: ETenantType,
     userId: string,
     month: number,
-    year: number,
+    year: number
   ): Promise<ICategoryDeviation[]>;
 
   // Aggregate budgets and actuals for the full year
   analyzeAnnualSpend(
     tenantId: ETenantType,
     userId: string,
-    year: number,
+    year: number
   ): Promise<ICategoryDeviation[]>;
 }

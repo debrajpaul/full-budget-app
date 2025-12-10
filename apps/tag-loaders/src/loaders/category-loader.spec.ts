@@ -29,10 +29,10 @@ describe("TransactionCategoryLoader", () => {
       eventName: "INSERT",
       dynamodb: {
         NewImage: {
-          tenantId: { S: ETenantType.default },
+          tenantId: { S: ETenantType.client },
           transactionId: { S: "t1" },
           description: { S: "desc" },
-          category: { S: EBaseCategories.expenses },
+          category: { S: EBaseCategories.unclassified },
           debit: { N: "12.34" },
           credit: { N: "4.56" },
           createdAt: { S: "2024-01-01T00:00:00.000Z" },
@@ -46,10 +46,10 @@ describe("TransactionCategoryLoader", () => {
     await loader.loader([record]);
 
     expect(service.process).toHaveBeenCalledWith({
-      tenantId: ETenantType.default,
+      tenantId: ETenantType.client,
       transactionId: "t1",
       description: "desc",
-      category: EBaseCategories.expenses,
+      category: EBaseCategories.unclassified,
       debit: 12.34,
       credit: 4.56,
       createdAt: "2024-01-01T00:00:00.000Z",
@@ -59,7 +59,7 @@ describe("TransactionCategoryLoader", () => {
     });
   });
 
-  it("defaults createdAt, tenant, and monetary fields when missing", async () => {
+  it("defaults createdAt and monetary fields when missing", async () => {
     const fixedDate = new Date("2024-02-02T03:04:05.000Z");
     jest.useFakeTimers();
     jest.setSystemTime(fixedDate);
@@ -69,7 +69,7 @@ describe("TransactionCategoryLoader", () => {
       eventName: "INSERT",
       dynamodb: {
         NewImage: {
-          tenantId: { S: ETenantType.default },
+          tenantId: { S: ETenantType.personal },
           transactionId: { S: "t2" },
           description: { S: "no meta" },
         },
@@ -79,10 +79,10 @@ describe("TransactionCategoryLoader", () => {
     await loader.loader([record]);
 
     expect(service.process).toHaveBeenCalledWith({
-      tenantId: ETenantType.default,
+      tenantId: ETenantType.personal,
       transactionId: "t2",
       description: "no meta",
-      category: EBaseCategories.unclassified,
+      category: undefined,
       debit: 0,
       credit: 0,
       createdAt: fixedDate.toISOString(),
@@ -98,7 +98,7 @@ describe("TransactionCategoryLoader", () => {
       eventName: "MODIFY",
       dynamodb: {
         NewImage: {
-          tenantId: { S: ETenantType.default },
+          tenantId: { S: ETenantType.personal },
           transactionId: { S: "t3" },
           description: { S: "updated" },
         },
@@ -111,7 +111,7 @@ describe("TransactionCategoryLoader", () => {
       expect.objectContaining({
         transactionId: "t3",
         description: "updated",
-      }),
+      })
     );
   });
 
@@ -121,7 +121,7 @@ describe("TransactionCategoryLoader", () => {
       eventName: "REMOVE",
       dynamodb: {
         NewImage: {
-          tenantId: { S: ETenantType.default },
+          tenantId: { S: ETenantType.personal },
           transactionId: { S: "t4" },
           description: { S: "should skip" },
         },
@@ -151,7 +151,7 @@ describe("TransactionCategoryLoader", () => {
       eventName: "INSERT",
       dynamodb: {
         NewImage: {
-          tenantId: { S: ETenantType.default },
+          tenantId: { S: ETenantType.personal },
         },
       },
     } as unknown as DynamoDBRecord;
@@ -167,8 +167,86 @@ describe("TransactionCategoryLoader", () => {
       eventName: "INSERT",
       dynamodb: {
         NewImage: {
-          tenantId: { S: ETenantType.default },
+          tenantId: { S: ETenantType.client },
           description: { S: "   " },
+        },
+      },
+    } as unknown as DynamoDBRecord;
+
+    await loader.loader([record]);
+
+    expect(service.process).not.toHaveBeenCalled();
+  });
+
+  it("processes records with the default tenant type", async () => {
+    const record = {
+      eventID: "8",
+      eventName: "INSERT",
+      dynamodb: {
+        NewImage: {
+          tenantId: { S: ETenantType.default },
+          transactionId: { S: "t8" },
+          description: { S: "default tenant" },
+        },
+      },
+    } as unknown as DynamoDBRecord;
+
+    await loader.loader([record]);
+
+    expect(service.process).toHaveBeenCalledWith(
+      expect.objectContaining({
+        tenantId: ETenantType.default,
+        transactionId: "t8",
+        description: "default tenant",
+      })
+    );
+  });
+
+  it("skips records with unrecognized tenant types", async () => {
+    const record = {
+      eventID: "9",
+      eventName: "INSERT",
+      dynamodb: {
+        NewImage: {
+          tenantId: { S: "UNKNOWN" },
+          transactionId: { S: "t9" },
+          description: { S: "invalid tenant" },
+        },
+      },
+    } as unknown as DynamoDBRecord;
+
+    await loader.loader([record]);
+
+    expect(service.process).not.toHaveBeenCalled();
+  });
+
+  it("skips records missing transactionId", async () => {
+    const record = {
+      eventID: "10",
+      eventName: "INSERT",
+      dynamodb: {
+        NewImage: {
+          tenantId: { S: ETenantType.client },
+          description: { S: "missing transaction id" },
+        },
+      },
+    } as unknown as DynamoDBRecord;
+
+    await loader.loader([record]);
+
+    expect(service.process).not.toHaveBeenCalled();
+  });
+
+  it("skips records with non-unclassified category", async () => {
+    const record = {
+      eventID: "11",
+      eventName: "INSERT",
+      dynamodb: {
+        NewImage: {
+          tenantId: { S: ETenantType.client },
+          transactionId: { S: "t11" },
+          description: { S: "already tagged" },
+          category: { S: EBaseCategories.expenses },
         },
       },
     } as unknown as DynamoDBRecord;

@@ -94,7 +94,7 @@ describe("TransactionService", () => {
       buffer,
       req.bankName,
       req.bankType,
-      req.userId,
+      req.userId
     );
     expect(store.saveTransactions).toHaveBeenCalledWith(req.tenantId, txns);
   });
@@ -113,7 +113,7 @@ describe("TransactionService", () => {
     expect(result).toBe(false);
     expect(logger.error).toHaveBeenCalledWith(
       "Error processing message",
-      expect.any(Error),
+      expect.any(Error)
     );
   });
 
@@ -184,7 +184,7 @@ describe("TransactionService", () => {
         tenantId,
         userId,
         expectedStart,
-        expectedEnd,
+        expectedEnd
       );
       expect(result.totalIncome).toBe(1000);
       expect(result.totalExpense).toBe(500);
@@ -204,7 +204,7 @@ describe("TransactionService", () => {
         tenantId,
         userId,
         expectedStart,
-        expectedEnd,
+        expectedEnd
       );
       expect(result.totalIncome).toBe(1000);
       expect(result.totalExpense).toBe(500);
@@ -219,7 +219,7 @@ describe("TransactionService", () => {
         tenantId,
         userId,
         month,
-        year,
+        year
       );
 
       const expectedStart = new Date(year, month - 1, 1).toISOString();
@@ -229,11 +229,11 @@ describe("TransactionService", () => {
         tenantId,
         userId,
         expectedStart,
-        expectedEnd,
+        expectedEnd
       );
 
       const byCategory = Object.fromEntries(
-        result.map((g) => [g.category, g.totalAmount]),
+        result.map((g) => [g.category, g.totalAmount])
       );
       expect(byCategory["Uncategorized"]).toBe(1000);
       expect(byCategory["EXPENSES"]).toBe(-500);
@@ -250,7 +250,7 @@ describe("TransactionService", () => {
         tenantId,
         userId,
         expectedStart,
-        expectedEnd,
+        expectedEnd
       );
       expect(res.totalIncome).toBe(1000);
       expect(res.totalExpense).toBe(500);
@@ -268,7 +268,7 @@ describe("TransactionService", () => {
         tenantId,
         userId,
         expectedStart,
-        expectedEnd,
+        expectedEnd
       );
       expect(res.totalIncome).toBe(1000);
       expect(res.totalExpense).toBe(500);
@@ -281,7 +281,7 @@ describe("TransactionService", () => {
         tenantId,
         userId,
         year,
-        month,
+        month
       );
       expect(res).toHaveLength(3);
     });
@@ -302,7 +302,7 @@ describe("TransactionService", () => {
         txnId,
         category,
         subCategory,
-        taggedBy,
+        taggedBy
       );
 
       expect(store.updateTransactionCategory).toHaveBeenCalledWith(
@@ -310,7 +310,7 @@ describe("TransactionService", () => {
         txnId,
         category,
         subCategory,
-        taggedBy,
+        taggedBy
       );
       expect(result).toEqual({ id: txnId, category, taggedBy });
     });

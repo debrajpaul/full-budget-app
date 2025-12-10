@@ -9,9 +9,7 @@
       "name": "Query - apiVersion",
       "request": {
         "method": "POST",
-        "header": [
-          { "key": "Content-Type", "value": "application/json" }
-        ],
+        "header": [{ "key": "Content-Type", "value": "application/json" }],
         "url": "{{baseUrl}}/graphql",
         "body": {
           "mode": "graphql",
@@ -26,9 +24,7 @@
       "name": "Query - healthCheck",
       "request": {
         "method": "POST",
-        "header": [
-          { "key": "Content-Type", "value": "application/json" }
-        ],
+        "header": [{ "key": "Content-Type", "value": "application/json" }],
         "url": "{{baseUrl}}/graphql",
         "body": {
           "mode": "graphql",

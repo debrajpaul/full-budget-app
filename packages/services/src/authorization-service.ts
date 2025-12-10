@@ -45,7 +45,7 @@ export class AuthorizationService implements IAuthorizationService {
   }
 
   public async register(
-    registerInput: IRegisterInput,
+    registerInput: IRegisterInput
   ): Promise<IRegisterResponse> {
     const { email, name, tenantId, password } = registerInput;
     this.logger.debug("Registering user", { email });
@@ -88,7 +88,7 @@ export class AuthorizationService implements IAuthorizationService {
     }
     const token = signToken(
       { userId: user.email, email: user.email, tenantId: user.tenantId },
-      this.jwtSecret,
+      this.jwtSecret
     );
     this.logger.debug("User logged in successfully", { email });
     return {

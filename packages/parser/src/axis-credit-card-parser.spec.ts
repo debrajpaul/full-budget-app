@@ -41,7 +41,7 @@ describe("AxisCreditCardParser", () => {
   it("should throw error when transaction header is missing", async () => {
     const buffer = Buffer.from("Some preamble\nNo valid header here", "utf-8");
     await expect(parser.parse(buffer, userId)).rejects.toThrow(
-      "Could not find Axis credit card transactions header in provided CSV.",
+      "Could not find Axis credit card transactions header in provided CSV."
     );
   });
 

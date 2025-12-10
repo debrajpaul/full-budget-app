@@ -11,28 +11,28 @@ export function setupServices(
   logger: ILogger,
   s3Client: S3,
   sqsClient: SQS,
-  dynamoDBDocumentClient: DynamoDBDocumentClient,
+  dynamoDBDocumentClient: DynamoDBDocumentClient
 ) {
   const s3Service = new S3Service(
     logger.child("S3Service"),
     config.awsS3Bucket,
-    s3Client,
+    s3Client
   );
   const sqsService = new SQSService(
     logger.child("SQSService"),
     config.sqsQueueUrl,
-    sqsClient,
+    sqsClient
   );
   const transactionStore = new TransactionStore(
     logger.child("TransactionStore"),
     config.dynamoTransactionTable,
-    dynamoDBDocumentClient,
+    dynamoDBDocumentClient
   );
   const transactionService = new TransactionService(
     logger.child("TransactionService"),
     s3Service,
     sqsService,
-    transactionStore,
+    transactionStore
   );
 
   return {

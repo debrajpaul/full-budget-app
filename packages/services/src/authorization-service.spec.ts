@@ -40,18 +40,18 @@ describe("AuthorizationService", () => {
     await expect(service.verifyToken("")).rejects.toThrow("Token is required");
     expect(loggerMock.error).toHaveBeenCalledWith(
       "Error verifying token",
-      expect.any(Error),
+      expect.any(Error)
     );
   });
 
   it("should throw if jwtSecret is missing", async () => {
     service = new AuthorizationService(loggerMock, "", userStoreMock);
     await expect(service.verifyToken("sometoken")).rejects.toThrow(
-      "JWT secret is not configured",
+      "JWT secret is not configured"
     );
     expect(loggerMock.error).toHaveBeenCalledWith(
       "Error verifying token",
-      expect.any(Error),
+      expect.any(Error)
     );
   });
 
@@ -72,7 +72,7 @@ describe("AuthorizationService", () => {
         name: input.name,
         passwordHash: "hashed-pw",
         isActive: true,
-      }),
+      })
     );
     expect(result).toEqual({
       success: true,
@@ -83,7 +83,7 @@ describe("AuthorizationService", () => {
       {
         email: input.email,
         tenantId: input.tenantId,
-      },
+      }
     );
   });
 
@@ -94,10 +94,10 @@ describe("AuthorizationService", () => {
         name: "",
         tenantId: "",
         password: "",
-      } as any),
+      } as any)
     ).rejects.toThrow("Invalid are required");
     expect(loggerMock.error).toHaveBeenCalledWith(
-      "Invalid are required for registration",
+      "Invalid are required for registration"
     );
   });
 
@@ -109,10 +109,10 @@ describe("AuthorizationService", () => {
         name: "b",
         tenantId: "c",
         password: "d",
-      } as any),
+      } as any)
     ).rejects.toThrow("JWT secret is not configured");
     expect(loggerMock.error).toHaveBeenCalledWith(
-      "JWT secret is not configured",
+      "JWT secret is not configured"
     );
   });
 
@@ -133,12 +133,12 @@ describe("AuthorizationService", () => {
     const result = await service.login(input);
     expect(userStoreMock.getUser).toHaveBeenCalledWith(
       input.tenantId,
-      input.email,
+      input.email
     );
     expect(comparePassword).toHaveBeenCalledWith("pw", "hashed-pw");
     expect(signToken).toHaveBeenCalledWith(
       { userId: input.email, email: input.email, tenantId: input.tenantId },
-      jwtSecret,
+      jwtSecret
     );
     expect(result).toEqual({
       token: "mocked.jwt.token",
@@ -151,14 +151,14 @@ describe("AuthorizationService", () => {
     });
     expect(loggerMock.debug).toHaveBeenCalledWith(
       "User logged in successfully",
-      { email: input.email },
+      { email: input.email }
     );
   });
 
   it("should throw if user not found on login", async () => {
     userStoreMock.getUser.mockResolvedValue(undefined);
     await expect(
-      service.login({ email: "a", tenantId: "b", password: "c" } as any),
+      service.login({ email: "a", tenantId: "b", password: "c" } as any)
     ).rejects.toThrow("User not found");
     expect(loggerMock.error).toHaveBeenCalledWith("User not found");
   });
@@ -177,7 +177,7 @@ describe("AuthorizationService", () => {
         email: "a",
         tenantId: ETenantType.default,
         password: "pw",
-      } as any),
+      } as any)
     ).rejects.toThrow("Invalid credentials");
     expect(loggerMock.error).toHaveBeenCalledWith("Invalid credentials");
   });

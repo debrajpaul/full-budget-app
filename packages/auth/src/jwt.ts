@@ -7,7 +7,7 @@ export function signToken(
     email: string;
     tenantId: ETenantType;
   },
-  secret: string,
+  secret: string
 ): string {
   return jwt.sign(
     {
@@ -16,7 +16,7 @@ export function signToken(
       tenantId: user.tenantId,
     },
     secret,
-    { expiresIn: "1h" },
+    { expiresIn: "1h" }
   );
 }
 

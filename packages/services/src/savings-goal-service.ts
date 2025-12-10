@@ -14,7 +14,7 @@ export class SavingsGoalService implements ISavingsGoalService {
 
   public async getSavingsGoals(
     tenantId: ETenantType,
-    userId: string,
+    userId: string
   ): Promise<ISavingsGoal[]> {
     this.logger.debug("Fetching savings goals", { tenantId, userId });
     // Placeholder implementation

@@ -72,11 +72,11 @@ async function run() {
   const { transactionCategoryService } = setupServices(
     logger,
     fakeDdb,
-    bedrockClient,
+    bedrockClient
   );
   const { transactionCategoryLoader } = setupLoaders(
     logger,
-    transactionCategoryService,
+    transactionCategoryService
   );
 
   const event: DynamoDBStreamEvent = {

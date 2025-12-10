@@ -29,17 +29,17 @@ const baseHandler = startServerAndCreateLambdaHandler(
         context,
       });
     },
-  },
+  }
 );
 
 export const handler = async (
   event: APIGatewayProxyEvent,
-  context: Context,
+  context: Context
 ): Promise<APIGatewayProxyResult> => {
   // Prefer promise form if available to avoid unresolved callbacks
   const promiseHandler = baseHandler as unknown as (
     e: APIGatewayProxyEvent,
-    c: Context,
+    c: Context
   ) => Promise<APIGatewayProxyResult>;
   const resp = await promiseHandler(event, context);
   const corsHeaders = {

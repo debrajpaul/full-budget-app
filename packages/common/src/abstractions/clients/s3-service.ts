@@ -3,6 +3,6 @@ export interface IS3Service {
   putFile(
     key: string,
     body: Buffer | Uint8Array | string,
-    contentType?: string,
+    contentType?: string
   ): Promise<void>;
 }

@@ -4,6 +4,6 @@ import { ISinkingFund } from "./sinking-fund";
 export interface ISinkingFundService {
   getSinkingFunds(
     tenantId: ETenantType,
-    userId: string,
+    userId: string
   ): Promise<ISinkingFund[]>;
 }

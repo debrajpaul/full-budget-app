@@ -8,6 +8,7 @@ import {
   IRecurringTransaction,
   ERecurringFrequency,
   EBankName,
+  EBankType,
 } from "@common";
 
 function clampDayOfMonth(year: number, month: number, day: number): number {
@@ -21,9 +22,9 @@ function toIsoDate(year: number, month: number, day: number): string {
   return `${year}-${mm}-${dd}`;
 }
 
-export class RecurringTransactionService
-  implements IRecurringTransactionService
-{
+type RecurringServiceContract = IRecurringTransactionService;
+
+export class RecurringTransactionService implements RecurringServiceContract {
   private readonly logger: ILogger;
   private readonly recurringStore: IRecurringTransactionStore;
   private readonly transactionStore: ITransactionStore;
@@ -31,7 +32,7 @@ export class RecurringTransactionService
   constructor(
     logger: ILogger,
     recurringStore: IRecurringTransactionStore,
-    transactionStore: ITransactionStore,
+    transactionStore: ITransactionStore
   ) {
     this.logger = logger;
     this.recurringStore = recurringStore;
@@ -51,7 +52,7 @@ export class RecurringTransactionService
       monthOfYear?: number;
       startDate: string;
       endDate?: string;
-    },
+    }
   ): Promise<IRecurringTransaction> {
     const recurring: Omit<IRecurringTransaction, "tenantId" | "createdAt"> = {
       userId,
@@ -78,7 +79,7 @@ export class RecurringTransactionService
     tenantId: ETenantType,
     userId: string,
     month: number,
-    year: number,
+    year: number
   ): Promise<ITransaction[]> {
     const recurrences = await this.recurringStore.listByUser(tenantId, userId);
     const created: ITransaction[] = [];
@@ -93,27 +94,27 @@ export class RecurringTransactionService
         if (occ < start) continue;
         if (end && occ > end) continue;
 
+        const credit = r.amount > 0 ? r.amount : 0;
+        const debit = r.amount < 0 ? Math.abs(r.amount) : 0;
+
         const txn: Omit<ITransaction, "createdAt" | "tenantId"> = {
           userId,
           transactionId: `${userId}#rec#${r.recurringId}#${dateStr}`,
           bankName: EBankName.other,
-          amount: r.amount,
-          balance: undefined,
+          bankType: EBankType.other,
+          credit,
+          debit,
           txnDate: dateStr,
           description: r.description,
-          category: r.category,
+          category: r.category as ITransaction["category"],
           taggedBy: "SYSTEM",
           type: "recurring",
-          embedding: undefined,
-          confidence: undefined,
-          updatedAt: undefined,
-          deletedAt: undefined,
-        } as any; // match store's expected optional fields
+        };
 
         try {
           await this.transactionStore.saveTransactions(tenantId, [txn]);
           created.push({
-            ...(txn as any),
+            ...txn,
             tenantId,
             createdAt: new Date().toISOString(),
           });
@@ -132,7 +133,7 @@ export class RecurringTransactionService
   private computeOccurrenceDates(
     r: IRecurringTransaction,
     month: number,
-    year: number,
+    year: number
   ): string[] {
     switch (r.frequency) {
       case ERecurringFrequency.monthly: {
@@ -146,7 +147,7 @@ export class RecurringTransactionService
         while (d.getMonth() === month - 1) {
           if (d.getDay() === dayOfWeek) {
             dates.push(
-              toIsoDate(d.getFullYear(), d.getMonth() + 1, d.getDate()),
+              toIsoDate(d.getFullYear(), d.getMonth() + 1, d.getDate())
             );
           }
           d.setDate(d.getDate() + 1);
@@ -179,8 +180,8 @@ export class RecurringTransactionService
             toIsoDate(
               current.getFullYear(),
               current.getMonth() + 1,
-              current.getDate(),
-            ),
+              current.getDate()
+            )
           );
           current.setDate(current.getDate() + 14);
         }

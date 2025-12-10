@@ -25,7 +25,7 @@ describe("CategoryRulesStore", () => {
     rulesStore = new CategoryRulesStore(
       loggerMock,
       tableName,
-      storeMock as unknown as DynamoDBDocumentClient,
+      storeMock as unknown as DynamoDBDocumentClient
     );
   });
 
@@ -119,7 +119,7 @@ describe("CategoryRulesStore", () => {
     });
     expect(storeMock.send).toHaveBeenNthCalledWith(
       1,
-      expect.any(DeleteCommand),
+      expect.any(DeleteCommand)
     );
     expect(storeMock.send).toHaveBeenNthCalledWith(2, expect.any(PutCommand));
 

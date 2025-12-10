@@ -22,13 +22,13 @@ describe("TransactionCategoryService", () => {
   let service: TransactionCategoryService;
 
   const makeRequest = (
-    overrides: Partial<ITransactionCategoryRequest> = {},
+    overrides: Partial<ITransactionCategoryRequest> = {}
   ): ITransactionCategoryRequest => ({
     tenantId: ETenantType.default,
     transactionId: "txn-123",
     description: "Netflix subscription",
     category: EBaseCategories.unclassified,
-    credit: null,
+    credit: 0,
     debit: 120.55,
     createdAt: new Date().toISOString(),
     ...overrides,
@@ -47,7 +47,7 @@ describe("TransactionCategoryService", () => {
       rulesStore,
       ruleEngine,
       bedrockClassifierService,
-      /* aiTaggingEnabled */ true,
+      /* aiTaggingEnabled */ true
     );
 
     rulesStore.getRulesByTenant.mockResolvedValue([]);
@@ -59,35 +59,7 @@ describe("TransactionCategoryService", () => {
   });
 
   describe("process", () => {
-    it("returns false when required fields are missing", async () => {
-      const request = makeRequest({ description: undefined });
-
-      const result = await service.process(request);
-
-      expect(result).toBe(false);
-      expect(logger.warn).toHaveBeenCalledWith(
-        "Skipping record with missing required fields",
-        {
-          tenantId: request.tenantId,
-          transactionId: request.transactionId,
-        },
-      );
-      expect(transactionStore.updateTransactionCategory).not.toHaveBeenCalled();
-    });
-
-    it("returns false when category is already set", async () => {
-      const request = makeRequest({ category: EBaseCategories.expenses });
-
-      const result = await service.process(request);
-
-      expect(result).toBe(false);
-      expect(logger.info).toHaveBeenCalledWith(
-        `Skipping transaction ${request.transactionId} — already categorized`,
-      );
-      expect(transactionStore.updateTransactionCategory).not.toHaveBeenCalled();
-    });
-
-    it("updates the transaction using rule engine results", async () => {
+    it("categorizes using rule engine results and updates the store", async () => {
       const rules: Awaited<
         ReturnType<ICategoryRulesStore["getRulesByTenant"]>
       > = [] as unknown as Awaited<
@@ -121,10 +93,13 @@ describe("TransactionCategoryService", () => {
         categorizeResult.taggedBy,
         categorizeResult.confidence,
         categorizeResult.reason,
-        undefined,
+        undefined
       );
       expect(logger.debug).toHaveBeenCalledWith(
-        `Transaction ${request.transactionId} categorized`,
+        `Transaction ${request.transactionId} categorized`
+      );
+      expect(logger.info).toHaveBeenCalledWith(
+        "process started processing messages"
       );
     });
 
@@ -145,7 +120,7 @@ describe("TransactionCategoryService", () => {
 
       expect(result).toBe(true);
       expect(bedrockClassifierService.classifyWithBedrock).toHaveBeenCalledWith(
-        request.description,
+        request.description
       );
       expect(transactionStore.updateTransactionCategory).toHaveBeenCalledWith(
         request.tenantId,
@@ -155,7 +130,7 @@ describe("TransactionCategoryService", () => {
         "BEDROCK",
         0.92,
         "High confidence AI match",
-        undefined,
+        undefined
       );
     });
 
@@ -179,7 +154,32 @@ describe("TransactionCategoryService", () => {
         "BEDROCK",
         0.7,
         "AI fallback",
+        undefined
+      );
+    });
+
+    it("continues with rule engine result when Bedrock returns no match", async () => {
+      ruleEngine.categorize.mockReturnValue({
+        category: EBaseCategories.unclassified,
+        taggedBy: "RULE",
+      });
+      bedrockClassifierService.classifyWithBedrock.mockResolvedValue(null);
+
+      const request = makeRequest();
+      await service.process(request);
+
+      expect(bedrockClassifierService.classifyWithBedrock).toHaveBeenCalledWith(
+        request.description
+      );
+      expect(transactionStore.updateTransactionCategory).toHaveBeenCalledWith(
+        request.tenantId,
+        request.transactionId,
+        EBaseCategories.unclassified,
         undefined,
+        "RULE",
+        undefined,
+        undefined,
+        undefined
       );
     });
 
@@ -190,7 +190,7 @@ describe("TransactionCategoryService", () => {
         rulesStore,
         ruleEngine,
         bedrockClassifierService,
-        /* aiTaggingEnabled */ false,
+        /* aiTaggingEnabled */ false
       );
       ruleEngine.categorize.mockReturnValue({
         category: EBaseCategories.unclassified,
@@ -201,7 +201,7 @@ describe("TransactionCategoryService", () => {
       await service.process(request);
 
       expect(
-        bedrockClassifierService.classifyWithBedrock,
+        bedrockClassifierService.classifyWithBedrock
       ).not.toHaveBeenCalled();
       expect(transactionStore.updateTransactionCategory).toHaveBeenCalledWith(
         request.tenantId,
@@ -211,7 +211,28 @@ describe("TransactionCategoryService", () => {
         "RULE",
         undefined,
         undefined,
-        undefined,
+        undefined
+      );
+      expect(logger.info).toHaveBeenCalledWith(
+        "process started processing messages"
+      );
+    });
+
+    it("returns false and logs error when processing fails", async () => {
+      ruleEngine.categorize.mockReturnValue({
+        category: EBaseCategories.expenses,
+        taggedBy: "RULE",
+      });
+      transactionStore.updateTransactionCategory.mockRejectedValue(
+        new Error("DB down")
+      );
+
+      const result = await service.process(makeRequest());
+
+      expect(result).toBe(false);
+      expect(logger.error).toHaveBeenCalledWith(
+        "Error processing message",
+        expect.any(Error)
       );
     });
   });
@@ -221,10 +242,10 @@ describe("TransactionCategoryService", () => {
 
     expect(rulesStore.addRules).toHaveBeenCalledWith(
       ETenantType.default,
-      keywordBaseCategoryMap,
+      keywordBaseCategoryMap
     );
     expect(logger.debug).toHaveBeenCalledWith(
-      `Adding rules for tenant ${ETenantType.default}`,
+      `Adding rules for tenant ${ETenantType.default}`
     );
   });
 

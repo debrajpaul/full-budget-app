@@ -40,7 +40,7 @@ describe("RecurringTransactionStore", () => {
     recurringStore = new RecurringTransactionStore(
       loggerMock,
       tableName,
-      storeMock as unknown as DynamoDBDocumentClient,
+      storeMock as unknown as DynamoDBDocumentClient
     );
   });
 
@@ -61,15 +61,15 @@ describe("RecurringTransactionStore", () => {
       startDate: baseRecurring.startDate,
     });
     expect(call.input.ConditionExpression).toContain(
-      "attribute_not_exists(tenantId)",
+      "attribute_not_exists(tenantId)"
     );
     expect(call.input.ConditionExpression).toContain(
-      "attribute_not_exists(recurringId)",
+      "attribute_not_exists(recurringId)"
     );
     expect(created.recurringId).toBe(baseRecurring.recurringId);
     expect(created.createdAt).toBeDefined();
     expect(loggerMock.debug).toHaveBeenCalledWith(
-      `Creating recurring transaction: ${baseRecurring.recurringId}`,
+      `Creating recurring transaction: ${baseRecurring.recurringId}`
     );
   });
 
@@ -82,7 +82,7 @@ describe("RecurringTransactionStore", () => {
     storeMock.send.mockResolvedValue({ Items: [item] });
     const result = await recurringStore.listByUser(
       tenantId,
-      baseRecurring.userId,
+      baseRecurring.userId
     );
     expect(storeMock.send).toHaveBeenCalledWith(expect.any(QueryCommand));
     const call = storeMock.send.mock.calls[0][0] as QueryCommand;
@@ -93,7 +93,7 @@ describe("RecurringTransactionStore", () => {
     });
     expect(result).toEqual([item]);
     expect(loggerMock.debug).toHaveBeenCalledWith(
-      "Listing recurring transactions for user",
+      "Listing recurring transactions for user"
     );
   });
 
@@ -101,11 +101,11 @@ describe("RecurringTransactionStore", () => {
     storeMock.send.mockResolvedValue({ Items: undefined });
     const result = await recurringStore.listByUser(
       tenantId,
-      baseRecurring.userId,
+      baseRecurring.userId
     );
     expect(result).toEqual([]);
     expect(loggerMock.debug).toHaveBeenCalledWith(
-      "Listing recurring transactions for user",
+      "Listing recurring transactions for user"
     );
   });
 });

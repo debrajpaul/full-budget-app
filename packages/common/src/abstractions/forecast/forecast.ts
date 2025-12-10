@@ -36,6 +36,6 @@ export interface IForecastService {
       startingBalance?: number;
       lowBalanceThreshold?: number;
       largeExpenseThreshold?: number;
-    },
+    }
   ): Promise<IForecastResult>;
 }

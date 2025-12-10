@@ -12,7 +12,7 @@ export class UploadStatementService implements IUploadStatementService {
   constructor(
     private readonly logger: ILogger,
     private readonly s3Service: IS3Service,
-    private readonly sqsService: ISQSService,
+    private readonly sqsService: ISQSService
   ) {}
 
   public async uploadStatement(request: IUploadRequest): Promise<boolean> {
@@ -20,7 +20,7 @@ export class UploadStatementService implements IUploadStatementService {
       const { bankName, bankType, fileName, contentBase64, userId, tenantId } =
         request;
       this.logger.debug(
-        `Uploading statement for bank: ${bankName}, bankType: ${bankType}, fileName: ${fileName}, userId: ${userId}`,
+        `Uploading statement for bank: ${bankName}, bankType: ${bankType}, fileName: ${fileName}, userId: ${userId}`
       );
       if (
         !bankName ||
@@ -31,7 +31,7 @@ export class UploadStatementService implements IUploadStatementService {
         !tenantId
       ) {
         const errorMessage = new Error(
-          "Missing required parameters for uploading statement",
+          "Missing required parameters for uploading statement"
         );
         this.logger.error("Missing required parameters", errorMessage, {
           ...request,

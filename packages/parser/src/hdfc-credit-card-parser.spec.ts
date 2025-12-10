@@ -47,9 +47,9 @@ describe("HdfcCreditCardParser", () => {
     ].join("\n");
 
     await expect(
-      parser.parse(Buffer.from(content, "utf-8"), userId),
+      parser.parse(Buffer.from(content, "utf-8"), userId)
     ).rejects.toThrow(
-      "Could not find transaction header in HDFC credit card statement.",
+      "Could not find transaction header in HDFC credit card statement."
     );
   });
 

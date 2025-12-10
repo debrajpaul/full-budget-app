@@ -5,23 +5,23 @@ import { EBaseCategories, EAllSubCategories } from "../categories";
 export interface ITransactionStore {
   saveTransactions(
     tenantId: ETenantType,
-    txns: Omit<ITransaction, "createdAt" | "tenantId">[],
+    txns: Omit<ITransaction, "createdAt" | "tenantId">[]
   ): Promise<void>;
   getUserTransactions(
     tenantId: ETenantType,
-    userId: string,
+    userId: string
   ): Promise<ITransaction[]>;
   getTransactionsByDateRange(
     tenantId: ETenantType,
     userId: string,
     startDate: string,
-    endDate: string,
+    endDate: string
   ): Promise<ITransaction[]>;
   aggregateSpendByCategory(
     tenantId: ETenantType,
     userId: string,
     month: number,
-    year: number,
+    year: number
   ): Promise<Record<string, number>>;
   updateTransactionCategory(
     tenantId: ETenantType,
@@ -31,6 +31,6 @@ export interface ITransactionStore {
     taggedBy?: string,
     confidence?: number,
     reason?: string,
-    embedding?: number[],
+    embedding?: number[]
   ): Promise<void>;
 }

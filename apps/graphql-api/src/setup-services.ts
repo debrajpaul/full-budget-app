@@ -30,63 +30,63 @@ export function setupServices(
   s3Client: S3,
   sqsClient: SQS,
   dynamoDBDocumentClient: DynamoDBDocumentClient,
-  bedrockClient: IBedrockClient,
+  bedrockClient: IBedrockClient
 ) {
   const ruleEngine = new RuleEngine(logger.child("RuleEngine"));
   const s3Service = new S3Service(
     logger.child("S3Service"),
     config.awsS3Bucket,
-    s3Client,
+    s3Client
   );
   const sqsService = new SQSService(
     logger.child("SQSService"),
     config.sqsQueueUrl,
-    sqsClient,
+    sqsClient
   );
   const userStore = new UserStore(
     logger.child("UserStore"),
     config.dynamoUserTable,
-    dynamoDBDocumentClient,
+    dynamoDBDocumentClient
   );
   const transactionStore = new TransactionStore(
     logger.child("TransactionStore"),
     config.dynamoTransactionTable,
-    dynamoDBDocumentClient,
+    dynamoDBDocumentClient
   );
   const categoryRulesStore = new CategoryRulesStore(
     logger.child("CategoryRulesStore"),
     config.dynamoCategoryRulesTable,
-    dynamoDBDocumentClient,
+    dynamoDBDocumentClient
   );
   const recurringStore = new RecurringTransactionStore(
     logger.child("RecurringTransactionStore"),
     config.dynamoRecurringTable,
-    dynamoDBDocumentClient,
+    dynamoDBDocumentClient
   );
   const budgetStore = new BudgetStore(
     logger.child("BudgetStore"),
     config.dynamoBudgetTable,
-    dynamoDBDocumentClient,
+    dynamoDBDocumentClient
   );
   const authorizationService = new AuthorizationService(
     logger.child("AuthorizationService"),
     config.jwtSecret,
-    userStore,
+    userStore
   );
   const uploadStatementService = new UploadStatementService(
     logger.child("UploadStatementService"),
     s3Service,
-    sqsService,
+    sqsService
   );
   const transactionService = new TransactionService(
     logger.child("TransactionService"),
     s3Service,
     sqsService,
-    transactionStore,
+    transactionStore
   );
   const bedrockClassifierService = new BedrockClassifierService(
     logger.child("BedrockClassifierService"),
-    bedrockClient,
+    bedrockClient
   );
   const transactionCategoryService = new TransactionCategoryService(
     logger.child("TransactionCategoryService"),
@@ -94,28 +94,28 @@ export function setupServices(
     categoryRulesStore,
     ruleEngine,
     bedrockClassifierService,
-    config.aiTaggingEnabled,
+    config.aiTaggingEnabled
   );
 
   const savingsGoalService = new SavingsGoalService(
-    logger.child("SavingsGoalService"),
+    logger.child("SavingsGoalService")
   );
   const sinkingFundService = new SinkingFundService(
-    logger.child("SinkingFundService"),
+    logger.child("SinkingFundService")
   );
   const recurringTransactionService = new RecurringTransactionService(
     logger.child("RecurringTransactionService"),
     recurringStore,
-    transactionStore,
+    transactionStore
   );
   const forecastService = new ForecastService(
     logger.child("ForecastService"),
-    recurringStore,
+    recurringStore
   );
   const budgetService = new BudgetService(
     logger.child("BudgetService"),
     budgetStore,
-    transactionStore,
+    transactionStore
   );
 
   return {

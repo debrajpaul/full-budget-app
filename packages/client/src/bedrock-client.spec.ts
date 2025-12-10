@@ -63,7 +63,7 @@ describe("BedrockClient", () => {
 
     // Logs invocation
     expect(loggerMock.info).toHaveBeenCalledWith(
-      `Invoking model with description: ${description}`,
+      `Invoking model with description: ${description}`
     );
 
     // Returns raw response from bedrock.send

@@ -31,24 +31,24 @@ export interface ITransactionService {
     tenantId: string,
     userId: string,
     month: number,
-    year: number,
+    year: number
   ): Promise<IMonthlyReview>;
   annualReview(
     tenantId: string,
     userId: string,
-    year: number,
+    year: number
   ): Promise<IAnnualReview>;
   categoryBreakDown(
     tenantId: string,
     userId: string,
     month: number,
-    year: number,
+    year: number
   ): Promise<IcategoryGroup[]>;
   aggregateSummary(
     tenantId: string,
     userId: string,
     year: number,
-    month?: number,
+    month?: number
   ): Promise<IAggregatedSummary>;
   filteredTransactions(
     tenantId: string,
@@ -56,12 +56,12 @@ export interface ITransactionService {
     year: number,
     month: number,
     bankName?: EBankName,
-    category?: string,
+    category?: string
   ): Promise<ITransaction[]>;
   reclassifyTransaction(
     tenantId: string,
     transactionId: string,
     category: string,
-    taggedBy?: string,
+    taggedBy?: string
   ): Promise<{ id: string; category: string; taggedBy?: string }>;
 }

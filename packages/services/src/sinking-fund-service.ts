@@ -14,7 +14,7 @@ export class SinkingFundService implements ISinkingFundService {
 
   public async getSinkingFunds(
     tenantId: ETenantType,
-    userId: string,
+    userId: string
   ): Promise<ISinkingFund[]> {
     this.logger.debug("Fetching sinking funds", { tenantId, userId });
     // Placeholder implementation

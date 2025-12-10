@@ -19,7 +19,7 @@ export class BudgetStore implements IBudgetStore {
   constructor(
     logger: ILogger,
     tableName: string,
-    store: DynamoDBDocumentClient,
+    store: DynamoDBDocumentClient
   ) {
     this.logger = logger;
     this.tableName = tableName;
@@ -33,7 +33,7 @@ export class BudgetStore implements IBudgetStore {
     month: number,
     category: EBaseCategories,
     amount: number,
-    subCategory?: string,
+    subCategory?: string
   ): Promise<IBudget> {
     const keyMonth = String(month).padStart(2, "0");
     const budgetId = `${userId}#${year}-${keyMonth}#${category}`;
@@ -62,7 +62,7 @@ export class BudgetStore implements IBudgetStore {
     tenantId: ETenantType,
     userId: string,
     month: number,
-    year: number,
+    year: number
   ): Promise<Record<string, number>> {
     const keyMonth = String(month).padStart(2, "0");
     const prefix = `${userId}#${year}-${keyMonth}#`;

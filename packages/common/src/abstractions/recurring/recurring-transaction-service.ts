@@ -19,7 +19,7 @@ export interface IRecurringTransactionService {
       monthOfYear?: number;
       startDate: string;
       endDate?: string;
-    },
+    }
   ): Promise<IRecurringTransaction>;
 
   list(tenantId: ETenantType, userId: string): Promise<IRecurringTransaction[]>;
@@ -28,6 +28,6 @@ export interface IRecurringTransactionService {
     tenantId: ETenantType,
     userId: string,
     month: number,
-    year: number,
+    year: number
   ): Promise<ITransaction[]>;
 }

@@ -10,7 +10,7 @@ export interface IBudgetStore {
     month: number,
     category: EBaseCategories,
     amount: number,
-    subCategory?: string, // Optional detailed sub-category
+    subCategory?: string // Optional detailed sub-category
   ): Promise<IBudget>;
 
   // Returns a map of category -> recommended amount for the given user/month/year
@@ -18,6 +18,6 @@ export interface IBudgetStore {
     tenantId: ETenantType,
     userId: string,
     month: number,
-    year: number,
+    year: number
   ): Promise<Record<string, number>>;
 }

@@ -1,6 +1,10 @@
-import { Construct } from 'constructs';
-import { Alarm, ComparisonOperator, TreatMissingData } from 'aws-cdk-lib/aws-cloudwatch';
-import { IFunction } from 'aws-cdk-lib/aws-lambda';
+import { Construct } from "constructs";
+import {
+  Alarm,
+  ComparisonOperator,
+  TreatMissingData,
+} from "aws-cdk-lib/aws-cloudwatch";
+import { IFunction } from "aws-cdk-lib/aws-lambda";
 
 interface LambdaAlarmsConstructProps {
   lambdaFn: IFunction;

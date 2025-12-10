@@ -27,7 +27,7 @@ export class CategoryRulesStore implements ICategoryRulesStore {
   constructor(
     logger: ILogger,
     tableName: string,
-    store: DynamoDBDocumentClient,
+    store: DynamoDBDocumentClient
   ) {
     this.logger = logger;
     this.tableName = tableName;
@@ -35,21 +35,21 @@ export class CategoryRulesStore implements ICategoryRulesStore {
   }
 
   public async getRulesByTenant(
-    tenantId: ETenantType,
+    tenantId: ETenantType
   ): Promise<ICategoryRules[]> {
     // Load tenant-specific rules
     const tenantRules: ICategoryRules[] = await this.loadRules(tenantId);
 
     // Load global defaults (only if tenant doesn't override)
     const globalRules: ICategoryRules[] = await this.loadRules(
-      ETenantType.default,
+      ETenantType.default
     );
 
     return [...tenantRules, ...globalRules];
   }
 
   public async listCategoriesByBase(
-    tenantId: ETenantType,
+    tenantId: ETenantType
   ): Promise<Record<EBaseCategories, string[]>> {
     const grouped: Record<EBaseCategories, Set<string>> = {
       [EBaseCategories.savings]: new Set<string>(),
@@ -67,7 +67,7 @@ export class CategoryRulesStore implements ICategoryRulesStore {
 
     // Load global defaults and only add if not already present
     const globalRules: ICategoryRules[] = await this.loadRules(
-      ETenantType.default,
+      ETenantType.default
     );
     globalRules.forEach((r) => {
       if (!grouped[r.category]?.has(String(r.match))) {
@@ -76,13 +76,13 @@ export class CategoryRulesStore implements ICategoryRulesStore {
     });
 
     return Object.fromEntries(
-      Object.entries(grouped).map(([k, set]) => [k, Array.from(set).sort()]),
+      Object.entries(grouped).map(([k, set]) => [k, Array.from(set).sort()])
     ) as Record<EBaseCategories, string[]>;
   }
 
   public async addRules(
     tenantId: ETenantType,
-    rules: Omit<ICategoryRules, "tenantId" | "ruleId" | "createdAt">[],
+    rules: Omit<ICategoryRules, "tenantId" | "ruleId" | "createdAt">[]
   ): Promise<void> {
     this.logger.debug("Saving rules to DynamoDB");
     this.logger.debug("Rules", { rules });
@@ -91,7 +91,7 @@ export class CategoryRulesStore implements ICategoryRulesStore {
     for (const chunk of chunks) {
       const promises = chunk.map(
         (rule: Omit<ICategoryRules, "tenantId" | "ruleId" | "createdAt">) =>
-          this.addRule(tenantId, rule),
+          this.addRule(tenantId, rule)
       );
       await Promise.all(promises);
     }
@@ -99,7 +99,7 @@ export class CategoryRulesStore implements ICategoryRulesStore {
 
   public async addRule(
     tenantId: ETenantType,
-    rule: Omit<ICategoryRules, "tenantId" | "ruleId" | "createdAt">,
+    rule: Omit<ICategoryRules, "tenantId" | "ruleId" | "createdAt">
   ): Promise<void> {
     this.logger.debug("Saving rule to DynamoDB");
     const { match, category, taggedBy, subCategory, reason, confidence, when } =
@@ -142,7 +142,7 @@ export class CategoryRulesStore implements ICategoryRulesStore {
             tenantId,
             ruleId: baseRuleId,
           },
-        }),
+        })
       );
     }
 
@@ -331,7 +331,7 @@ export class CategoryRulesStore implements ICategoryRulesStore {
    * @returns The corresponding base category
    */
   private baseCategoryForSubCategory(
-    subCategory: EAllSubCategories,
+    subCategory: EAllSubCategories
   ): EBaseCategories {
     switch (subCategory) {
       // Expenses

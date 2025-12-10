@@ -32,7 +32,7 @@ export function setupDependency() {
   const bedrockClient = new BedrockClient(
     logger.child("BedrockClient"),
     bedrock,
-    { modelId: config.bedrockModelId } as IBedrockClientConfig,
+    { modelId: config.bedrockModelId } as IBedrockClientConfig
   );
   return {
     logger,

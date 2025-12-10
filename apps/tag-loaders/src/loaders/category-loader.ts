@@ -15,11 +15,11 @@ import {
 export class TransactionCategoryLoader {
   constructor(
     private readonly logger: ILogger,
-    private readonly transactionCategoryService: ITransactionCategoryService,
+    private readonly transactionCategoryService: ITransactionCategoryService
   ) {}
 
   public async loader(
-    records: DynamoDBRecord[],
+    records: DynamoDBRecord[]
   ): Promise<DynamoDBBatchResponse> {
     this.logger.debug(`Loader ${records.length} records`);
     this.logger.debug("Loader records", { records });
@@ -42,6 +42,29 @@ export class TransactionCategoryLoader {
           });
           continue;
         }
+        const tenantId = newImage.tenantId?.S as ETenantType;
+        if (
+          !tenantId ||
+          !(
+            tenantId === ETenantType.client ||
+            tenantId === ETenantType.personal ||
+            tenantId === ETenantType.default
+          )
+        ) {
+          this.logger.debug("Skipping record without tenantId", {
+            eventID: record.eventID,
+            description: newImage?.tenantId?.S,
+          });
+          continue;
+        }
+        const transactionId = newImage.transactionId?.S;
+        if (!transactionId || transactionId.trim().length === 0) {
+          this.logger.debug("Skipping record without transactionId", {
+            eventID: record.eventID,
+            description: newImage?.transactionId?.S,
+          });
+          continue;
+        }
         const description = newImage.description?.S;
         if (!description || description.trim().length === 0) {
           this.logger.debug("Skipping record without description", {
@@ -50,20 +73,25 @@ export class TransactionCategoryLoader {
           });
           continue;
         }
+        const category = newImage.category?.S as EBaseCategories;
+        if (category && category !== EBaseCategories.unclassified) {
+          this.logger.debug("Skipping record with category and not been", {
+            eventID: record.eventID,
+            description: newImage?.category?.S,
+          });
+          continue;
+        }
         const request: ITransactionCategoryRequest = {
-          tenantId:
-            (newImage.tenantId?.S as ETenantType) ?? ETenantType.default,
-          transactionId: newImage.transactionId?.S ?? "",
+          tenantId,
+          transactionId,
           description,
-          category:
-            (newImage.category?.S as EBaseCategories) ??
-            EBaseCategories.unclassified,
+          category,
           debit: newImage.debit?.N ? Number(newImage.debit.N) : 0,
           credit: newImage.credit?.N ? Number(newImage.credit.N) : 0,
           createdAt: newImage.createdAt?.S ?? new Date().toISOString(),
           embedding:
             newImage.embedding?.L?.map((e: AttributeValue) =>
-              Number(e.N || 0),
+              Number(e.N || 0)
             ) ?? undefined,
           taggedBy: newImage.taggedBy?.S,
           confidence: newImage.confidence?.N
@@ -75,7 +103,7 @@ export class TransactionCategoryLoader {
         this.logger.error(
           "[transaction worker] failed to process message",
           error as Error,
-          { messageId: record.eventID },
+          { messageId: record.eventID }
         );
         failures.push({ itemIdentifier: record.eventID || "unknown" });
       }

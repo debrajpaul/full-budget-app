@@ -23,7 +23,7 @@ describe("WinstonLogger", () => {
     expect(loggerMock.log).toHaveBeenCalledWith(
       LogLevel.INFO,
       "info message",
-      expect.any(Object),
+      expect.any(Object)
     );
   });
 

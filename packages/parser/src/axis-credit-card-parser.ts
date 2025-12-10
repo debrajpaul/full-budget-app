@@ -5,7 +5,7 @@ import { Readable } from "stream";
 export class AxisCreditCardParser implements IBankParser {
   public async parse(
     buffer: Buffer,
-    userId: string,
+    userId: string
   ): Promise<Omit<ITransaction, "createdAt" | "tenantId">[]> {
     const txns: Omit<ITransaction, "createdAt" | "tenantId">[] = [];
 
@@ -26,7 +26,7 @@ export class AxisCreditCardParser implements IBankParser {
 
     if (headerIndex === -1) {
       throw new Error(
-        "Could not find Axis credit card transactions header in provided CSV.",
+        "Could not find Axis credit card transactions header in provided CSV."
       );
     }
 

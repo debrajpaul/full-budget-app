@@ -36,7 +36,7 @@ describe("SavingsGoalService", () => {
             value: expect.any(Number),
           }),
         ]),
-      }),
+      })
     );
   });
 });

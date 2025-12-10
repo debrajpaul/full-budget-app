@@ -19,7 +19,7 @@ describe("ForecastService", () => {
           IRecurringTransaction,
           "recurringId" | "description" | "amount" | "frequency" | "startDate"
         >
-      >,
+      >
   ): IRecurringTransaction {
     return {
       tenantId,
@@ -87,8 +87,8 @@ describe("ForecastService", () => {
     // Alerts should include a LARGE_EXPENSE on the 5th (>= 1000)
     expect(
       result.alerts.some(
-        (a) => a.type === "LARGE_EXPENSE" && a.date.endsWith("-09-05"),
-      ),
+        (a) => a.type === "LARGE_EXPENSE" && a.date.endsWith("-09-05")
+      )
     ).toBe(true);
     // No low balance alerts since running balance stays above 200
     expect(result.alerts.some((a) => a.type === "LOW_BALANCE")).toBe(false);
