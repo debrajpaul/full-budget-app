@@ -1,6 +1,7 @@
 # Architecture
 
 ## Overview
+
 🧠📊 Full Budget App is a multi-tenant, serverless budgeting platform that ingests raw bank
 statements, enriches transactions, and exposes a GraphQL API for dashboards and
 automations. The monorepo is managed with pnpm workspaces so application code,
@@ -8,6 +9,7 @@ shared services, and infrastructure definitions can evolve together while
 staying deployable as independent AWS Lambda functions.
 
 Key principles:
+
 - **Serverless first** – Lambda, DynamoDB, S3, and SQS supply elastic scale without
   maintaining servers.
 - **Local-first parity** – All SDK clients can point at LocalStack via
@@ -23,6 +25,7 @@ Key principles:
   is desired.
 
 ## Runtime Services (apps/)
+
 - **`graphql-api`** – Apollo Server running on Lambda (with Express support for
   local dev). Resolves queries/mutations by delegating to service layer modules,
   wires multi-tenant auth context (JWT-backed register/login), enqueues upload
@@ -38,6 +41,7 @@ Each service bundles with esbuild for fast cold starts and provides a
 `dev` script powered by `ts-node-dev` for local iteration.
 
 ## Shared Packages (packages/)
+
 - **`services`** – Domain orchestrators such as `AuthorizationService`
   (register/login), `UploadStatementService` (S3 + SQS producer),
   `TransactionService` (ingestion + analytics), `TransactionCategoryService`,
@@ -59,7 +63,9 @@ Workspaces share TypeScript configuration and leverage path aliases so services
 import package code directly (e.g. `import { BudgetService } from "@services"`).
 
 ## Infrastructure as Code (infra/)
+
 AWS CDK stacks provision the platform. Key stacks include:
+
 - **Storage & queues** (`storage.stack.ts`, `queue.stack.ts`) – S3 buckets for
   statement uploads and SQS queues for ingestion + categorisation workflows.
 - **Tables** (`transactions-table.stack.ts`, `transaction-category-table.stack.ts`,
@@ -78,6 +84,7 @@ AWS CDK stacks provision the platform. Key stacks include:
 build, while `pnpm synth` produces the CloudFormation templates for review.
 
 ## Data Flow
+
 1. **Authenticate & scope** – Users register/login via GraphQL; JWT secrets are
    sourced from SSM and decoded in the request context to attach `tenantId`,
    `userId`, and `email` to every operation.
@@ -96,6 +103,7 @@ build, while `pnpm synth` produces the CloudFormation templates for review.
    exposed via `/metrics`, and traces are sampled by X-Ray.
 
 ## AI-Assisted Categorisation
+
 - **Rule engine first** – `TransactionCategoryService` executes deterministic
   keyword/tagging rules from `@nlp-tagger`. This keeps behaviour explainable and
   avoids unnecessary AI calls.
@@ -109,6 +117,7 @@ build, while `pnpm synth` produces the CloudFormation templates for review.
   credentials determine whether the AI step runs in each environment.
 
 ## Observability & Operations
+
 - **Logging** – `@logger` provides a Winston-based logger injected into every
   service. Logs include tenant, request, and correlation metadata.
 - **Metrics** – The GraphQL service exports Prometheus metrics; extend collectors
@@ -121,6 +130,7 @@ build, while `pnpm synth` produces the CloudFormation templates for review.
   SSM parameters, and feature flags injected during deployment.
 
 ## Local Development Workflow
+
 - Run `pnpm install` once to hydrate workspace dependencies.
 - Use `pnpm dev` to build packages in watch mode; individual apps can be started
   with `pnpm --filter @app/<service> dev`.
@@ -136,6 +146,7 @@ build, while `pnpm synth` produces the CloudFormation templates for review.
   local emulated resources.
 
 ## Extending the Platform
+
 - **Add a new bank parser** by implementing it in `packages/parser` and exporting
   it from the package index. Update `txn-loaders` to recognise the new bank code.
 - **Launch additional metrics** by declaring collectors in `graphql-api` and

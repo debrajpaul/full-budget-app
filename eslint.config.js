@@ -2,6 +2,7 @@ import js from "@eslint/js";
 import pluginTs from "@typescript-eslint/eslint-plugin";
 import parserTs from "@typescript-eslint/parser";
 import pluginJest from "eslint-plugin-jest";
+import pluginPrettier from "eslint-plugin-prettier";
 import globals from "globals";
 import eslintConfigPrettier from "eslint-config-prettier";
 
@@ -52,5 +53,14 @@ export default [
   {
     name: "prettier-overrides",
     rules: eslintConfigPrettier.rules,
+  },
+  {
+    name: "prettier",
+    plugins: {
+      prettier: pluginPrettier,
+    },
+    rules: {
+      ...pluginPrettier.configs.recommended.rules,
+    },
   },
 ];

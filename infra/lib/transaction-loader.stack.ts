@@ -6,11 +6,11 @@ import {
   aws_iam as iam,
   aws_sqs as sqs,
   aws_s3 as s3,
-} from 'aws-cdk-lib';
-import { Construct } from 'constructs';
-import * as path from 'path';
-import * as eventSources from 'aws-cdk-lib/aws-lambda-event-sources';
-import { LambdaAlarmsConstruct } from './lambda-alarms-construct';
+} from "aws-cdk-lib";
+import { Construct } from "constructs";
+import * as path from "path";
+import * as eventSources from "aws-cdk-lib/aws-lambda-event-sources";
+import { LambdaAlarmsConstruct } from "./lambda-alarms-construct";
 
 interface TransactionLoaderStackProps extends StackProps {
   jobsQueue: sqs.Queue;
@@ -20,26 +20,32 @@ interface TransactionLoaderStackProps extends StackProps {
 }
 
 export class TransactionLoaderStack extends Stack {
-  constructor(scope: Construct, id: string, props: TransactionLoaderStackProps) {
+  constructor(
+    scope: Construct,
+    id: string,
+    props: TransactionLoaderStackProps
+  ) {
     super(scope, id, props);
 
     // Use a stack-scoped function name to avoid log group name collisions across deployments.
     const functionName = `${Stack.of(this).stackName}-TransactionLoader`;
 
-    const transactionLambda = new lambda.Function(this, 'TransactionLambda', {
+    const transactionLambda = new lambda.Function(this, "TransactionLambda", {
       functionName,
       runtime: lambda.Runtime.NODEJS_20_X,
-      handler: 'index.handler',
-      code: lambda.Code.fromAsset(path.resolve(__dirname, '../../apps/txn-loaders/dist')),
+      handler: "index.handler",
+      code: lambda.Code.fromAsset(
+        path.resolve(__dirname, "../../apps/txn-loaders/dist")
+      ),
       timeout: Duration.seconds(30),
       logRetentionRetryOptions: { base: Duration.hours(8), maxRetries: 10 },
       tracing: lambda.Tracing.ACTIVE,
       environment: props.environment,
     });
-  
+
     // Allow the function to write trace segments to X‑Ray
     transactionLambda.role?.addManagedPolicy(
-      iam.ManagedPolicy.fromAwsManagedPolicyName('AWSXRayWriteOnlyAccess'),
+      iam.ManagedPolicy.fromAwsManagedPolicyName("AWSXRayWriteOnlyAccess")
     );
 
     // Attach queue trigger
@@ -54,7 +60,11 @@ export class TransactionLoaderStack extends Stack {
     // DynamoDB access
     transactionLambda.addToRolePolicy(
       new iam.PolicyStatement({
-        actions: ['dynamodb:PutItem', 'dynamodb:UpdateItem', 'dynamodb:GetItem'],
+        actions: [
+          "dynamodb:PutItem",
+          "dynamodb:UpdateItem",
+          "dynamodb:GetItem",
+        ],
         resources: [props.transactionTableArn],
       })
     );
@@ -62,7 +72,7 @@ export class TransactionLoaderStack extends Stack {
     // s3 access
     transactionLambda.addToRolePolicy(
       new iam.PolicyStatement({
-        actions: ['s3:PutObject', 's3:GetObject'],
+        actions: ["s3:PutObject", "s3:GetObject"],
         resources: [`${props.uploadBucket.bucketArn}/*`],
       })
     );
@@ -71,7 +81,7 @@ export class TransactionLoaderStack extends Stack {
     props.uploadBucket.grantWrite(transactionLambda);
 
     // Reusable monitoring
-    new LambdaAlarmsConstruct(this, 'TransactionLoaderAlarms', {
+    new LambdaAlarmsConstruct(this, "TransactionLoaderAlarms", {
       lambdaFn: transactionLambda,
       alarmPrefix: functionName,
     });

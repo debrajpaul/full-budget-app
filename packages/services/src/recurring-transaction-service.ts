@@ -22,9 +22,9 @@ function toIsoDate(year: number, month: number, day: number): string {
   return `${year}-${mm}-${dd}`;
 }
 
-export class RecurringTransactionService
-  implements IRecurringTransactionService
-{
+type RecurringServiceContract = IRecurringTransactionService;
+
+export class RecurringTransactionService implements RecurringServiceContract {
   private readonly logger: ILogger;
   private readonly recurringStore: IRecurringTransactionStore;
   private readonly transactionStore: ITransactionStore;

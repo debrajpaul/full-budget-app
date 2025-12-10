@@ -3,6 +3,7 @@
 Thanks for helping improve `full-budget-app`. This guide outlines how to get set up and what we expect when you open a pull request.
 
 ## Quickstart
+
 1. Fork `debrajpaul/full-budget-app` and clone your fork:
    ```bash
    git clone https://github.com/<your-user>/full-budget-app.git
@@ -26,6 +27,7 @@ Minor improvements can be made directly from the GitHub web editor—open the fi
 Postman collection/environment files for manual testing live in `docs/postman/`.
 
 ## Pull Request Checklist
+
 - Include context in the description: what changed, why, any rollout concerns, and whether LocalStack was exercised.
 - Add or update tests when you change logic or behaviour (unit specs live beside implementations).
 - Keep commits focused; avoid bundling unrelated changes.

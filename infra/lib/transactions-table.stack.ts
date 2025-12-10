@@ -1,7 +1,12 @@
-import * as cdk from 'aws-cdk-lib';
-import { Stack, StackProps, RemovalPolicy } from 'aws-cdk-lib';
-import { Table, AttributeType, BillingMode, StreamViewType } from 'aws-cdk-lib/aws-dynamodb';
-import { Construct } from 'constructs';
+import * as cdk from "aws-cdk-lib";
+import { Stack, StackProps, RemovalPolicy } from "aws-cdk-lib";
+import {
+  Table,
+  AttributeType,
+  BillingMode,
+  StreamViewType,
+} from "aws-cdk-lib/aws-dynamodb";
+import { Construct } from "constructs";
 
 export class TransactionsTableStack extends Stack {
   public readonly transactionsTable: Table;
@@ -9,14 +14,14 @@ export class TransactionsTableStack extends Stack {
   constructor(scope: Construct, id: string, props?: StackProps) {
     super(scope, id, props);
 
-    this.transactionsTable = new Table(this, 'TransactionsTable', {
-      tableName: 'transactions',
+    this.transactionsTable = new Table(this, "TransactionsTable", {
+      tableName: "transactions",
       partitionKey: {
-        name: 'tenantId', // Multi-tenant partitioning
+        name: "tenantId", // Multi-tenant partitioning
         type: AttributeType.STRING,
       },
       sortKey: {
-        name: 'transactionId', // Sort by transaction ID within tenant
+        name: "transactionId", // Sort by transaction ID within tenant
         type: AttributeType.STRING,
       },
       stream: StreamViewType.NEW_IMAGE, // Enable streams for change data capture
@@ -27,9 +32,9 @@ export class TransactionsTableStack extends Stack {
     // Optional: enable TTL for data expiry
     // this.transactionsTable.addTimeToLiveAttribute('expiresAt');
 
-    new cdk.CfnOutput(this, 'TransactionsTableName', {
+    new cdk.CfnOutput(this, "TransactionsTableName", {
       value: this.transactionsTable.tableName,
-      exportName: 'TransactionsTableName',
+      exportName: "TransactionsTableName",
     });
   }
 }

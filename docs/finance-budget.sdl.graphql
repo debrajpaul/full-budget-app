@@ -1,4 +1,6 @@
-"""Supported banks for statement import and transaction parsing."""
+"""
+Supported banks for statement import and transaction parsing.
+"""
 enum BankName {
   HDFC
   SBI
@@ -6,7 +8,9 @@ enum BankName {
   OTHER
 }
 
-"""Supported bank account types for statement import and transaction parsing."""
+"""
+Supported bank account types for statement import and transaction parsing.
+"""
 enum BankType {
   SAVINGS
   CURRENT
@@ -14,14 +18,18 @@ enum BankType {
   OTHER
 }
 
-"""Tenant scope used for data segregation across users/clients."""
+"""
+Tenant scope used for data segregation across users/clients.
+"""
 enum TenantType {
   PERSONAL
   CLIENT
   DEFAULT
 }
 
-"""Input payload to register a new user account."""
+"""
+Input payload to register a new user account.
+"""
 input RegisterInput {
   email: String!
   name: String!
@@ -29,20 +37,26 @@ input RegisterInput {
   password: String!
 }
 
-"""Result of the register mutation."""
+"""
+Result of the register mutation.
+"""
 type RegisterResponse {
   success: Boolean!
   message: String!
 }
 
-"""Input payload to authenticate a user."""
+"""
+Input payload to authenticate a user.
+"""
 input LoginInput {
   email: String!
   tenantId: TenantType!
   password: String!
 }
 
-"""User account profile for the authenticated tenant."""
+"""
+User account profile for the authenticated tenant.
+"""
 type User {
   email: String!
   name: String!
@@ -50,13 +64,17 @@ type User {
   isActive: Boolean!
 }
 
-"""Result of the login mutation containing user and token."""
+"""
+Result of the login mutation containing user and token.
+"""
 type LoginResponse {
   user: User!
   token: String!
 }
 
-"""Normalized bank transaction record as imported and processed."""
+"""
+Normalized bank transaction record as imported and processed.
+"""
 type Transaction {
   tenantId: TenantType!
   userId: String!
@@ -74,7 +92,9 @@ type Transaction {
   type: String
 }
 
-"""Simplified transaction representation used for listings."""
+"""
+Simplified transaction representation used for listings.
+"""
 type TransactionItem {
   id: String!
   date: String!
@@ -86,20 +106,26 @@ type TransactionItem {
   taggedBy: String
 }
 
-"""Cursor-paginated list of transaction items."""
+"""
+Cursor-paginated list of transaction items.
+"""
 type TransactionsPage {
   items: [TransactionItem!]!
   cursor: String
 }
 
-"""Subset of fields returned after reclassifying a transaction."""
+"""
+Subset of fields returned after reclassifying a transaction.
+"""
 type ReclassifiedTransaction {
   id: String!
   category: String!
   taggedBy: String
 }
 
-"""Filters to list transactions for a given period and category."""
+"""
+Filters to list transactions for a given period and category.
+"""
 input TransactionsFilter {
   year: Int!
   month: Int!
@@ -107,20 +133,26 @@ input TransactionsFilter {
   category: String
 }
 
-"""Category with its aggregated amount."""
+"""
+Category with its aggregated amount.
+"""
 type CategoryAmount {
   name: String!
   amount: Float!
 }
 
-"""Budget vs actual values for a specific date."""
+"""
+Budget vs actual values for a specific date.
+"""
 type ReviewSeriesPoint {
   date: String!
   budget: Float!
   actual: Float!
 }
 
-"""Monthly aggregates, category breakdown, and time series."""
+"""
+Monthly aggregates, category breakdown, and time series.
+"""
 type MonthlyReview {
   totalIncome: Float!
   totalExpenses: Float!
@@ -129,7 +161,9 @@ type MonthlyReview {
   series: [ReviewSeriesPoint!]!
 }
 
-"""Yearly aggregates and the list of transactions."""
+"""
+Yearly aggregates and the list of transactions.
+"""
 type AnnualReview {
   totalIncome: Float!
   totalExpense: Float!
@@ -137,14 +171,18 @@ type AnnualReview {
   transactions: [Transaction!]!
 }
 
-"""Transactions grouped by category with total amount."""
+"""
+Transactions grouped by category with total amount.
+"""
 type CategoryGroup {
   category: String!
   totalAmount: Float!
   transactions: [Transaction!]!
 }
 
-"""Top-level budget category buckets used for grouping."""
+"""
+Top-level budget category buckets used for grouping.
+"""
 enum BaseCategory {
   SAVINGS
   EXPENSES
@@ -152,20 +190,26 @@ enum BaseCategory {
   DEFAULT
 }
 
-"""Categories grouped by their base category bucket."""
+"""
+Categories grouped by their base category bucket.
+"""
 type CategoriesByBase {
   base: BaseCategory!
   categories: [String!]!
 }
 
-"""Aggregated totals for income, expenses, and net savings."""
+"""
+Aggregated totals for income, expenses, and net savings.
+"""
 type AggregatedSummary {
   totalIncome: Float!
   totalExpense: Float!
   netSavings: Float!
 }
 
-"""Payload to upload a bank statement (base64 content)."""
+"""
+Payload to upload a bank statement (base64 content).
+"""
 input StatementInput {
   bankName: BankName!
   bankType: BankType!
@@ -173,19 +217,25 @@ input StatementInput {
   contentBase64: String!
 }
 
-"""Tenant record available in the system."""
+"""
+Tenant record available in the system.
+"""
 type Tenant {
   id: TenantType!
   name: String!
 }
 
-"""Historical point representing savings value on a date."""
+"""
+Historical point representing savings value on a date.
+"""
 type SavingsHistoryPoint {
   date: String!
   value: Float!
 }
 
-"""Savings goal with target, current progress, deadline, and history."""
+"""
+Savings goal with target, current progress, deadline, and history.
+"""
 type SavingsGoal {
   id: ID!
   name: String!
@@ -195,13 +245,17 @@ type SavingsGoal {
   history: [SavingsHistoryPoint!]!
 }
 
-"""Historical point representing sinking fund value on a date."""
+"""
+Historical point representing sinking fund value on a date.
+"""
 type SinkingFundHistoryPoint {
   date: String!
   value: Float!
 }
 
-"""Sinking fund with targets, balances, and contribution history."""
+"""
+Sinking fund with targets, balances, and contribution history.
+"""
 type SinkingFund {
   id: ID!
   name: String!
@@ -212,7 +266,9 @@ type SinkingFund {
   history: [SinkingFundHistoryPoint!]!
 }
 
-"""Per-day forecast metrics and running balance."""
+"""
+Per-day forecast metrics and running balance.
+"""
 type ForecastDay {
   date: String!
   inflow: Float!
@@ -221,14 +277,18 @@ type ForecastDay {
   runningBalance: Float
 }
 
-"""Severity levels for forecast alerts."""
+"""
+Severity levels for forecast alerts.
+"""
 enum AlertSeverity {
   info
   warning
   critical
 }
 
-"""Alert generated during forecasting with severity and message."""
+"""
+Alert generated during forecasting with severity and message.
+"""
 type ForecastAlert {
   date: String!
   type: String!
@@ -236,7 +296,9 @@ type ForecastAlert {
   severity: AlertSeverity!
 }
 
-"""Monthly cash-flow forecast summary with daily details and alerts."""
+"""
+Monthly cash-flow forecast summary with daily details and alerts.
+"""
 type ForecastResult {
   month: Int!
   year: Int!
@@ -246,14 +308,18 @@ type ForecastResult {
   alerts: [ForecastAlert!]!
 }
 
-"""Optional parameters to tune forecasting behavior and thresholds."""
+"""
+Optional parameters to tune forecasting behavior and thresholds.
+"""
 input ForecastOptionsInput {
   startingBalance: Float
   lowBalanceThreshold: Float
   largeExpenseThreshold: Float
 }
 
-"""Supported schedules for recurring transactions."""
+"""
+Supported schedules for recurring transactions.
+"""
 enum RecurringFrequency {
   monthly
   weekly
@@ -261,7 +327,9 @@ enum RecurringFrequency {
   yearly
 }
 
-"""Definition and schedule of a recurring transaction."""
+"""
+Definition and schedule of a recurring transaction.
+"""
 type RecurringTransaction {
   id: String!
   description: String!
@@ -276,7 +344,9 @@ type RecurringTransaction {
   nextRunDate: String
 }
 
-"""Input to create a recurring transaction rule."""
+"""
+Input to create a recurring transaction rule.
+"""
 input CreateRecurringTransactionInput {
   description: String!
   amount: Float!
@@ -289,7 +359,9 @@ input CreateRecurringTransactionInput {
   endDate: String
 }
 
-"""Budget allocation for a category in a specific month/year."""
+"""
+Budget allocation for a category in a specific month/year.
+"""
 type Budget {
   id: String!
   month: Int!
@@ -298,58 +370,115 @@ type Budget {
   amount: Float!
 }
 
-"""Period identifier consisting of month and year."""
+"""
+Period identifier consisting of month and year.
+"""
 input PeriodInput {
   month: Int!
   year: Int!
 }
 
-"""Root query operations for the Finance Budget API."""
+"""
+Root query operations for the Finance Budget API.
+"""
 type Query {
-  """API version of the GraphQL service."""
+  """
+  API version of the GraphQL service.
+  """
   apiVersion: String
-  """Simple health check; returns a status string if the API is up."""
+  """
+  Simple health check; returns a status string if the API is up.
+  """
   healthCheck: String
-  """Returns yearly income, expenses, net savings, and transactions."""
+  """
+  Returns yearly income, expenses, net savings, and transactions.
+  """
   annualReview(year: Int!): AnnualReview!
-  """Returns monthly income, expenses, savings, category breakdown, and series."""
+  """
+  Returns monthly income, expenses, savings, category breakdown, and series.
+  """
   monthlyReview(month: Int!, year: Int!): MonthlyReview!
-  """Returns income, expense, and net savings for the given period."""
+  """
+  Returns income, expense, and net savings for the given period.
+  """
   aggregateSummary(year: Int!, month: Int): AggregatedSummary!
-  """Groups transactions by category with totals for the month."""
+  """
+  Groups transactions by category with totals for the month.
+  """
   categoryBreakdown(month: Int!, year: Int!): [CategoryGroup!]!
-  """Lists transactions filtered by month/year (paged by cursor)."""
+  """
+  Lists transactions filtered by month/year (paged by cursor).
+  """
   transactions(filters: TransactionsFilter!, cursor: String): TransactionsPage!
-  """Lists categories grouped by base type (INCOME/EXPENSES/SAVINGS)."""
+  """
+  Lists categories grouped by base type (INCOME/EXPENSES/SAVINGS).
+  """
   categoriesByBase: [CategoriesByBase!]!
-  """Lists supported tenant types available in the system."""
+  """
+  Lists supported tenant types available in the system.
+  """
   tenants: [Tenant!]!
-  """Lists savings goals with current progress and history."""
+  """
+  Lists savings goals with current progress and history.
+  """
   savingsGoals: [SavingsGoal!]!
-  """Lists sinking funds, balances, and history for the tenant."""
+  """
+  Lists sinking funds, balances, and history for the tenant.
+  """
   sinkingFunds: [SinkingFund!]!
-  """Forecasts daily cash flow for the specified month with optional rules."""
-  forecastMonth(year: Int!, month: Int!, options: ForecastOptionsInput): ForecastResult!
-  """Lists all recurring transactions for the current tenant/user."""
+  """
+  Forecasts daily cash flow for the specified month with optional rules.
+  """
+  forecastMonth(
+    year: Int!
+    month: Int!
+    options: ForecastOptionsInput
+  ): ForecastResult!
+  """
+  Lists all recurring transactions for the current tenant/user.
+  """
   recurringTransactions: [RecurringTransaction!]!
 }
 
-"""Root mutation operations for the Finance Budget API."""
+"""
+Root mutation operations for the Finance Budget API.
+"""
 type Mutation {
-  """Creates a new user account for the given tenant."""
+  """
+  Creates a new user account for the given tenant.
+  """
   register(input: RegisterInput!): RegisterResponse!
-  """Authenticates a user and returns a login token."""
+  """
+  Authenticates a user and returns a login token.
+  """
   login(input: LoginInput!): LoginResponse!
-  """Adds or syncs transaction category rules for the current tenant."""
+  """
+  Adds or syncs transaction category rules for the current tenant.
+  """
   addTransactionCategory: Boolean!
-  """Reclassifies a transaction to a new category and returns the updated item."""
-  reclassifyTransaction(id: String!, category: String!): ReclassifiedTransaction!
-  """Uploads a bank statement file (base64) for processing and import."""
+  """
+  Reclassifies a transaction to a new category and returns the updated item.
+  """
+  reclassifyTransaction(
+    id: String!
+    category: String!
+  ): ReclassifiedTransaction!
+  """
+  Uploads a bank statement file (base64) for processing and import.
+  """
   uploadStatement(input: StatementInput!): Boolean!
-  """Creates a recurring transaction definition."""
-  createRecurringTransaction(input: CreateRecurringTransactionInput!): RecurringTransaction!
-  """Materializes recurring transactions for the given month and returns the count."""
+  """
+  Creates a recurring transaction definition.
+  """
+  createRecurringTransaction(
+    input: CreateRecurringTransactionInput!
+  ): RecurringTransaction!
+  """
+  Materializes recurring transactions for the given month and returns the count.
+  """
   generateRecurringTransactions(month: Int!, year: Int!): Int!
-  """Sets the budget amount for a category in the specified month/year."""
+  """
+  Sets the budget amount for a category in the specified month/year.
+  """
   setBudget(period: PeriodInput!, category: String!, amount: Float!): Budget!
 }
