@@ -49,5 +49,8 @@ export default [
       "jest/no-focused-tests": "error",
     },
   },
-  eslintConfigPrettier,
+  {
+    name: "prettier-overrides",
+    rules: eslintConfigPrettier.rules,
+  },
 ];
