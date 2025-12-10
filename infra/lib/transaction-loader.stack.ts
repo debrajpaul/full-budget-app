@@ -23,8 +23,11 @@ export class TransactionLoaderStack extends Stack {
   constructor(scope: Construct, id: string, props: TransactionLoaderStackProps) {
     super(scope, id, props);
 
+    // Use a stack-scoped function name to avoid log group name collisions across deployments.
+    const functionName = `${Stack.of(this).stackName}-TransactionLoader`;
+
     const transactionLambda = new lambda.Function(this, 'TransactionLambda', {
-      functionName: 'TransactionLoader',
+      functionName,
       runtime: lambda.Runtime.NODEJS_20_X,
       handler: 'index.handler',
       code: lambda.Code.fromAsset(path.resolve(__dirname, '../../apps/txn-loaders/dist')),
@@ -70,7 +73,7 @@ export class TransactionLoaderStack extends Stack {
     // Reusable monitoring
     new LambdaAlarmsConstruct(this, 'TransactionLoaderAlarms', {
       lambdaFn: transactionLambda,
-      alarmPrefix: 'TransactionLoader',
+      alarmPrefix: functionName,
     });
   }
 }

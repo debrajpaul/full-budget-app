@@ -21,8 +21,11 @@ export class TransactionCategoryStack extends Stack {
   constructor(scope: Construct, id: string, props: TransactionCategoryStackProps) {
     super(scope, id, props);
 
+    // Use a stack-scoped function name to avoid log group collisions across deployments.
+    const functionName = `${Stack.of(this).stackName}-TransactionCategoryLoader`;
+
     const transactionCategoryLambda = new lambda.Function(this, 'TransactionCategoryLambda', {
-      functionName: 'TransactionCategoryLoader',
+      functionName,
       runtime: lambda.Runtime.NODEJS_20_X,
       handler: 'index.handler',
       code: lambda.Code.fromAsset(path.resolve(__dirname, '../../apps/tag-loaders/dist')),
@@ -72,7 +75,7 @@ export class TransactionCategoryStack extends Stack {
     // Reusable monitoring
     new LambdaAlarmsConstruct(this, 'TransactionCategoryLoaderAlarms', {
       lambdaFn: transactionCategoryLambda,
-      alarmPrefix: 'TransactionCategoryLoader',
+      alarmPrefix: functionName,
     });
   }
 }

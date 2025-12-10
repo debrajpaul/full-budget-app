@@ -42,6 +42,27 @@ export class TransactionCategoryLoader {
           });
           continue;
         }
+        const tenantId = newImage.tenantId?.S as ETenantType;
+        if (
+          !tenantId ||
+          !(
+            tenantId === ETenantType.client || tenantId === ETenantType.personal
+          )
+        ) {
+          this.logger.debug("Skipping record without tenantId", {
+            eventID: record.eventID,
+            description: newImage?.tenantId?.S,
+          });
+          continue;
+        }
+        const transactionId = newImage.transactionId?.S;
+        if (!transactionId || transactionId.trim().length === 0) {
+          this.logger.debug("Skipping record without transactionId", {
+            eventID: record.eventID,
+            description: newImage?.transactionId?.S,
+          });
+          continue;
+        }
         const description = newImage.description?.S;
         if (!description || description.trim().length === 0) {
           this.logger.debug("Skipping record without description", {
@@ -50,14 +71,19 @@ export class TransactionCategoryLoader {
           });
           continue;
         }
+        const category = newImage.category?.S as EBaseCategories;
+        if (category && category !== EBaseCategories.unclassified) {
+          this.logger.debug("Skipping record with category and not been", {
+            eventID: record.eventID,
+            description: newImage?.category?.S,
+          });
+          continue;
+        }
         const request: ITransactionCategoryRequest = {
-          tenantId:
-            (newImage.tenantId?.S as ETenantType) ?? ETenantType.default,
-          transactionId: newImage.transactionId?.S ?? "",
+          tenantId,
+          transactionId,
           description,
-          category:
-            (newImage.category?.S as EBaseCategories) ??
-            EBaseCategories.unclassified,
+          category,
           debit: newImage.debit?.N ? Number(newImage.debit.N) : 0,
           credit: newImage.credit?.N ? Number(newImage.credit.N) : 0,
           createdAt: newImage.createdAt?.S ?? new Date().toISOString(),
