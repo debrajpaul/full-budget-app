@@ -3,7 +3,7 @@ import { IBankParser, ITransaction, EBankName, EBankType } from "@common";
 export class HdfcCreditCardParser implements IBankParser {
   public async parse(
     buffer: Buffer,
-    userId: string,
+    userId: string
   ): Promise<Omit<ITransaction, "createdAt" | "tenantId">[]> {
     const txns: Omit<ITransaction, "createdAt" | "tenantId">[] = [];
     const raw = buffer.toString("utf-8");
@@ -14,11 +14,11 @@ export class HdfcCreditCardParser implements IBankParser {
     // summary header.  This determines where to start extracting
     // transactions.
     const headerIndex = lines.findIndex((line) =>
-      /transaction\s*type/i.test(line),
+      /transaction\s*type/i.test(line)
     );
     if (headerIndex === -1) {
       throw new Error(
-        "Could not find transaction header in HDFC credit card statement.",
+        "Could not find transaction header in HDFC credit card statement."
       );
     }
 

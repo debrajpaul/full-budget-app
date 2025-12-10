@@ -111,7 +111,7 @@ describe("TransactionCategoryLoader", () => {
       expect.objectContaining({
         transactionId: "t3",
         description: "updated",
-      }),
+      })
     );
   });
 
@@ -198,7 +198,7 @@ describe("TransactionCategoryLoader", () => {
         tenantId: ETenantType.default,
         transactionId: "t8",
         description: "default tenant",
-      }),
+      })
     );
   });
 

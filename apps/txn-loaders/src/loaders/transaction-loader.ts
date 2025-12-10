@@ -4,7 +4,7 @@ import { ILogger, ITransactionService, ITransactionSqsRequest } from "@common";
 export class TransactionLoader {
   constructor(
     private readonly logger: ILogger,
-    private readonly transactionService: ITransactionService,
+    private readonly transactionService: ITransactionService
   ) {}
 
   public async loader(records: SQSRecord[]): Promise<SQSBatchResponse> {
@@ -20,7 +20,7 @@ export class TransactionLoader {
         this.logger.error(
           "[transaction worker] failed to process message",
           error as Error,
-          { messageId: record.messageId },
+          { messageId: record.messageId }
         );
         failures.push({ itemIdentifier: record.messageId });
       }

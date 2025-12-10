@@ -11,29 +11,29 @@ export const authResolvers = {
     register: async (
       _: unknown,
       args: { input: IRegisterInput },
-      ctx: IGraphQLContext,
+      ctx: IGraphQLContext
     ) => {
       const authService = ctx.dataSources.authorizationService;
       if (!authService)
         throw new CustomError(
           "Authorization service not found",
-          "SERVICE_NOT_FOUND",
+          "SERVICE_NOT_FOUND"
         );
       const { email, name, tenantId, password } = RegisterArgs.parse(
-        args.input,
+        args.input
       );
       return await authService.register({ email, name, tenantId, password });
     },
     login: async (
       _: unknown,
       args: { input: ILoginInput },
-      ctx: IGraphQLContext,
+      ctx: IGraphQLContext
     ) => {
       const authService = ctx.dataSources.authorizationService;
       if (!authService)
         throw new CustomError(
           "Authorization service not found",
-          "SERVICE_NOT_FOUND",
+          "SERVICE_NOT_FOUND"
         );
       const { email, tenantId, password } = LoginArgs.parse(args.input);
       return await authService.login({ email, tenantId, password });

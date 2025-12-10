@@ -28,7 +28,7 @@ function clampDayOfMonth(year: number, month: number, day: number): number {
 function computeOccurrences(
   r: IRecurringTransaction,
   month: number,
-  year: number,
+  year: number
 ): string[] {
   switch (r.frequency) {
     case ERecurringFrequency.monthly: {
@@ -63,7 +63,7 @@ function computeOccurrences(
       const dates: string[] = [];
       while (current <= last) {
         dates.push(
-          iso(current.getFullYear(), current.getMonth() + 1, current.getDate()),
+          iso(current.getFullYear(), current.getMonth() + 1, current.getDate())
         );
         current.setDate(current.getDate() + 14);
       }
@@ -98,7 +98,7 @@ export class ForecastService implements IForecastService {
       startingBalance?: number;
       lowBalanceThreshold?: number;
       largeExpenseThreshold?: number;
-    },
+    }
   ): Promise<IForecastResult> {
     const startBal = options?.startingBalance ?? 0;
     const lowThreshold = options?.lowBalanceThreshold ?? 0;

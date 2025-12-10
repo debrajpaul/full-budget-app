@@ -11,7 +11,7 @@ export class SQSService implements ISQSService {
   constructor(
     private readonly logger: ILogger,
     private readonly queueUrl: string,
-    private readonly sqs: SQS,
+    private readonly sqs: SQS
   ) {}
 
   /**

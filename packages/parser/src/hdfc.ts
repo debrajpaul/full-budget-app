@@ -5,7 +5,7 @@ import { Readable } from "stream";
 export class HdfcBankParser implements IBankParser {
   public async parse(
     buffer: Buffer,
-    userId: string,
+    userId: string
   ): Promise<Omit<ITransaction, "createdAt" | "tenantId">[]> {
     const txns: Omit<ITransaction, "createdAt" | "tenantId">[] = [];
 
@@ -16,7 +16,7 @@ export class HdfcBankParser implements IBankParser {
     const headerIndex = lines.findIndex(
       (line) =>
         line.toLowerCase().includes("date") &&
-        line.toLowerCase().includes("narration"),
+        line.toLowerCase().includes("narration")
     );
 
     if (headerIndex === -1) {
@@ -37,13 +37,13 @@ export class HdfcBankParser implements IBankParser {
       const dateRaw = row["Date"];
       const description = row["Narration"] || "";
       const withdrawal = parseFloat(
-        (row["Withdrawal Amt."] || "0").replace(/,/g, ""),
+        (row["Withdrawal Amt."] || "0").replace(/,/g, "")
       );
       const deposit = parseFloat(
-        (row["Deposit Amt."] || "0").replace(/,/g, ""),
+        (row["Deposit Amt."] || "0").replace(/,/g, "")
       );
       const balance = parseFloat(
-        (row["Closing Balance"] || "0").replace(/,/g, ""),
+        (row["Closing Balance"] || "0").replace(/,/g, "")
       );
 
       if (!dateRaw || isNaN(balance)) continue;

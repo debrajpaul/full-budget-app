@@ -6,19 +6,19 @@ export class WinstonLogger implements ILogger {
 
   private constructor(
     public minLevel: LogLevel,
-    private readonly logger?: winston.Logger,
+    private readonly logger?: winston.Logger
   ) {}
 
   public static getInstance(
     minLevel: LogLevel,
-    loggerName: string = "default",
+    loggerName: string = "default"
   ): WinstonLogger {
     const options: winston.LoggerOptions = {
       level: minLevel,
       format: format.combine(
         format.errors({ stack: true }),
         format.timestamp(),
-        format.json(),
+        format.json()
       ),
       transports: [
         new transports.Console({
@@ -42,7 +42,7 @@ export class WinstonLogger implements ILogger {
           stack: value.stack,
           message: value.message,
         },
-        value,
+        value
       );
     }
     return new Error(`Unknown error: ${JSON.stringify(value)}`);
@@ -63,7 +63,7 @@ export class WinstonLogger implements ILogger {
     message: string,
     error?: Error,
     data?: object,
-    tags?: string[],
+    tags?: string[]
   ): void {
     this.logger?.log(level, message, { error, data, tags });
   }

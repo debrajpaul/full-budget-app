@@ -9,7 +9,7 @@ export const budgetResolvers = {
         category: string;
         amount: number;
       },
-      ctx: IGraphQLContext,
+      ctx: IGraphQLContext
     ) => {
       if (!ctx.userId) throw new Error("Unauthorized");
       if (!ctx.tenantId) throw new Error("Tenant ID is required");
@@ -22,7 +22,7 @@ export const budgetResolvers = {
           year,
           category: args.category as EBaseCategories,
           amount: args.amount,
-        },
+        }
       );
       return {
         id: budget.budgetId,

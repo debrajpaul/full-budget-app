@@ -18,7 +18,7 @@ describe("BedrockClassifierService", () => {
 
   it("logs initialization on construction", () => {
     expect(logger.info).toHaveBeenCalledWith(
-      "BedrockClassifierService initialized",
+      "BedrockClassifierService initialized"
     );
   });
 
@@ -35,13 +35,13 @@ describe("BedrockClassifierService", () => {
 
     // Service awaits bedrockClient.invokeModel; mock a resolved value
     (bedrockClient.invokeModel as unknown as jest.Mock).mockResolvedValue(
-      fakeResponse,
+      fakeResponse
     );
 
     const result = await service.classifyWithBedrock(description);
 
     expect(logger.info).toHaveBeenCalledWith(
-      `Classifying transaction with description: ${description}`,
+      `Classifying transaction with description: ${description}`
     );
     expect(result).toEqual({
       base: "INCOME",
@@ -55,7 +55,7 @@ describe("BedrockClassifierService", () => {
     const description = "Savings transfer";
     const fakeResponse = { body: encodeBody({ base: "savings" }) } as any;
     (bedrockClient.invokeModel as unknown as jest.Mock).mockResolvedValue(
-      fakeResponse,
+      fakeResponse
     );
 
     const result = await service.classifyWithBedrock(description);
@@ -72,7 +72,7 @@ describe("BedrockClassifierService", () => {
     const description = "Unknown description";
     const fakeResponse = { body: encodeBody({ reason: "n/a" }) } as any;
     (bedrockClient.invokeModel as unknown as jest.Mock).mockResolvedValue(
-      fakeResponse,
+      fakeResponse
     );
 
     const result = await service.classifyWithBedrock(description);
@@ -84,26 +84,26 @@ describe("BedrockClassifierService", () => {
     const invalidJson = new TextEncoder().encode("not-json");
     const fakeResponse = { body: invalidJson } as any;
     (bedrockClient.invokeModel as unknown as jest.Mock).mockResolvedValue(
-      fakeResponse,
+      fakeResponse
     );
 
     const result = await service.classifyWithBedrock(description);
     expect(result).toBeNull();
     expect(logger.error).toHaveBeenCalledWith(
-      expect.stringContaining("Error classifying transaction:"),
+      expect.stringContaining("Error classifying transaction:")
     );
   });
 
   it("handles rejected client promise and returns null", async () => {
     const description = "Should throw";
     (bedrockClient.invokeModel as unknown as jest.Mock).mockImplementationOnce(
-      () => Promise.reject(new Error("bedrock down")),
+      () => Promise.reject(new Error("bedrock down"))
     );
 
     const result = await service.classifyWithBedrock(description);
     expect(result).toBeNull();
     expect(logger.error).toHaveBeenCalledWith(
-      expect.stringContaining("Error classifying transaction:"),
+      expect.stringContaining("Error classifying transaction:")
     );
   });
 });

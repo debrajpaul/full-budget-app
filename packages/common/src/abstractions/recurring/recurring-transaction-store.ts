@@ -4,10 +4,10 @@ import { ETenantType } from "../users";
 export interface IRecurringTransactionStore {
   create(
     tenantId: ETenantType,
-    recurring: Omit<IRecurringTransaction, "tenantId" | "createdAt">,
+    recurring: Omit<IRecurringTransaction, "tenantId" | "createdAt">
   ): Promise<IRecurringTransaction>;
   listByUser(
     tenantId: ETenantType,
-    userId: string,
+    userId: string
   ): Promise<IRecurringTransaction[]>;
 }

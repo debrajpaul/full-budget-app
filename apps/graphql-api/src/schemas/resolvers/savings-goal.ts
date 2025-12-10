@@ -9,7 +9,7 @@ export const savingsGoalResolvers = {
         throw new CustomError("Tenant ID is required", "TENANT_ID_REQUIRED");
       return ctx.dataSources.savingsGoalService.getSavingsGoals(
         ctx.tenantId,
-        ctx.userId,
+        ctx.userId
       );
     },
   },

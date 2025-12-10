@@ -33,7 +33,7 @@ export class TransactionService implements ITransactionService {
     logger: ILogger,
     s3Service: IS3Service,
     sqsService: ISQSService,
-    transactionStore: ITransactionStore,
+    transactionStore: ITransactionStore
   ) {
     this.logger = logger;
     this.s3Service = s3Service;
@@ -64,7 +64,7 @@ export class TransactionService implements ITransactionService {
       return false;
     }
     this.logger.debug(
-      `Processing fileKey: ${messageData.fileKey}, bank: ${messageData.bankName}, userId: ${messageData.userId}, tenantId: ${messageData.tenantId}`,
+      `Processing fileKey: ${messageData.fileKey}, bank: ${messageData.bankName}, userId: ${messageData.userId}, tenantId: ${messageData.tenantId}`
     );
     let flag: boolean = await this.process(messageData);
     this.logger.debug(`Flag ${flag}`);
@@ -80,12 +80,12 @@ export class TransactionService implements ITransactionService {
         fileBuffer,
         request.bankName,
         request.bankType,
-        request.userId,
+        request.userId
       );
       this.logger.debug(`###transactions. -->`, { data: transactions });
       await this.transactionStore.saveTransactions(
         request.tenantId,
-        transactions,
+        transactions
       );
       this.logger.debug(`Processed ${transactions.length} transactions.`);
       return true;
@@ -99,7 +99,7 @@ export class TransactionService implements ITransactionService {
     tenantId: ETenantType,
     userId: string,
     month: number,
-    year: number,
+    year: number
   ): Promise<IMonthlyReview> {
     this.logger.debug(`Getting monthlyReview for user`);
     this.logger.debug("User ID, month & year", { userId, month, year });
@@ -109,7 +109,7 @@ export class TransactionService implements ITransactionService {
       tenantId,
       userId,
       startDate,
-      endDate,
+      endDate
     );
     this.logger.debug(`MonthlyReview transactions`, {
       count: txns.length,
@@ -134,7 +134,7 @@ export class TransactionService implements ITransactionService {
   public async annualReview(
     tenantId: ETenantType,
     userId: string,
-    year: number,
+    year: number
   ): Promise<IAnnualReview> {
     this.logger.debug(`Getting annualReview for user`);
     this.logger.debug("User ID, year", { userId, year });
@@ -144,7 +144,7 @@ export class TransactionService implements ITransactionService {
       tenantId,
       userId,
       startDate,
-      endDate,
+      endDate
     );
     this.logger.debug(`AnnualReview transactions`, { count: txns.length });
     // Calculate totals
@@ -168,7 +168,7 @@ export class TransactionService implements ITransactionService {
     tenantId: ETenantType,
     userId: string,
     month: number,
-    year: number,
+    year: number
   ): Promise<IcategoryGroup[]> {
     this.logger.debug(`Getting categoryBreakDown for user`);
     this.logger.debug("User ID, month & year", { userId, month, year });
@@ -178,7 +178,7 @@ export class TransactionService implements ITransactionService {
       tenantId,
       userId,
       startDate,
-      endDate,
+      endDate
     );
     this.logger.debug(`CategoryBreakDown transactions`, { count: txns.length });
     const categoryMap: Record<
@@ -207,7 +207,7 @@ export class TransactionService implements ITransactionService {
     tenantId: ETenantType,
     userId: string,
     year: number,
-    month?: number,
+    month?: number
   ): Promise<IAggregatedSummary> {
     this.logger.debug(`Getting aggregateSummary for user`);
     this.logger.debug("User ID, month & year", { userId, month, year });
@@ -226,7 +226,7 @@ export class TransactionService implements ITransactionService {
       tenantId,
       userId,
       startDate,
-      endDate,
+      endDate
     );
     this.logger.debug(`AggregateSummary transactions`, { count: txns.length });
     let totalIncome = 0;
@@ -248,7 +248,7 @@ export class TransactionService implements ITransactionService {
     year: number,
     month: number,
     bankName?: EBankName,
-    category?: string,
+    category?: string
   ): Promise<ITransaction[]> {
     this.logger.debug(`Getting filteredTransactions for user`);
     this.logger.debug("User ID, month & year", { userId, month, year });
@@ -258,7 +258,7 @@ export class TransactionService implements ITransactionService {
       tenantId,
       userId,
       startDate,
-      endDate,
+      endDate
     );
     this.logger.debug(`FilteredTransactions transactions`, {
       count: txns.length,
@@ -277,14 +277,14 @@ export class TransactionService implements ITransactionService {
     transactionId: string,
     category: string,
     subCategory?: string,
-    taggedBy?: string,
+    taggedBy?: string
   ): Promise<{ id: string; category: string; taggedBy?: string }> {
     await this.transactionStore.updateTransactionCategory(
       tenantId,
       transactionId,
       category as EBaseCategories,
       subCategory as EAllSubCategories,
-      taggedBy,
+      taggedBy
     );
     return { id: transactionId, category, taggedBy };
   }
@@ -293,7 +293,7 @@ export class TransactionService implements ITransactionService {
     buffer: Buffer,
     bank: EBankName,
     bankType: EBankType,
-    userId: string,
+    userId: string
   ): Promise<Omit<ITransaction, "createdAt" | "tenantId">[]> {
     switch (bank) {
       case EBankName.sbi: {

@@ -18,7 +18,7 @@ export class BudgetService implements IBudgetService {
   constructor(
     logger: ILogger,
     budgetStore: BudgetStore,
-    transactionStore: ITransactionStore,
+    transactionStore: ITransactionStore
   ) {
     this.logger = logger;
     this.budgetStore = budgetStore;
@@ -28,7 +28,7 @@ export class BudgetService implements IBudgetService {
   public async setBudget(
     tenantId: ETenantType,
     userId: string,
-    input: ISetBudgetInput,
+    input: ISetBudgetInput
   ): Promise<IBudget> {
     const { month, year, category, amount, subCategory } = input;
     this.logger.debug("Setting budget", {
@@ -63,7 +63,7 @@ export class BudgetService implements IBudgetService {
       year,
       month,
       category,
-      amount,
+      amount
     );
   }
 
@@ -71,7 +71,7 @@ export class BudgetService implements IBudgetService {
     tenantId: ETenantType,
     userId: string,
     month: number,
-    year: number,
+    year: number
   ): Promise<ICategoryDeviation[]> {
     this.logger.debug("Analyzing spend vs. budget", {
       tenantId,
@@ -86,7 +86,7 @@ export class BudgetService implements IBudgetService {
         tenantId,
         userId,
         month,
-        year,
+        year
       ),
     ]);
 
@@ -106,8 +106,8 @@ export class BudgetService implements IBudgetService {
 
     const categories = new Set<EBaseCategories>(
       [...Object.keys(budgets), ...Object.keys(actuals)].map(
-        (c) => c as EBaseCategories,
-      ),
+        (c) => c as EBaseCategories
+      )
     );
     const deviations: ICategoryDeviation[] = [];
 
@@ -130,7 +130,7 @@ export class BudgetService implements IBudgetService {
   public async analyzeAnnualSpend(
     tenantId: ETenantType,
     userId: string,
-    year: number,
+    year: number
   ): Promise<ICategoryDeviation[]> {
     this.logger.debug("Analyzing annual spend vs. budget", {
       tenantId,
@@ -143,8 +143,8 @@ export class BudgetService implements IBudgetService {
     const [budgetsByMonth, actualsByMonth] = await Promise.all([
       Promise.all(
         months.map((m) =>
-          this.budgetStore.getBudgetsByPeriod(tenantId, userId, m, year),
-        ),
+          this.budgetStore.getBudgetsByPeriod(tenantId, userId, m, year)
+        )
       ),
       Promise.all(
         months.map((m) =>
@@ -152,9 +152,9 @@ export class BudgetService implements IBudgetService {
             tenantId,
             userId,
             m,
-            year,
-          ),
-        ),
+            year
+          )
+        )
       ),
     ]);
 
@@ -165,7 +165,7 @@ export class BudgetService implements IBudgetService {
         }
         return acc;
       },
-      {} as Record<string, number>,
+      {} as Record<string, number>
     );
 
     const annualActuals = actualsByMonth.reduce(
@@ -175,7 +175,7 @@ export class BudgetService implements IBudgetService {
         }
         return acc;
       },
-      {} as Record<string, number>,
+      {} as Record<string, number>
     );
 
     // Provide default recommended budgets if NO budgets exist for the whole year.
@@ -190,8 +190,8 @@ export class BudgetService implements IBudgetService {
 
     const categories = new Set<EBaseCategories>(
       [...Object.keys(annualBudgets), ...Object.keys(annualActuals)].map(
-        (c) => c as EBaseCategories,
-      ),
+        (c) => c as EBaseCategories
+      )
     );
 
     const deviations: ICategoryDeviation[] = [];

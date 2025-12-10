@@ -32,7 +32,7 @@ export class RecurringTransactionService
   constructor(
     logger: ILogger,
     recurringStore: IRecurringTransactionStore,
-    transactionStore: ITransactionStore,
+    transactionStore: ITransactionStore
   ) {
     this.logger = logger;
     this.recurringStore = recurringStore;
@@ -52,7 +52,7 @@ export class RecurringTransactionService
       monthOfYear?: number;
       startDate: string;
       endDate?: string;
-    },
+    }
   ): Promise<IRecurringTransaction> {
     const recurring: Omit<IRecurringTransaction, "tenantId" | "createdAt"> = {
       userId,
@@ -79,7 +79,7 @@ export class RecurringTransactionService
     tenantId: ETenantType,
     userId: string,
     month: number,
-    year: number,
+    year: number
   ): Promise<ITransaction[]> {
     const recurrences = await this.recurringStore.listByUser(tenantId, userId);
     const created: ITransaction[] = [];
@@ -133,7 +133,7 @@ export class RecurringTransactionService
   private computeOccurrenceDates(
     r: IRecurringTransaction,
     month: number,
-    year: number,
+    year: number
   ): string[] {
     switch (r.frequency) {
       case ERecurringFrequency.monthly: {
@@ -147,7 +147,7 @@ export class RecurringTransactionService
         while (d.getMonth() === month - 1) {
           if (d.getDay() === dayOfWeek) {
             dates.push(
-              toIsoDate(d.getFullYear(), d.getMonth() + 1, d.getDate()),
+              toIsoDate(d.getFullYear(), d.getMonth() + 1, d.getDate())
             );
           }
           d.setDate(d.getDate() + 1);
@@ -180,8 +180,8 @@ export class RecurringTransactionService
             toIsoDate(
               current.getFullYear(),
               current.getMonth() + 1,
-              current.getDate(),
-            ),
+              current.getDate()
+            )
           );
           current.setDate(current.getDate() + 14);
         }

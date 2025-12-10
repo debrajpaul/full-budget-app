@@ -13,7 +13,7 @@ export class S3Service implements IS3Service {
   constructor(
     private readonly logger: ILogger,
     private readonly bucketName: string,
-    private readonly s3Client: S3,
+    private readonly s3Client: S3
   ) {}
 
   /**
@@ -22,11 +22,11 @@ export class S3Service implements IS3Service {
   async getFile(key: string): Promise<Buffer> {
     this.logger.debug("###GettingS3", { key });
     const res = await this.s3Client.send(
-      new GetObjectCommand({ Bucket: this.bucketName, Key: key }),
+      new GetObjectCommand({ Bucket: this.bucketName, Key: key })
     );
     if (res.$metadata.httpStatusCode !== 200)
       throw new Error(
-        `Failed to get file from S3: ${res.$metadata.httpStatusCode}`,
+        `Failed to get file from S3: ${res.$metadata.httpStatusCode}`
       );
     if (!res.Body) throw new Error(`No file body returned from S3: ${key}`);
     const chunks: Buffer[] = [];
@@ -41,7 +41,7 @@ export class S3Service implements IS3Service {
    */
   async putFile(
     key: string,
-    body: Buffer | Uint8Array | string,
+    body: Buffer | Uint8Array | string
   ): Promise<void> {
     this.logger.info("#PuttingS3");
     this.logger.debug("PuttingS3", { key });
@@ -51,7 +51,7 @@ export class S3Service implements IS3Service {
         Key: key,
         Body: body,
         ContentType: "application/pdf", // Adjust based on actual file type
-      }),
+      })
     );
   }
 }

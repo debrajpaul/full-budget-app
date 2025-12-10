@@ -4,6 +4,6 @@ import { ISavingsGoal } from "./savings-goal";
 export interface ISavingsGoalService {
   getSavingsGoals(
     tenantId: ETenantType,
-    userId: string,
+    userId: string
   ): Promise<ISavingsGoal[]>;
 }

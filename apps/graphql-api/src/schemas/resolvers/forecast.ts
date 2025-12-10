@@ -14,7 +14,7 @@ export const forecastResolvers = {
           largeExpenseThreshold?: number;
         };
       },
-      ctx: IGraphQLContext,
+      ctx: IGraphQLContext
     ) => {
       if (!ctx.userId) throw new CustomError("Unauthorized", "UNAUTHORIZED");
       if (!ctx.tenantId)
@@ -24,7 +24,7 @@ export const forecastResolvers = {
         ctx.userId,
         args.year,
         args.month,
-        args.options,
+        args.options
       );
     },
   },

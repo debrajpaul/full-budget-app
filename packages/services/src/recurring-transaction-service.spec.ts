@@ -26,7 +26,7 @@ describe("RecurringTransactionService", () => {
     service = new RecurringTransactionService(
       logger,
       recurringStore,
-      transactionStore,
+      transactionStore
     );
     jest.spyOn(Date, "now").mockReturnValue(1720000000000); // fixed timestamp
   });
@@ -65,7 +65,7 @@ describe("RecurringTransactionService", () => {
         dayOfMonth: payload.dayOfMonth,
         startDate: payload.startDate,
         nextRunDate: payload.startDate,
-      }),
+      })
     );
     expect(created.recurringId).toBe(expectedId);
   });
@@ -110,7 +110,7 @@ describe("RecurringTransactionService", () => {
       tenantId,
       userId,
       2,
-      2025,
+      2025
     ); // Feb 2025 -> 28 days
 
     expect(transactionStore.saveTransactions).toHaveBeenCalledTimes(1);
@@ -118,7 +118,7 @@ describe("RecurringTransactionService", () => {
     expect(call[0]).toBe(tenantId);
     const [txn] = call[1];
     expect(txn.transactionId).toBe(
-      `${userId}#rec#${recurring.recurringId}#2025-02-28`,
+      `${userId}#rec#${recurring.recurringId}#2025-02-28`
     );
     expect(txn.txnDate).toBe("2025-02-28");
     expect(txn.bankName).toBe(EBankName.other);
@@ -151,7 +151,7 @@ describe("RecurringTransactionService", () => {
       tenantId,
       userId,
       month,
-      year,
+      year
     );
 
     // Compute Mondays in Aug 2025 for assertion
@@ -169,7 +169,7 @@ describe("RecurringTransactionService", () => {
     }
 
     expect(transactionStore.saveTransactions).toHaveBeenCalledTimes(
-      mondays.length,
+      mondays.length
     );
     // Verify one of the calls matches the expected transaction date pattern
     const firstDate = mondays[0];
@@ -218,7 +218,7 @@ describe("RecurringTransactionService", () => {
       tenantId,
       userId,
       9,
-      2025,
+      2025
     );
 
     expect(transactionStore.saveTransactions).not.toHaveBeenCalled();
@@ -278,12 +278,12 @@ describe("RecurringTransactionService", () => {
       tenantId,
       userId,
       month,
-      year,
+      year
     );
 
     // Expect only 4 and 18 to be included (week offsets 0 and 2)
     const calls = transactionStore.saveTransactions.mock.calls.map(
-      (c) => (c[1] as any)[0].txnDate,
+      (c) => (c[1] as any)[0].txnDate
     );
     expect(calls).toEqual(["2025-08-04", "2025-08-18"]);
     expect(created.map((t) => t.txnDate)).toEqual(["2025-08-04", "2025-08-18"]);
@@ -319,7 +319,7 @@ describe("RecurringTransactionService", () => {
       tenantId,
       userId,
       8,
-      2025,
+      2025
     );
 
     const calls = transactionStore.saveTransactions.mock.calls;
@@ -358,15 +358,15 @@ describe("RecurringTransactionService", () => {
       tenantId,
       userId,
       8,
-      2025,
+      2025
     );
     // At least 1 occurrence in Aug; one failed so created length < calls
     expect(created.length).toBeLessThan(
-      transactionStore.saveTransactions.mock.calls.length,
+      transactionStore.saveTransactions.mock.calls.length
     );
     expect(logger.debug).toHaveBeenCalledWith(
       "Skipping duplicate or failed recurring save",
-      expect.objectContaining({ error: "dup" }),
+      expect.objectContaining({ error: "dup" })
     );
   });
 });

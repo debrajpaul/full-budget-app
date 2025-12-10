@@ -43,7 +43,7 @@ describe("TransactionStore", () => {
     transactionStore = new TransactionStore(
       loggerMock,
       tableName,
-      storeMock as unknown as DynamoDBDocumentClient,
+      storeMock as unknown as DynamoDBDocumentClient
     );
   });
 
@@ -57,7 +57,7 @@ describe("TransactionStore", () => {
     expect(callArg.input.Item.taggedBy).toEqual(txn.taggedBy);
     expect(callArg.input.Item.confidence).toEqual(txn.confidence);
     expect(loggerMock.debug).toHaveBeenCalledWith(
-      `Saving transaction: ${txn.transactionId}`,
+      `Saving transaction: ${txn.transactionId}`
     );
   });
 
@@ -68,7 +68,7 @@ describe("TransactionStore", () => {
     const { tenantId, ...txnWithoutTenant } = txn;
     await transactionStore.saveTransaction(tenantId, txnWithoutTenant);
     expect(loggerMock.warn).toHaveBeenCalledWith(
-      `Duplicate transaction: ${txn.transactionId}`,
+      `Duplicate transaction: ${txn.transactionId}`
     );
   });
 
@@ -80,11 +80,11 @@ describe("TransactionStore", () => {
     });
     const { tenantId, ...txnWithoutTenant } = txn;
     await expect(
-      transactionStore.saveTransaction(tenantId, txnWithoutTenant),
+      transactionStore.saveTransaction(tenantId, txnWithoutTenant)
     ).rejects.toThrow("Failed to save transaction: fail");
     expect(loggerMock.error).toHaveBeenCalledWith(
       `Error saving transaction: ${txn.transactionId}`,
-      expect.objectContaining({ message: "fail" }),
+      expect.objectContaining({ message: "fail" })
     );
   });
 
@@ -107,7 +107,7 @@ describe("TransactionStore", () => {
     storeMock.send = jest.fn().mockResolvedValue({ Items: [txn] });
     const result = await transactionStore.getUserTransactions(
       tenantId,
-      txn.userId,
+      txn.userId
     );
     expect(storeMock.send).toHaveBeenCalled();
     expect(result).toEqual([txn]);
@@ -119,7 +119,7 @@ describe("TransactionStore", () => {
       tenantId,
       txn.userId,
       "2025-08-01",
-      "2025-08-31",
+      "2025-08-31"
     );
     expect(storeMock.send).toHaveBeenCalled();
     expect(result).toEqual([txn]);
@@ -135,7 +135,7 @@ describe("TransactionStore", () => {
       "RULE_ENGINE",
       0.95,
       undefined,
-      [0.1, 0.2],
+      [0.1, 0.2]
     );
     expect(storeMock.send).toHaveBeenCalled();
     const command = storeMock.send.mock.calls[0][0];
@@ -158,7 +158,7 @@ describe("TransactionStore", () => {
       "RULE_ENGINE",
       0.88,
       undefined,
-      [0.3, 0.4],
+      [0.3, 0.4]
     );
     const command = storeMock.send.mock.calls[0][0];
     expect(command.input.UpdateExpression).toContain("subCategory = :subCat");
@@ -176,14 +176,14 @@ describe("TransactionStore", () => {
     await transactionStore.updateTransactionCategory(
       tenantId,
       txn.transactionId,
-      EBaseCategories.income,
+      EBaseCategories.income
     );
     const command = storeMock.send.mock.calls[0][0];
     expect(command.input.ExpressionAttributeValues).toMatchObject({
       ":cat": EBaseCategories.income,
     });
     expect(command.input.UpdateExpression).toBe(
-      "SET category = :cat, updatedAt = :updatedAt",
+      "SET category = :cat, updatedAt = :updatedAt"
     );
   });
 
@@ -221,11 +221,11 @@ describe("TransactionStore", () => {
       tenantId,
       userId,
       8,
-      2025,
+      2025
     );
 
     expect(transactionStore.getTransactionsByDateRange).toHaveBeenCalledTimes(
-      1,
+      1
     );
     expect(result).toEqual({
       [EBaseCategories.expenses]: -150,

@@ -15,11 +15,11 @@ import {
 export class TransactionCategoryLoader {
   constructor(
     private readonly logger: ILogger,
-    private readonly transactionCategoryService: ITransactionCategoryService,
+    private readonly transactionCategoryService: ITransactionCategoryService
   ) {}
 
   public async loader(
-    records: DynamoDBRecord[],
+    records: DynamoDBRecord[]
   ): Promise<DynamoDBBatchResponse> {
     this.logger.debug(`Loader ${records.length} records`);
     this.logger.debug("Loader records", { records });
@@ -91,7 +91,7 @@ export class TransactionCategoryLoader {
           createdAt: newImage.createdAt?.S ?? new Date().toISOString(),
           embedding:
             newImage.embedding?.L?.map((e: AttributeValue) =>
-              Number(e.N || 0),
+              Number(e.N || 0)
             ) ?? undefined,
           taggedBy: newImage.taggedBy?.S,
           confidence: newImage.confidence?.N
@@ -103,7 +103,7 @@ export class TransactionCategoryLoader {
         this.logger.error(
           "[transaction worker] failed to process message",
           error as Error,
-          { messageId: record.eventID },
+          { messageId: record.eventID }
         );
         failures.push({ itemIdentifier: record.eventID || "unknown" });
       }

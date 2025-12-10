@@ -25,7 +25,7 @@ describe("BudgetStore", () => {
     budgetStore = new BudgetStore(
       loggerMock,
       tableName,
-      storeMock as unknown as DynamoDBDocumentClient,
+      storeMock as unknown as DynamoDBDocumentClient
     );
   });
 
@@ -43,7 +43,7 @@ describe("BudgetStore", () => {
       month,
       category,
       amount,
-      subCategory,
+      subCategory
     );
 
     expect(storeMock.send).toHaveBeenCalled();
@@ -116,7 +116,7 @@ describe("BudgetStore", () => {
       tenantId,
       userId,
       month,
-      year,
+      year
     );
 
     // Validates query prefix
@@ -133,7 +133,7 @@ describe("BudgetStore", () => {
         userId,
         month,
         year,
-      },
+      }
     );
 
     // Validates aggregation

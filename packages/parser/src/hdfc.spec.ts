@@ -38,14 +38,14 @@ describe("HdfcBankParser", () => {
       txnDate: "2025-08-04",
     });
     expect(new Set(txns.map((txn) => txn.transactionId)).size).toBe(
-      txns.length,
+      txns.length
     );
   });
 
   it("should throw error if header not found", async () => {
     const buffer = Buffer.from("No header here\nSome random text", "utf-8");
     await expect(parser.parse(buffer, userId)).rejects.toThrow(
-      "### Could not find valid CSV header in HDFC file.",
+      "### Could not find valid CSV header in HDFC file."
     );
   });
 

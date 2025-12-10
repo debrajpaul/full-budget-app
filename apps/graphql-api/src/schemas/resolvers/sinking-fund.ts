@@ -9,7 +9,7 @@ export const sinkingFundResolvers = {
         throw new CustomError("Tenant ID is required", "TENANT_ID_REQUIRED");
       return ctx.dataSources.sinkingFundService.getSinkingFunds(
         ctx.tenantId,
-        ctx.userId,
+        ctx.userId
       );
     },
   },

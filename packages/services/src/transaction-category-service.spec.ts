@@ -22,7 +22,7 @@ describe("TransactionCategoryService", () => {
   let service: TransactionCategoryService;
 
   const makeRequest = (
-    overrides: Partial<ITransactionCategoryRequest> = {},
+    overrides: Partial<ITransactionCategoryRequest> = {}
   ): ITransactionCategoryRequest => ({
     tenantId: ETenantType.default,
     transactionId: "txn-123",
@@ -47,7 +47,7 @@ describe("TransactionCategoryService", () => {
       rulesStore,
       ruleEngine,
       bedrockClassifierService,
-      /* aiTaggingEnabled */ true,
+      /* aiTaggingEnabled */ true
     );
 
     rulesStore.getRulesByTenant.mockResolvedValue([]);
@@ -93,13 +93,13 @@ describe("TransactionCategoryService", () => {
         categorizeResult.taggedBy,
         categorizeResult.confidence,
         categorizeResult.reason,
-        undefined,
+        undefined
       );
       expect(logger.debug).toHaveBeenCalledWith(
-        `Transaction ${request.transactionId} categorized`,
+        `Transaction ${request.transactionId} categorized`
       );
       expect(logger.info).toHaveBeenCalledWith(
-        "process started processing messages",
+        "process started processing messages"
       );
     });
 
@@ -120,7 +120,7 @@ describe("TransactionCategoryService", () => {
 
       expect(result).toBe(true);
       expect(bedrockClassifierService.classifyWithBedrock).toHaveBeenCalledWith(
-        request.description,
+        request.description
       );
       expect(transactionStore.updateTransactionCategory).toHaveBeenCalledWith(
         request.tenantId,
@@ -130,7 +130,7 @@ describe("TransactionCategoryService", () => {
         "BEDROCK",
         0.92,
         "High confidence AI match",
-        undefined,
+        undefined
       );
     });
 
@@ -154,7 +154,7 @@ describe("TransactionCategoryService", () => {
         "BEDROCK",
         0.7,
         "AI fallback",
-        undefined,
+        undefined
       );
     });
 
@@ -169,7 +169,7 @@ describe("TransactionCategoryService", () => {
       await service.process(request);
 
       expect(bedrockClassifierService.classifyWithBedrock).toHaveBeenCalledWith(
-        request.description,
+        request.description
       );
       expect(transactionStore.updateTransactionCategory).toHaveBeenCalledWith(
         request.tenantId,
@@ -179,7 +179,7 @@ describe("TransactionCategoryService", () => {
         "RULE",
         undefined,
         undefined,
-        undefined,
+        undefined
       );
     });
 
@@ -190,7 +190,7 @@ describe("TransactionCategoryService", () => {
         rulesStore,
         ruleEngine,
         bedrockClassifierService,
-        /* aiTaggingEnabled */ false,
+        /* aiTaggingEnabled */ false
       );
       ruleEngine.categorize.mockReturnValue({
         category: EBaseCategories.unclassified,
@@ -201,7 +201,7 @@ describe("TransactionCategoryService", () => {
       await service.process(request);
 
       expect(
-        bedrockClassifierService.classifyWithBedrock,
+        bedrockClassifierService.classifyWithBedrock
       ).not.toHaveBeenCalled();
       expect(transactionStore.updateTransactionCategory).toHaveBeenCalledWith(
         request.tenantId,
@@ -211,10 +211,10 @@ describe("TransactionCategoryService", () => {
         "RULE",
         undefined,
         undefined,
-        undefined,
+        undefined
       );
       expect(logger.info).toHaveBeenCalledWith(
-        "process started processing messages",
+        "process started processing messages"
       );
     });
 
@@ -224,7 +224,7 @@ describe("TransactionCategoryService", () => {
         taggedBy: "RULE",
       });
       transactionStore.updateTransactionCategory.mockRejectedValue(
-        new Error("DB down"),
+        new Error("DB down")
       );
 
       const result = await service.process(makeRequest());
@@ -232,7 +232,7 @@ describe("TransactionCategoryService", () => {
       expect(result).toBe(false);
       expect(logger.error).toHaveBeenCalledWith(
         "Error processing message",
-        expect.any(Error),
+        expect.any(Error)
       );
     });
   });
@@ -242,10 +242,10 @@ describe("TransactionCategoryService", () => {
 
     expect(rulesStore.addRules).toHaveBeenCalledWith(
       ETenantType.default,
-      keywordBaseCategoryMap,
+      keywordBaseCategoryMap
     );
     expect(logger.debug).toHaveBeenCalledWith(
-      `Adding rules for tenant ${ETenantType.default}`,
+      `Adding rules for tenant ${ETenantType.default}`
     );
   });
 

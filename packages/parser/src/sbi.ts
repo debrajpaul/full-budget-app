@@ -5,7 +5,7 @@ import { Readable } from "stream";
 export class SbiBankParser implements IBankParser {
   public async parse(
     buffer: Buffer,
-    userId: string,
+    userId: string
   ): Promise<Omit<ITransaction, "createdAt" | "tenantId">[]> {
     const txns: Omit<ITransaction, "createdAt" | "tenantId">[] = [];
 
@@ -13,7 +13,7 @@ export class SbiBankParser implements IBankParser {
     const lines = rawText.split(/\r?\n/);
 
     const headerIndex = lines.findIndex(
-      (line) => /txn\s+date/i.test(line) && /description/i.test(line),
+      (line) => /txn\s+date/i.test(line) && /description/i.test(line)
     );
 
     if (headerIndex === -1) {
@@ -28,7 +28,7 @@ export class SbiBankParser implements IBankParser {
         line
           .replace(/^"|"$/g, "") // remove wrapping quotes
           .replace(/\s*,\s*/g, ",") // trim around commas
-          .replace(/,+$/, ""), // remove trailing commas
+          .replace(/,+$/, "") // remove trailing commas
     );
 
     // More robust footer trimming

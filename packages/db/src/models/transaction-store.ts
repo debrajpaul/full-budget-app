@@ -22,7 +22,7 @@ export class TransactionStore implements ITransactionStore {
   constructor(
     logger: ILogger,
     tableName: string,
-    store: DynamoDBDocumentClient,
+    store: DynamoDBDocumentClient
   ) {
     this.logger = logger;
     this.tableName = tableName;
@@ -31,7 +31,7 @@ export class TransactionStore implements ITransactionStore {
 
   public async saveTransactions(
     tenantId: ETenantType,
-    txns: Omit<ITransaction, "createdAt" | "tenantId">[],
+    txns: Omit<ITransaction, "createdAt" | "tenantId">[]
   ): Promise<void> {
     this.logger.debug("Saving transactions to DynamoDB");
     this.logger.debug("Transactions", { txns });
@@ -47,7 +47,7 @@ export class TransactionStore implements ITransactionStore {
 
   async saveTransaction(
     tenantId: ETenantType,
-    txn: Omit<ITransaction, "createdAt" | "tenantId">,
+    txn: Omit<ITransaction, "createdAt" | "tenantId">
   ): Promise<void> {
     try {
       this.logger.debug(`Saving transaction: ${txn.transactionId}`);
@@ -98,7 +98,7 @@ export class TransactionStore implements ITransactionStore {
 
   public async getUserTransactions(
     tenantId: ETenantType,
-    userId: string,
+    userId: string
   ): Promise<ITransaction[]> {
     this.logger.debug(`Getting transactions for user`);
     this.logger.debug("User ID", { userId });
@@ -121,7 +121,7 @@ export class TransactionStore implements ITransactionStore {
     tenantId: ETenantType,
     userId: string,
     startDate: string,
-    endDate: string,
+    endDate: string
   ): Promise<ITransaction[]> {
     this.logger.debug(`Getting transactions by date range`);
     this.logger.debug("User ID, start date & end date", {
@@ -155,7 +155,7 @@ export class TransactionStore implements ITransactionStore {
     tenantId: ETenantType,
     userId: string,
     month: number,
-    year: number,
+    year: number
   ): Promise<Record<string, number>> {
     const startDate = new Date(year, month - 1, 1).toISOString();
     const endDate = new Date(year, month, 0).toISOString();
@@ -163,7 +163,7 @@ export class TransactionStore implements ITransactionStore {
       tenantId,
       userId,
       startDate,
-      endDate,
+      endDate
     );
     return items.reduce(
       (acc, txn) => {
@@ -171,7 +171,7 @@ export class TransactionStore implements ITransactionStore {
         acc[cat] = (acc[cat] || 0) + Number(txn.credit) - Number(txn.debit);
         return acc;
       },
-      {} as Record<string, number>,
+      {} as Record<string, number>
     );
   }
 
@@ -183,7 +183,7 @@ export class TransactionStore implements ITransactionStore {
     taggedBy?: string,
     confidence?: number,
     reason?: string,
-    embedding?: number[],
+    embedding?: number[]
   ): Promise<void> {
     this.logger.debug(`Updating transaction category`);
     this.logger.debug("Transaction ID & Category", {

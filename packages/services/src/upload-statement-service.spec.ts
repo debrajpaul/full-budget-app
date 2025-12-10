@@ -44,13 +44,13 @@ describe("UploadStatementService", () => {
         fileName: validRequest.fileName,
         userId: validRequest.userId,
         tenantId: validRequest.tenantId,
-      }),
+      })
     );
     expect(logger.debug).toHaveBeenCalledWith(
-      expect.stringContaining("Uploading statement for bank"),
+      expect.stringContaining("Uploading statement for bank")
     );
     expect(logger.debug).toHaveBeenCalledWith(
-      expect.stringContaining("Statement uploaded successfully"),
+      expect.stringContaining("Statement uploaded successfully")
     );
     expect(result).toBe(true);
   });
@@ -61,7 +61,7 @@ describe("UploadStatementService", () => {
     expect(logger.error).toHaveBeenCalledWith(
       "Missing required parameters",
       expect.any(Error),
-      {},
+      {}
     );
   });
 
@@ -72,7 +72,7 @@ describe("UploadStatementService", () => {
     expect(logger.error).toHaveBeenCalledWith(
       "Error uploading statement",
       expect.any(Error),
-      validRequest,
+      validRequest
     );
   });
 });

@@ -5,13 +5,13 @@ export const recurringTransactionResolvers = {
     recurringTransactions: async (
       _: unknown,
       __: unknown,
-      ctx: IGraphQLContext,
+      ctx: IGraphQLContext
     ) => {
       if (!ctx.userId) throw new Error("Unauthorized");
       if (!ctx.tenantId) throw new Error("Tenant ID is required");
       const items = await ctx.dataSources.recurringTransactionService.list(
         ctx.tenantId,
-        ctx.userId,
+        ctx.userId
       );
       return items.map((r) => ({
         id: r.recurringId,
@@ -44,14 +44,14 @@ export const recurringTransactionResolvers = {
           endDate?: string;
         };
       },
-      ctx: IGraphQLContext,
+      ctx: IGraphQLContext
     ) => {
       if (!ctx.userId) throw new Error("Unauthorized");
       if (!ctx.tenantId) throw new Error("Tenant ID is required");
       const r = await ctx.dataSources.recurringTransactionService.create(
         ctx.tenantId,
         ctx.userId,
-        args.input,
+        args.input
       );
       return {
         id: r.recurringId,
@@ -70,7 +70,7 @@ export const recurringTransactionResolvers = {
     generateRecurringTransactions: async (
       _: unknown,
       args: { month: number; year: number },
-      ctx: IGraphQLContext,
+      ctx: IGraphQLContext
     ) => {
       if (!ctx.userId) throw new Error("Unauthorized");
       if (!ctx.tenantId) throw new Error("Tenant ID is required");
@@ -79,7 +79,7 @@ export const recurringTransactionResolvers = {
           ctx.tenantId,
           ctx.userId,
           args.month,
-          args.year,
+          args.year
         );
       return txns.length;
     },

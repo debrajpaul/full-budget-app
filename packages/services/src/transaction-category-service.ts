@@ -26,7 +26,7 @@ export class TransactionCategoryService implements ITransactionCategoryService {
     categoryRulesStore: ICategoryRulesStore,
     ruleEngine: IRuleEngine,
     bedrockClassifierService: IBedrockClassifierService,
-    aiTaggingEnabled: boolean,
+    aiTaggingEnabled: boolean
   ) {
     this.logger = logger;
     this.transactionStore = transactionStore;
@@ -58,7 +58,7 @@ export class TransactionCategoryService implements ITransactionCategoryService {
         this.aiTaggingEnabled
       ) {
         this.logger.info(
-          `Rules returned UNCLASSIFIED for ${transactionId}; invoking Bedrock`,
+          `Rules returned UNCLASSIFIED for ${transactionId}; invoking Bedrock`
         );
         const aiResult =
           await this.bedrockClassifierService.classifyWithBedrock(description);
@@ -72,8 +72,8 @@ export class TransactionCategoryService implements ITransactionCategoryService {
                 aiSub: aiResult.sub,
                 aiConfidence: aiResult.confidence,
               },
-              aiResult.reason ? { aiReason: aiResult.reason } : {},
-            ),
+              aiResult.reason ? { aiReason: aiResult.reason } : {}
+            )
           );
           matchedCategory = {
             taggedBy: "BEDROCK",
@@ -95,7 +95,7 @@ export class TransactionCategoryService implements ITransactionCategoryService {
         matchedCategory.taggedBy,
         matchedCategory.confidence,
         matchedCategory.reason,
-        undefined,
+        undefined
       );
       this.logger.debug(`Transaction ${transactionId} categorized`);
       return true;
@@ -106,23 +106,23 @@ export class TransactionCategoryService implements ITransactionCategoryService {
   }
 
   public async addRulesByTenant(
-    tenantId: ETenantType = ETenantType.default,
+    tenantId: ETenantType = ETenantType.default
   ): Promise<void> {
     this.logger.debug(`Adding rules for tenant ${tenantId}`);
     return await this.categoryRulesStore.addRules(
       tenantId,
-      keywordBaseCategoryMap,
+      keywordBaseCategoryMap
     );
   }
 
   public async getCategoriesByTenant(
-    tenantId: ETenantType,
+    tenantId: ETenantType
   ): Promise<Record<string, string[]>> {
     const grouped =
       await this.categoryRulesStore.listCategoriesByBase(tenantId);
     // Return as Record<string, string[]> to keep GraphQL layer simple
     return Object.fromEntries(
-      Object.entries(grouped).map(([k, v]) => [k, v as string[]]),
+      Object.entries(grouped).map(([k, v]) => [k, v as string[]])
     );
   }
 }

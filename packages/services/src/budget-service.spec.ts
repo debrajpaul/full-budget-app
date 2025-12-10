@@ -41,7 +41,7 @@ describe("BudgetService - setBudget validations", () => {
     const svc = new BudgetService(
       logger,
       budgetStore as BudgetStore,
-      transactionStore as ITransactionStore,
+      transactionStore as ITransactionStore
     );
 
     const response = await svc.setBudget(tenantId, userId, {
@@ -58,7 +58,7 @@ describe("BudgetService - setBudget validations", () => {
       2024,
       5,
       EBaseCategories.expenses,
-      250,
+      250
     );
     expect(response).toEqual(baseBudget);
   });
@@ -67,7 +67,7 @@ describe("BudgetService - setBudget validations", () => {
     const svc = new BudgetService(
       logger,
       budgetStore as BudgetStore,
-      transactionStore as ITransactionStore,
+      transactionStore as ITransactionStore
     );
 
     await expect(
@@ -76,7 +76,7 @@ describe("BudgetService - setBudget validations", () => {
         year: 2024,
         category: EBaseCategories.expenses,
         amount: 100,
-      }),
+      })
     ).rejects.toThrow("month must be an integer between 1 and 12");
   });
 
@@ -84,7 +84,7 @@ describe("BudgetService - setBudget validations", () => {
     const svc = new BudgetService(
       logger,
       budgetStore as BudgetStore,
-      transactionStore as ITransactionStore,
+      transactionStore as ITransactionStore
     );
 
     await expect(
@@ -93,7 +93,7 @@ describe("BudgetService - setBudget validations", () => {
         year: 1800,
         category: EBaseCategories.expenses,
         amount: 100,
-      }),
+      })
     ).rejects.toThrow("year must be a reasonable integer (1900-3000)");
   });
 
@@ -101,7 +101,7 @@ describe("BudgetService - setBudget validations", () => {
     const svc = new BudgetService(
       logger,
       budgetStore as BudgetStore,
-      transactionStore as ITransactionStore,
+      transactionStore as ITransactionStore
     );
 
     await expect(
@@ -110,7 +110,7 @@ describe("BudgetService - setBudget validations", () => {
         year: 2024,
         category: "   " as EBaseCategories,
         amount: 100,
-      }),
+      })
     ).rejects.toThrow("category is required");
   });
 
@@ -118,7 +118,7 @@ describe("BudgetService - setBudget validations", () => {
     const svc = new BudgetService(
       logger,
       budgetStore as BudgetStore,
-      transactionStore as ITransactionStore,
+      transactionStore as ITransactionStore
     );
 
     await expect(
@@ -127,7 +127,7 @@ describe("BudgetService - setBudget validations", () => {
         year: 2024,
         category: EBaseCategories.expenses,
         amount: "100" as any,
-      }),
+      })
     ).rejects.toThrow("amount must be a number");
   });
 });
@@ -163,12 +163,12 @@ describe("BudgetService - default recommended budgets", () => {
     const svc = new BudgetService(
       logger,
       budgetStore as BudgetStore,
-      transactionStore as ITransactionStore,
+      transactionStore as ITransactionStore
     );
 
     const deviations = await svc.analyzeSpend(tenantId, userId, month, year);
     const byCat = Object.fromEntries(
-      deviations.map((d) => [d.category, d.recommended]),
+      deviations.map((d) => [d.category, d.recommended])
     );
 
     expect(byCat[EBaseCategories.expenses]).toBe(-4000); // 80% of 5000
@@ -187,30 +187,30 @@ describe("BudgetService - default recommended budgets", () => {
     const svc = new BudgetService(
       logger,
       budgetStore as BudgetStore,
-      transactionStore as ITransactionStore,
+      transactionStore as ITransactionStore
     );
 
     const deviations = await svc.analyzeSpend(tenantId, userId, month, year);
     const expensesDev = deviations.find(
-      (d) => d.category === EBaseCategories.expenses,
+      (d) => d.category === EBaseCategories.expenses
     );
     expect(expensesDev?.recommended).toBe(-2000);
 
     const savingsDev = deviations.find(
-      (d) => d.category === EBaseCategories.savings,
+      (d) => d.category === EBaseCategories.savings
     );
     expect(savingsDev).toBeUndefined();
   });
 
   it("handles no income gracefully (no defaults)", async () => {
     (transactionStore.aggregateSpendByCategory as jest.Mock).mockResolvedValue(
-      {},
+      {}
     );
 
     const svc = new BudgetService(
       logger,
       budgetStore as BudgetStore,
-      transactionStore as ITransactionStore,
+      transactionStore as ITransactionStore
     );
 
     const deviations = await svc.analyzeSpend(tenantId, userId, month, year);
@@ -244,18 +244,18 @@ describe("BudgetService - annual analyzeAnnualSpend", () => {
       async (_tenant: any, _user: any, month: number) => {
         if (month === 1) return { [EBaseCategories.income]: 60000 };
         return {};
-      },
+      }
     );
 
     const svc = new BudgetService(
       logger,
       budgetStore as BudgetStore,
-      transactionStore as ITransactionStore,
+      transactionStore as ITransactionStore
     );
 
     const deviations = await svc.analyzeAnnualSpend(tenantId, userId, year);
     const byCat = Object.fromEntries(
-      deviations.map((d) => [d.category, d.recommended]),
+      deviations.map((d) => [d.category, d.recommended])
     );
 
     expect(byCat[EBaseCategories.expenses]).toBe(-48000); // 80% of 60000
@@ -277,7 +277,7 @@ describe("BudgetService - annual analyzeAnnualSpend", () => {
             [EBaseCategories.savings]: -300,
           };
         return {};
-      },
+      }
     );
     // Actuals not important for recommended check, but provide some values
     (transactionStore.aggregateSpendByCategory as jest.Mock).mockResolvedValue({
@@ -288,15 +288,15 @@ describe("BudgetService - annual analyzeAnnualSpend", () => {
     const svc = new BudgetService(
       logger,
       budgetStore as BudgetStore,
-      transactionStore as ITransactionStore,
+      transactionStore as ITransactionStore
     );
 
     const deviations = await svc.analyzeAnnualSpend(tenantId, userId, year);
     const expensesDev = deviations.find(
-      (d) => d.category === EBaseCategories.expenses,
+      (d) => d.category === EBaseCategories.expenses
     );
     const savingsDev = deviations.find(
-      (d) => d.category === EBaseCategories.savings,
+      (d) => d.category === EBaseCategories.savings
     );
 
     expect(expensesDev?.recommended).toBe(-2500); // -1000 + -1500
@@ -305,13 +305,13 @@ describe("BudgetService - annual analyzeAnnualSpend", () => {
 
   it("annual analysis handles no income gracefully (no defaults)", async () => {
     (transactionStore.aggregateSpendByCategory as jest.Mock).mockResolvedValue(
-      {},
+      {}
     );
 
     const svc = new BudgetService(
       logger,
       budgetStore as BudgetStore,
-      transactionStore as ITransactionStore,
+      transactionStore as ITransactionStore
     );
 
     const deviations = await svc.analyzeAnnualSpend(tenantId, userId, year);

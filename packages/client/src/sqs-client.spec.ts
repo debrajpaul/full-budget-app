@@ -71,7 +71,7 @@ describe("SQSService", () => {
           Body: JSON.stringify(messageBody),
           ReceiptHandle: "rh123",
         },
-      }),
+      })
     );
     expect(result).toEqual(messageBody);
   });

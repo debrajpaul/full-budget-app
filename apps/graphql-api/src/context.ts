@@ -35,11 +35,11 @@ const {
   s3Client,
   sqsClient,
   dynamoDBDocumentClient,
-  bedrockClient,
+  bedrockClient
 );
 
 export const createContext = async (
-  ctx: IncomingRequest,
+  ctx: IncomingRequest
 ): Promise<IGraphQLContext> => {
   const loggerCtx = logger.child("GraphQLContext");
   // Detect Express vs Lambda & get auth header
@@ -103,7 +103,7 @@ export const createContext = async (
 };
 
 function isExpressContext(
-  ctx: IncomingRequest,
+  ctx: IncomingRequest
 ): ctx is ExpressContextFunctionArgument {
   return "req" in ctx;
 }

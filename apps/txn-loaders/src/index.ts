@@ -10,7 +10,7 @@ const { transactionService } = setupServices(
   logger,
   s3Client,
   sqsClient,
-  dynamoDBDocumentClient,
+  dynamoDBDocumentClient
 );
 
 const { transactionLoader } = setupLoaders(logger, transactionService);

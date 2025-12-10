@@ -49,7 +49,7 @@ describe("S3Service", () => {
       $metadata: { httpStatusCode: 200 },
     });
     await expect(service.getFile(key)).rejects.toThrow(
-      `No file body returned from S3: ${key}`,
+      `No file body returned from S3: ${key}`
     );
   });
 
@@ -59,7 +59,7 @@ describe("S3Service", () => {
       Body: {},
     });
     await expect(service.getFile(key)).rejects.toThrow(
-      "Failed to get file from S3: 404",
+      "Failed to get file from S3: 404"
     );
   });
 });

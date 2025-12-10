@@ -19,6 +19,6 @@ export interface ITransactionCategoryService {
   process(request: ITransactionCategoryRequest): Promise<boolean>;
   addRulesByTenant(tenantId: ETenantType): Promise<void>;
   getCategoriesByTenant(
-    tenantId: ETenantType,
+    tenantId: ETenantType
   ): Promise<Record<string, string[]>>;
 }

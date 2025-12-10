@@ -18,7 +18,7 @@ export class RecurringTransactionStore implements IRecurringTransactionStore {
   constructor(
     logger: ILogger,
     tableName: string,
-    store: DynamoDBDocumentClient,
+    store: DynamoDBDocumentClient
   ) {
     this.logger = logger;
     this.tableName = tableName;
@@ -27,7 +27,7 @@ export class RecurringTransactionStore implements IRecurringTransactionStore {
 
   public async create(
     tenantId: ETenantType,
-    recurring: Omit<IRecurringTransaction, "tenantId" | "createdAt">,
+    recurring: Omit<IRecurringTransaction, "tenantId" | "createdAt">
   ): Promise<IRecurringTransaction> {
     const item: IRecurringTransaction = {
       ...recurring,
@@ -47,7 +47,7 @@ export class RecurringTransactionStore implements IRecurringTransactionStore {
 
   public async listByUser(
     tenantId: ETenantType,
-    userId: string,
+    userId: string
   ): Promise<IRecurringTransaction[]> {
     this.logger.debug(`Listing recurring transactions for user`);
     const command = new QueryCommand({

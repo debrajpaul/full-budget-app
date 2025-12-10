@@ -8,16 +8,16 @@ const { logger, dynamoDBDocumentClient, bedrockClient } = setupDependency();
 const { transactionCategoryService } = setupServices(
   logger,
   dynamoDBDocumentClient,
-  bedrockClient,
+  bedrockClient
 );
 
 const { transactionCategoryLoader } = setupLoaders(
   logger,
-  transactionCategoryService,
+  transactionCategoryService
 );
 
 export const handler = async (
-  event: DynamoDBStreamEvent,
+  event: DynamoDBStreamEvent
 ): Promise<DynamoDBBatchResponse> => {
   logger.debug(`handler event: ${JSON.stringify(event)}`);
   const result = await transactionCategoryLoader.loader(event.Records);

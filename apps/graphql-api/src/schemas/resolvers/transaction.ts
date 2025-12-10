@@ -14,7 +14,7 @@ export const transactionResolvers = {
     monthlyReview: async (
       _: unknown,
       args: { month: number; year: number },
-      ctx: IGraphQLContext,
+      ctx: IGraphQLContext
     ) => {
       if (!ctx.userId) throw new CustomError("Unauthorized", "UNAUTHORIZED");
       if (!ctx.tenantId)
@@ -24,19 +24,19 @@ export const transactionResolvers = {
         ctx.tenantId,
         ctx.userId,
         month,
-        year,
+        year
       );
       if (!review)
         throw new CustomError(
           "No transactions found for the selected period",
-          "NOT_FOUND",
+          "NOT_FOUND"
         );
       const categories =
         await ctx.dataSources.transactionService.categoryBreakDown(
           ctx.tenantId,
           ctx.userId,
           month,
-          year,
+          year
         );
       const categoryBreakdown = categories.map((c) => ({
         name: c.category,
@@ -63,7 +63,7 @@ export const transactionResolvers = {
     annualReview: async (
       _: unknown,
       args: { year: number },
-      ctx: IGraphQLContext,
+      ctx: IGraphQLContext
     ) => {
       if (!ctx.userId) throw new CustomError("Unauthorized", "UNAUTHORIZED");
       if (!ctx.tenantId)
@@ -72,12 +72,12 @@ export const transactionResolvers = {
       const result = await ctx.dataSources.transactionService.annualReview(
         ctx.tenantId,
         ctx.userId,
-        year,
+        year
       );
       if (!result)
         throw new CustomError(
           "No transactions found for the selected year",
-          "NOT_FOUND",
+          "NOT_FOUND"
         );
       return result;
     },
@@ -85,7 +85,7 @@ export const transactionResolvers = {
     categoryBreakdown: async (
       _: unknown,
       args: { month: number; year: number },
-      ctx: IGraphQLContext,
+      ctx: IGraphQLContext
     ) => {
       if (!ctx.userId) throw new CustomError("Unauthorized", "UNAUTHORIZED");
       if (!ctx.tenantId)
@@ -95,12 +95,12 @@ export const transactionResolvers = {
         ctx.tenantId,
         ctx.userId,
         month,
-        year,
+        year
       );
       if (!result)
         throw new CustomError(
           "No category breakdown found for the selected period",
-          "NOT_FOUND",
+          "NOT_FOUND"
         );
       return result;
     },
@@ -108,7 +108,7 @@ export const transactionResolvers = {
     aggregateSummary: async (
       _: unknown,
       args: { year: number; month?: number },
-      ctx: IGraphQLContext,
+      ctx: IGraphQLContext
     ) => {
       if (!ctx.userId) throw new CustomError("Unauthorized", "UNAUTHORIZED");
       if (!ctx.tenantId)
@@ -118,12 +118,12 @@ export const transactionResolvers = {
         ctx.tenantId,
         ctx.userId,
         year,
-        month,
+        month
       );
       if (!result)
         throw new CustomError(
           "No aggregate summary found for the selected period",
-          "NOT_FOUND",
+          "NOT_FOUND"
         );
       return result;
     },
@@ -139,7 +139,7 @@ export const transactionResolvers = {
         };
         cursor?: string;
       },
-      ctx: IGraphQLContext,
+      ctx: IGraphQLContext
     ) => {
       if (!ctx.userId) throw new CustomError("Unauthorized", "UNAUTHORIZED");
       if (!ctx.tenantId)
@@ -155,12 +155,12 @@ export const transactionResolvers = {
           year,
           month,
           bankName,
-          category,
+          category
         );
       if (!txns)
         throw new CustomError(
           "No filtered transactions found for the selected criteria",
-          "NOT_FOUND",
+          "NOT_FOUND"
         );
 
       const PAGE_SIZE = 20;
@@ -189,7 +189,7 @@ export const transactionResolvers = {
 
       const grouped =
         await ctx.dataSources.transactionCategoryService.getCategoriesByTenant(
-          ctx.tenantId,
+          ctx.tenantId
         );
       // Transform to array with enum-compatible keys
       return Object.entries(grouped).map(([base, categories]) => ({
@@ -202,14 +202,14 @@ export const transactionResolvers = {
     addTransactionCategory: async (
       _: unknown,
       __: unknown,
-      ctx: IGraphQLContext,
+      ctx: IGraphQLContext
     ) => {
       if (!ctx.userId) throw new CustomError("Unauthorized", "UNAUTHORIZED");
       if (!ctx.tenantId)
         throw new CustomError("Tenant ID is required", "TENANT_ID_REQUIRED");
       // const { name, keyword } = AddTransactionCategoryArgs.parse(args);
       await ctx.dataSources.transactionCategoryService.addRulesByTenant(
-        ctx.tenantId,
+        ctx.tenantId
       );
       return true;
     },
@@ -217,7 +217,7 @@ export const transactionResolvers = {
     reclassifyTransaction: async (
       _: unknown,
       args: { id: string; category: string },
-      ctx: IGraphQLContext,
+      ctx: IGraphQLContext
     ) => {
       if (!ctx.userId) throw new CustomError("Unauthorized", "UNAUTHORIZED");
       if (!ctx.tenantId)
@@ -231,7 +231,7 @@ export const transactionResolvers = {
           ctx.tenantId,
           id,
           category,
-          taggedBy,
+          taggedBy
         );
       return result;
     },

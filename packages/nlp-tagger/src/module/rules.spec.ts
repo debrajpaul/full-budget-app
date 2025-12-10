@@ -12,8 +12,7 @@ import {
 const findRule = (description: string, when: ERawTxnType = ERawTxnType.any) => {
   const desc = description.toLowerCase();
   return keywordBaseCategoryMap.find(
-    (r) =>
-      (r.when === ERawTxnType.any || r.when === when) && r.match.test(desc),
+    (r) => (r.when === ERawTxnType.any || r.when === when) && r.match.test(desc)
   );
 };
 
@@ -200,7 +199,7 @@ describe("keywordBaseCategoryMap (rule patterns)", () => {
       expect(matchedRule.reason).toBe(reason);
       expect(matchedRule.taggedBy).toBe("RULE_ENGINE");
       expect(matchedRule.confidence).toBeGreaterThan(0);
-    },
+    }
   );
 
   it("does not match credit-only rules on debit transactions", () => {
@@ -216,7 +215,7 @@ describe("keywordBaseCategoryMap (rule patterns)", () => {
   it("does not match unrelated text", () => {
     const r = findRule(
       "random grocery brand that is unknown",
-      ERawTxnType.debit,
+      ERawTxnType.debit
     );
     expect(r).toBeUndefined();
   });

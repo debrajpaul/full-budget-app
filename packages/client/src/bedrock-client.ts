@@ -19,7 +19,7 @@ export class BedrockClient implements IBedrockClient {
   constructor(
     private readonly logger: ILogger,
     private readonly bedrock: BedrockRuntimeClient,
-    private readonly bedrockClientConfig: IBedrockClientConfig,
+    private readonly bedrockClientConfig: IBedrockClientConfig
   ) {
     this.logger.info("BedrockClient initialized");
     this.logger.info("BedrockClient config", { bedrockClientConfig });

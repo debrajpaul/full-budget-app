@@ -3,11 +3,11 @@ import { TransactionLoader } from "./loaders/transaction-loader";
 
 export function setupLoaders(
   logger: ILogger,
-  transactionService: ITransactionService,
+  transactionService: ITransactionService
 ) {
   const transactionLoader = new TransactionLoader(
     logger.child("TransactionLoader"),
-    transactionService,
+    transactionService
   );
   return {
     transactionLoader,

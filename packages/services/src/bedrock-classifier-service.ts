@@ -35,7 +35,7 @@ export class BedrockClassifierService implements IBedrockClassifierService {
   } | null> {
     try {
       this.logger.info(
-        `Classifying transaction with description: ${description}`,
+        `Classifying transaction with description: ${description}`
       );
       const response = await this.bedrockClient.invokeModel(description);
       const built = this.buildResponse(response);

@@ -45,7 +45,7 @@ describe("SbiBankParser", () => {
   it("should throw error if header not found", async () => {
     const buffer = Buffer.from("No header here\nSome random text", "utf-8");
     await expect(parser.parse(buffer, userId)).rejects.toThrow(
-      "Could not find valid header row in SBI CSV.",
+      "Could not find valid header row in SBI CSV."
     );
   });
 

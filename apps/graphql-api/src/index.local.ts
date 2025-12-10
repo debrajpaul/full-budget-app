@@ -26,12 +26,12 @@ async function startServer() {
     express.json(),
     expressMiddleware(server, {
       context: createContext,
-    }),
+    })
   );
 
   httpServer.listen(config.port, () => {
     console.log(
-      `🚀 Apollo Server ready at http://localhost:${config.port}/graphql`,
+      `🚀 Apollo Server ready at http://localhost:${config.port}/graphql`
     );
   });
 }
