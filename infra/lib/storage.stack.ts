@@ -3,7 +3,6 @@ import { Stack, StackProps, RemovalPolicy } from "aws-cdk-lib";
 import { Bucket, BucketEncryption } from "aws-cdk-lib/aws-s3";
 import { Construct } from "constructs";
 
-
 export class StorageStack extends Stack {
   public readonly uploadBucket: Bucket;
 

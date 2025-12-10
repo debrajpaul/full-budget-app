@@ -4,12 +4,12 @@ import {
   Duration,
   aws_lambda as lambda,
   aws_iam as iam,
-} from 'aws-cdk-lib';
-import { Construct } from 'constructs';
-import * as path from 'path';
-import { Table } from 'aws-cdk-lib/aws-dynamodb';
-import * as eventSources from 'aws-cdk-lib/aws-lambda-event-sources';
-import { LambdaAlarmsConstruct } from './lambda-alarms-construct';
+} from "aws-cdk-lib";
+import { Construct } from "constructs";
+import * as path from "path";
+import { Table } from "aws-cdk-lib/aws-dynamodb";
+import * as eventSources from "aws-cdk-lib/aws-lambda-event-sources";
+import { LambdaAlarmsConstruct } from "./lambda-alarms-construct";
 
 interface TransactionCategoryStackProps extends StackProps {
   transactionTable: Table;
@@ -18,26 +18,36 @@ interface TransactionCategoryStackProps extends StackProps {
 }
 
 export class TransactionCategoryStack extends Stack {
-  constructor(scope: Construct, id: string, props: TransactionCategoryStackProps) {
+  constructor(
+    scope: Construct,
+    id: string,
+    props: TransactionCategoryStackProps
+  ) {
     super(scope, id, props);
 
     // Use a stack-scoped function name to avoid log group collisions across deployments.
     const functionName = `${Stack.of(this).stackName}-TransactionCategoryLoader`;
 
-    const transactionCategoryLambda = new lambda.Function(this, 'TransactionCategoryLambda', {
-      functionName,
-      runtime: lambda.Runtime.NODEJS_20_X,
-      handler: 'index.handler',
-      code: lambda.Code.fromAsset(path.resolve(__dirname, '../../apps/tag-loaders/dist')),
-      timeout: Duration.seconds(30),
-      logRetentionRetryOptions: { base: Duration.hours(8), maxRetries: 10 },
-      tracing: lambda.Tracing.ACTIVE,
-      environment: props.environment,
-    });
+    const transactionCategoryLambda = new lambda.Function(
+      this,
+      "TransactionCategoryLambda",
+      {
+        functionName,
+        runtime: lambda.Runtime.NODEJS_20_X,
+        handler: "index.handler",
+        code: lambda.Code.fromAsset(
+          path.resolve(__dirname, "../../apps/tag-loaders/dist")
+        ),
+        timeout: Duration.seconds(30),
+        logRetentionRetryOptions: { base: Duration.hours(8), maxRetries: 10 },
+        tracing: lambda.Tracing.ACTIVE,
+        environment: props.environment,
+      }
+    );
 
     // Allow the function to write trace segments to X‑Ray
     transactionCategoryLambda.role?.addManagedPolicy(
-      iam.ManagedPolicy.fromAwsManagedPolicyName('AWSXRayWriteOnlyAccess'),
+      iam.ManagedPolicy.fromAwsManagedPolicyName("AWSXRayWriteOnlyAccess")
     );
 
     // Attach queue trigger
@@ -51,7 +61,12 @@ export class TransactionCategoryStack extends Stack {
     // DynamoDB access
     transactionCategoryLambda.addToRolePolicy(
       new iam.PolicyStatement({
-        actions: ['dynamodb:PutItem', 'dynamodb:UpdateItem', 'dynamodb:GetItem', 'dynamodb:Query'],
+        actions: [
+          "dynamodb:PutItem",
+          "dynamodb:UpdateItem",
+          "dynamodb:GetItem",
+          "dynamodb:Query",
+        ],
         resources: [props.transactionsCategoryTable.tableArn],
       })
     );
@@ -59,9 +74,9 @@ export class TransactionCategoryStack extends Stack {
     // Amazon Bedrock model invocation access
     transactionCategoryLambda.addToRolePolicy(
       new iam.PolicyStatement({
-        actions: ['bedrock:InvokeModel'],
-        resources: ['*'], // Consider narrowing to specific model ARN(s)
-      }),
+        actions: ["bedrock:InvokeModel"],
+        resources: ["*"], // Consider narrowing to specific model ARN(s)
+      })
     );
 
     // Grant permissions to the transaction category table
@@ -73,7 +88,7 @@ export class TransactionCategoryStack extends Stack {
     props.transactionTable.grantWriteData(transactionCategoryLambda);
 
     // Reusable monitoring
-    new LambdaAlarmsConstruct(this, 'TransactionCategoryLoaderAlarms', {
+    new LambdaAlarmsConstruct(this, "TransactionCategoryLoaderAlarms", {
       lambdaFn: transactionCategoryLambda,
       alarmPrefix: functionName,
     });
