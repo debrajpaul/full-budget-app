@@ -8,6 +8,7 @@ import {
   IRecurringTransaction,
   ERecurringFrequency,
   EBankName,
+  EBankType,
 } from "@common";
 
 function clampDayOfMonth(year: number, month: number, day: number): number {
@@ -93,27 +94,27 @@ export class RecurringTransactionService
         if (occ < start) continue;
         if (end && occ > end) continue;
 
+        const credit = r.amount > 0 ? r.amount : 0;
+        const debit = r.amount < 0 ? Math.abs(r.amount) : 0;
+
         const txn: Omit<ITransaction, "createdAt" | "tenantId"> = {
           userId,
           transactionId: `${userId}#rec#${r.recurringId}#${dateStr}`,
           bankName: EBankName.other,
-          amount: r.amount,
-          balance: undefined,
+          bankType: EBankType.other,
+          credit,
+          debit,
           txnDate: dateStr,
           description: r.description,
-          category: r.category,
+          category: r.category as ITransaction["category"],
           taggedBy: "SYSTEM",
           type: "recurring",
-          embedding: undefined,
-          confidence: undefined,
-          updatedAt: undefined,
-          deletedAt: undefined,
-        } as any; // match store's expected optional fields
+        };
 
         try {
           await this.transactionStore.saveTransactions(tenantId, [txn]);
           created.push({
-            ...(txn as any),
+            ...txn,
             tenantId,
             createdAt: new Date().toISOString(),
           });

@@ -7,6 +7,7 @@ import {
   ERecurringFrequency,
   IRecurringTransaction,
   EBankName,
+  EBankType,
 } from "@common";
 import { RecurringTransactionService } from "./recurring-transaction-service";
 
@@ -184,6 +185,46 @@ describe("RecurringTransactionService", () => {
     expect(created.length).toBe(mondays.length);
   });
 
+  it("skips occurrences outside the start/end window", async () => {
+    const futureStart: IRecurringTransaction = {
+      tenantId,
+      userId,
+      recurringId: "user1#rec#future",
+      description: "Future",
+      amount: -100,
+      category: "fees",
+      frequency: ERecurringFrequency.monthly,
+      dayOfMonth: 15,
+      startDate: "2025-10-01",
+      createdAt: "2025-07-01T00:00:00.000Z",
+    } as any;
+    const expired: IRecurringTransaction = {
+      tenantId,
+      userId,
+      recurringId: "user1#rec#expired",
+      description: "Expired",
+      amount: -50,
+      category: "fees",
+      frequency: ERecurringFrequency.monthly,
+      dayOfMonth: 10,
+      startDate: "2025-01-01",
+      endDate: "2025-08-15",
+      createdAt: "2025-01-01T00:00:00.000Z",
+    } as any;
+    recurringStore.listByUser.mockResolvedValue([futureStart, expired]);
+    transactionStore.saveTransactions.mockResolvedValue();
+
+    const created = await service.materializeForMonth(
+      tenantId,
+      userId,
+      9,
+      2025,
+    );
+
+    expect(transactionStore.saveTransactions).not.toHaveBeenCalled();
+    expect(created).toHaveLength(0);
+  });
+
   it("materializes yearly only when month matches", async () => {
     const yearly: IRecurringTransaction = {
       tenantId,
@@ -246,6 +287,52 @@ describe("RecurringTransactionService", () => {
     );
     expect(calls).toEqual(["2025-08-04", "2025-08-18"]);
     expect(created.map((t) => t.txnDate)).toEqual(["2025-08-04", "2025-08-18"]);
+  });
+
+  it("maps positive/negative amounts to credit and debit correctly", async () => {
+    const income: IRecurringTransaction = {
+      tenantId,
+      userId,
+      recurringId: "user1#rec#income",
+      description: "Salary",
+      amount: 2500,
+      frequency: ERecurringFrequency.monthly,
+      dayOfMonth: 1,
+      startDate: "2025-08-01",
+      createdAt: "2025-07-01T00:00:00.000Z",
+    } as any;
+    const expense: IRecurringTransaction = {
+      tenantId,
+      userId,
+      recurringId: "user1#rec#expense",
+      description: "Bill",
+      amount: -75,
+      frequency: ERecurringFrequency.monthly,
+      dayOfMonth: 2,
+      startDate: "2025-08-01",
+      createdAt: "2025-07-01T00:00:00.000Z",
+    } as any;
+    recurringStore.listByUser.mockResolvedValue([income, expense]);
+    transactionStore.saveTransactions.mockResolvedValue();
+
+    const created = await service.materializeForMonth(
+      tenantId,
+      userId,
+      8,
+      2025,
+    );
+
+    const calls = transactionStore.saveTransactions.mock.calls;
+    expect(calls).toHaveLength(2);
+    const [incomeCall, expenseCall] = calls;
+    const incomeTxn = incomeCall[1][0];
+    const expenseTxn = expenseCall[1][0];
+    expect(incomeTxn.credit).toBe(2500);
+    expect(incomeTxn.debit).toBe(0);
+    expect(incomeTxn.bankType).toBe(EBankType.other);
+    expect(expenseTxn.credit).toBe(0);
+    expect(expenseTxn.debit).toBe(75);
+    expect(created).toHaveLength(2);
   });
 
   it("continues on save error and returns created subset", async () => {

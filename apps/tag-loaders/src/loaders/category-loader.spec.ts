@@ -178,7 +178,7 @@ describe("TransactionCategoryLoader", () => {
     expect(service.process).not.toHaveBeenCalled();
   });
 
-  it("skips records without allowed tenant types", async () => {
+  it("processes records with the default tenant type", async () => {
     const record = {
       eventID: "8",
       eventName: "INSERT",
@@ -186,6 +186,30 @@ describe("TransactionCategoryLoader", () => {
         NewImage: {
           tenantId: { S: ETenantType.default },
           transactionId: { S: "t8" },
+          description: { S: "default tenant" },
+        },
+      },
+    } as unknown as DynamoDBRecord;
+
+    await loader.loader([record]);
+
+    expect(service.process).toHaveBeenCalledWith(
+      expect.objectContaining({
+        tenantId: ETenantType.default,
+        transactionId: "t8",
+        description: "default tenant",
+      }),
+    );
+  });
+
+  it("skips records with unrecognized tenant types", async () => {
+    const record = {
+      eventID: "9",
+      eventName: "INSERT",
+      dynamodb: {
+        NewImage: {
+          tenantId: { S: "UNKNOWN" },
+          transactionId: { S: "t9" },
           description: { S: "invalid tenant" },
         },
       },
@@ -198,7 +222,7 @@ describe("TransactionCategoryLoader", () => {
 
   it("skips records missing transactionId", async () => {
     const record = {
-      eventID: "9",
+      eventID: "10",
       eventName: "INSERT",
       dynamodb: {
         NewImage: {
@@ -215,12 +239,12 @@ describe("TransactionCategoryLoader", () => {
 
   it("skips records with non-unclassified category", async () => {
     const record = {
-      eventID: "10",
+      eventID: "11",
       eventName: "INSERT",
       dynamodb: {
         NewImage: {
           tenantId: { S: ETenantType.client },
-          transactionId: { S: "t10" },
+          transactionId: { S: "t11" },
           description: { S: "already tagged" },
           category: { S: EBaseCategories.expenses },
         },

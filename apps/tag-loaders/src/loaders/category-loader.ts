@@ -46,7 +46,9 @@ export class TransactionCategoryLoader {
         if (
           !tenantId ||
           !(
-            tenantId === ETenantType.client || tenantId === ETenantType.personal
+            tenantId === ETenantType.client ||
+            tenantId === ETenantType.personal ||
+            tenantId === ETenantType.default
           )
         ) {
           this.logger.debug("Skipping record without tenantId", {
