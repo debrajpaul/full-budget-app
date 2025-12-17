@@ -7,11 +7,11 @@ export interface ITransaction {
   transactionId: string;
   bankName: EBankName;
   bankType: EBankType;
+  description: string;
+  txnDate: string | undefined;
   credit: number;
   debit: number;
   balance?: number;
-  txnDate: string | undefined;
-  description?: string;
   category?: EBaseCategories;
   subCategory?: string; // Optional detailed sub-category
   embedding?: number[];
