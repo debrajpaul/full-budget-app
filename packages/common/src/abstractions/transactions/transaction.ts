@@ -18,7 +18,6 @@ export interface ITransaction {
   taggedBy?: string;
   reason?: string;
   confidence?: number;
-  type?: string;
   createdAt: string;
   updatedAt?: string;
   deletedAt?: string;

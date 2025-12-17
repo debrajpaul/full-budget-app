@@ -165,16 +165,7 @@ export const transactionResolvers = {
 
       const PAGE_SIZE = 20;
       const start = cursor ? parseInt(cursor, 10) : 0;
-      const items = txns.slice(start, start + PAGE_SIZE).map((t) => ({
-        id: t.transactionId,
-        date: t.txnDate,
-        description: t.description,
-        debit: t.debit,
-        credit: t.credit,
-        currency: "INR",
-        category: t.category,
-        taggedBy: t.taggedBy,
-      }));
+      const items = txns.slice(start, start + PAGE_SIZE);
 
       const nextCursor =
         start + PAGE_SIZE < txns.length ? String(start + PAGE_SIZE) : null;
