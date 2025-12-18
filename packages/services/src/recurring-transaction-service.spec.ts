@@ -122,7 +122,6 @@ describe("RecurringTransactionService", () => {
     );
     expect(txn.txnDate).toBe("2025-02-28");
     expect(txn.bankName).toBe(EBankName.other);
-    expect(txn.type).toBe("recurring");
     expect(txn.category).toBe("fees");
     expect(created).toHaveLength(1);
   });

@@ -108,7 +108,6 @@ export class RecurringTransactionService implements RecurringServiceContract {
           description: r.description,
           category: r.category as ITransaction["category"],
           taggedBy: "SYSTEM",
-          type: "recurring",
         };
 
         try {
