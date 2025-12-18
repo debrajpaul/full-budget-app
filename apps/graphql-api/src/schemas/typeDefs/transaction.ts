@@ -13,30 +13,17 @@ export const transactionTypeDefs = /* GraphQL */ `
     txnDate: String!
     description: String
     category: String
+    subCategory: String
     embedding: [Float!]
     taggedBy: String
     confidence: Float
-    type: String
-  }
-  """
-  Simplified transaction representation used for listings.
-  """
-  type TransactionItem {
-    id: String!
-    date: String!
-    description: String
-    credit: Float!
-    debit: Float!
-    currency: String!
-    category: String
-    taggedBy: String
   }
 
   """
   Cursor-paginated list of transaction items.
   """
   type TransactionsPage {
-    items: [TransactionItem!]!
+    items: [Transaction!]!
     cursor: String
   }
 

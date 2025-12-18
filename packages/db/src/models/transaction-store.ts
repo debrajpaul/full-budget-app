@@ -69,7 +69,6 @@ export class TransactionStore implements ITransactionStore {
         embedding: txn.embedding,
         taggedBy: txn.taggedBy,
         confidence: txn.confidence,
-        type: txn.type,
       };
 
       const command = new PutCommand({
