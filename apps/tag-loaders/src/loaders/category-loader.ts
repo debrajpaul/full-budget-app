@@ -1,6 +1,5 @@
 import {
   DynamoDBRecord,
-  AttributeValue,
   DynamoDBBatchResponse,
   DynamoDBBatchItemFailure,
 } from "aws-lambda";
@@ -89,10 +88,6 @@ export class TransactionCategoryLoader {
           debit: newImage.debit?.N ? Number(newImage.debit.N) : 0,
           credit: newImage.credit?.N ? Number(newImage.credit.N) : 0,
           createdAt: newImage.createdAt?.S ?? new Date().toISOString(),
-          embedding:
-            newImage.embedding?.L?.map((e: AttributeValue) =>
-              Number(e.N || 0)
-            ) ?? undefined,
           taggedBy: newImage.taggedBy?.S,
           confidence: newImage.confidence?.N
             ? Number(newImage.confidence.N)

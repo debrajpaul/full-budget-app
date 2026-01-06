@@ -92,8 +92,7 @@ describe("TransactionCategoryService", () => {
         categorizeResult.subCategory,
         categorizeResult.taggedBy,
         categorizeResult.confidence,
-        categorizeResult.reason,
-        undefined
+        categorizeResult.reason
       );
       expect(logger.debug).toHaveBeenCalledWith(
         `Transaction ${request.transactionId} categorized`
@@ -129,8 +128,7 @@ describe("TransactionCategoryService", () => {
         ESubInvestmentCategories.stocks,
         "BEDROCK",
         0.92,
-        "High confidence AI match",
-        undefined
+        "High confidence AI match"
       );
     });
 
@@ -153,8 +151,7 @@ describe("TransactionCategoryService", () => {
         undefined,
         "BEDROCK",
         0.7,
-        "AI fallback",
-        undefined
+        "AI fallback"
       );
     });
 
@@ -177,7 +174,6 @@ describe("TransactionCategoryService", () => {
         EBaseCategories.unclassified,
         undefined,
         "RULE",
-        undefined,
         undefined,
         undefined
       );
@@ -209,7 +205,6 @@ describe("TransactionCategoryService", () => {
         EBaseCategories.unclassified,
         undefined,
         "RULE",
-        undefined,
         undefined,
         undefined
       );
