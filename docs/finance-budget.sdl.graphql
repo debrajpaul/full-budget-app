@@ -86,7 +86,6 @@ type Transaction {
   txnDate: String!
   description: String
   category: String
-  embedding: [Float!]
   taggedBy: String
   confidence: Float
   type: String

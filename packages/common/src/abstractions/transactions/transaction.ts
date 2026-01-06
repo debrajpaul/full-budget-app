@@ -14,7 +14,6 @@ export interface ITransaction {
   balance?: number;
   category?: EBaseCategories;
   subCategory?: string; // Optional detailed sub-category
-  embedding?: number[];
   taggedBy?: string;
   reason?: string;
   confidence?: number;

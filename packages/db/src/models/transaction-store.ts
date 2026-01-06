@@ -66,7 +66,6 @@ export class TransactionStore implements ITransactionStore {
         description: txn.description || "NONE",
         balance: txn.balance,
         category: txn.category,
-        embedding: txn.embedding,
         taggedBy: txn.taggedBy,
         confidence: txn.confidence,
       };
@@ -181,8 +180,7 @@ export class TransactionStore implements ITransactionStore {
     matchedSubCategory?: EAllSubCategories,
     taggedBy?: string,
     confidence?: number,
-    reason?: string,
-    embedding?: number[]
+    reason?: string
   ): Promise<void> {
     this.logger.debug(`Updating transaction category`);
     this.logger.debug("Transaction ID & Category", {
@@ -213,11 +211,6 @@ export class TransactionStore implements ITransactionStore {
     if (confidence !== undefined) {
       updateExpressions.push("confidence = :conf");
       expressionAttributeValues[":conf"] = confidence;
-    }
-
-    if (embedding !== undefined) {
-      updateExpressions.push("embedding = :emb");
-      expressionAttributeValues[":emb"] = embedding;
     }
 
     updateExpressions.push("updatedAt = :updatedAt");

@@ -33,7 +33,7 @@ export class TransactionCategoryService implements ITransactionCategoryService {
     this.categoryRulesStore = categoryRulesStore;
     this.ruleEngine = ruleEngine;
     this.bedrockClassifierService = bedrockClassifierService;
-    this.aiTaggingEnabled = aiTaggingEnabled;
+    this.aiTaggingEnabled = aiTaggingEnabled || false;
     this.logger.debug("ProcessService initialized");
   }
   public async process(request: ITransactionCategoryRequest): Promise<boolean> {
@@ -94,8 +94,7 @@ export class TransactionCategoryService implements ITransactionCategoryService {
         matchedCategory.subCategory,
         matchedCategory.taggedBy,
         matchedCategory.confidence,
-        matchedCategory.reason,
-        undefined
+        matchedCategory.reason
       );
       this.logger.debug(`Transaction ${transactionId} categorized`);
       return true;

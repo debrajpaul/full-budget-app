@@ -10,7 +10,6 @@ export interface ITransactionCategoryRequest {
   credit: number;
   debit: number;
   createdAt: string;
-  embedding?: number[];
   taggedBy?: string;
   confidence?: number;
 }

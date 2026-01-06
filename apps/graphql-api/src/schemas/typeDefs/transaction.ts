@@ -14,7 +14,6 @@ export const transactionTypeDefs = /* GraphQL */ `
     description: String
     category: String
     subCategory: String
-    embedding: [Float!]
     taggedBy: String
     confidence: Float
   }

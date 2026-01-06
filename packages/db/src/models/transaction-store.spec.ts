@@ -30,7 +30,6 @@ describe("TransactionStore", () => {
     description: "desc",
     balance: 1000,
     category: EBaseCategories.unclassified,
-    embedding: [0.1, 0.2],
     taggedBy: "RULE_ENGINE",
     confidence: 0.9,
     createdAt: "2025-08-07T00:00:00.000Z",
@@ -52,7 +51,6 @@ describe("TransactionStore", () => {
     await transactionStore.saveTransaction(tenantId, txnWithoutTenant);
     expect(storeMock.send).toHaveBeenCalled();
     const callArg = storeMock.send.mock.calls[0][0];
-    expect(callArg.input.Item.embedding).toEqual(txn.embedding);
     expect(callArg.input.Item.taggedBy).toEqual(txn.taggedBy);
     expect(callArg.input.Item.confidence).toEqual(txn.confidence);
     expect(loggerMock.debug).toHaveBeenCalledWith(
@@ -133,8 +131,7 @@ describe("TransactionStore", () => {
       undefined,
       "RULE_ENGINE",
       0.95,
-      undefined,
-      [0.1, 0.2]
+      undefined
     );
     expect(storeMock.send).toHaveBeenCalled();
     const command = storeMock.send.mock.calls[0][0];
@@ -142,7 +139,6 @@ describe("TransactionStore", () => {
       ":cat": EBaseCategories.expenses,
       ":tagger": "RULE_ENGINE",
       ":conf": 0.95,
-      ":emb": [0.1, 0.2],
     });
     expect(command.input.ExpressionAttributeValues[":updatedAt"]).toBeDefined();
   });
@@ -156,8 +152,7 @@ describe("TransactionStore", () => {
       ESubExpenseCategories.food,
       "RULE_ENGINE",
       0.88,
-      undefined,
-      [0.3, 0.4]
+      undefined
     );
     const command = storeMock.send.mock.calls[0][0];
     expect(command.input.UpdateExpression).toContain("subCategory = :subCat");
@@ -166,7 +161,6 @@ describe("TransactionStore", () => {
       ":subCat": ESubExpenseCategories.food,
       ":tagger": "RULE_ENGINE",
       ":conf": 0.88,
-      ":emb": [0.3, 0.4],
     });
   });
 

@@ -36,7 +36,6 @@ describe("TransactionCategoryLoader", () => {
           debit: { N: "12.34" },
           credit: { N: "4.56" },
           createdAt: { S: "2024-01-01T00:00:00.000Z" },
-          embedding: { L: [{ N: "0.1" }, { N: "0.2" }] },
           taggedBy: { S: "RULE_ENGINE" },
           confidence: { N: "0.9" },
         },
@@ -53,7 +52,6 @@ describe("TransactionCategoryLoader", () => {
       debit: 12.34,
       credit: 4.56,
       createdAt: "2024-01-01T00:00:00.000Z",
-      embedding: [0.1, 0.2],
       taggedBy: "RULE_ENGINE",
       confidence: 0.9,
     });
@@ -86,7 +84,6 @@ describe("TransactionCategoryLoader", () => {
       debit: 0,
       credit: 0,
       createdAt: fixedDate.toISOString(),
-      embedding: undefined,
       taggedBy: undefined,
       confidence: undefined,
     });
