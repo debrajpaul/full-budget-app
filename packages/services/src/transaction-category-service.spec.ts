@@ -6,6 +6,7 @@ import {
   ICategoryRulesStore,
   ITransactionCategoryRequest,
   EBaseCategories,
+  ESubExpenseCategories,
   ESubInvestmentCategories,
   IRuleEngine,
   IBedrockClassifierService,
@@ -75,7 +76,9 @@ describe("TransactionCategoryService", () => {
       };
       ruleEngine.categorize.mockReturnValue(categorizeResult);
 
-      const request = makeRequest();
+      const request = makeRequest({
+        description: "Mystery merchant debit",
+      });
       const result = await service.process(request);
 
       expect(result).toBe(true);
@@ -99,6 +102,33 @@ describe("TransactionCategoryService", () => {
       );
       expect(logger.info).toHaveBeenCalledWith(
         "process started processing messages"
+      );
+    });
+
+    it("persists FOOD keyword matches from rules with confidence", async () => {
+      const request = makeRequest({
+        description: "Swiggy Instamart order #456",
+        debit: 450,
+      });
+      ruleEngine.categorize.mockReturnValue({
+        category: EBaseCategories.expenses,
+        subCategory: ESubExpenseCategories.food,
+        taggedBy: "RULE_ENGINE",
+        reason: "Food/grocery delivery",
+        confidence: 0.9,
+      });
+
+      const result = await service.process(request);
+
+      expect(result).toBe(true);
+      expect(transactionStore.updateTransactionCategory).toHaveBeenCalledWith(
+        request.tenantId,
+        request.transactionId,
+        EBaseCategories.expenses,
+        ESubExpenseCategories.food,
+        "RULE_ENGINE",
+        0.9,
+        "Food/grocery delivery"
       );
     });
 
@@ -155,7 +185,7 @@ describe("TransactionCategoryService", () => {
       );
     });
 
-    it("continues with rule engine result when Bedrock returns no match", async () => {
+    it("keeps unknown descriptions UNCLASSIFIED when AI returns no suggestion", async () => {
       ruleEngine.categorize.mockReturnValue({
         category: EBaseCategories.unclassified,
         taggedBy: "RULE",

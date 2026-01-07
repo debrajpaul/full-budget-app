@@ -263,13 +263,15 @@ export class TransactionService implements ITransactionService {
     this.logger.debug(`FilteredTransactions transactions`, {
       count: txns.length,
     });
+    let filtered = txns;
+
     if (bankName) {
-      txns.filter((txn) => txn.bankName === bankName);
+      filtered = filtered.filter((txn) => txn.bankName === bankName);
     }
     if (category) {
-      txns.filter((txn) => txn.category === category);
+      filtered = filtered.filter((txn) => txn.category === category);
     }
-    return txns;
+    return filtered;
   }
 
   public async reclassifyTransaction(
