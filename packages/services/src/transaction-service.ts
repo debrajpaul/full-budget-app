@@ -57,6 +57,7 @@ export class TransactionService implements ITransactionService {
     if (
       !messageData.fileKey ||
       !messageData.bankName ||
+      !messageData.bankType ||
       !messageData.userId ||
       !messageData.tenantId
     ) {
@@ -64,7 +65,7 @@ export class TransactionService implements ITransactionService {
       return false;
     }
     this.logger.debug(
-      `Processing fileKey: ${messageData.fileKey}, bank: ${messageData.bankName}, userId: ${messageData.userId}, tenantId: ${messageData.tenantId}`
+      `Processing fileKey: ${messageData.fileKey}, bank: ${messageData.bankName}, bankType: ${messageData.bankType}, userId: ${messageData.userId}, tenantId: ${messageData.tenantId}`
     );
     let flag: boolean = await this.process(messageData);
     this.logger.debug(`Flag ${flag}`);

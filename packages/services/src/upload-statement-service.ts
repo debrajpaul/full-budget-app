@@ -46,7 +46,7 @@ export class UploadStatementService implements IUploadStatementService {
         tenantId,
       });
       const buffer = Buffer.from(contentBase64, "base64");
-      const fileKey = `${bankName}/${bankType}}/${randomUUID()}-${fileName}`;
+      const fileKey = `${bankName}/${bankType}/${randomUUID()}-${fileName}`;
       const transactionRequest: ITransactionSqsRequest = {
         bankName,
         bankType,
