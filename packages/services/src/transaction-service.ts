@@ -19,6 +19,8 @@ import {
 import {
   HdfcBankParser,
   SbiBankParser,
+  HdfcCurrentParser,
+  AxisSavingsParser,
   AxisCreditCardParser,
   HdfcCreditCardParser,
 } from "@parser";
@@ -57,6 +59,7 @@ export class TransactionService implements ITransactionService {
     if (
       !messageData.fileKey ||
       !messageData.bankName ||
+      !messageData.bankType ||
       !messageData.userId ||
       !messageData.tenantId
     ) {
@@ -64,7 +67,7 @@ export class TransactionService implements ITransactionService {
       return false;
     }
     this.logger.debug(
-      `Processing fileKey: ${messageData.fileKey}, bank: ${messageData.bankName}, userId: ${messageData.userId}, tenantId: ${messageData.tenantId}`
+      `Processing fileKey: ${messageData.fileKey}, bank: ${messageData.bankName}, bankType: ${messageData.bankType}, userId: ${messageData.userId}, tenantId: ${messageData.tenantId}`
     );
     let flag: boolean = await this.process(messageData);
     this.logger.debug(`Flag ${flag}`);
@@ -309,8 +312,8 @@ export class TransactionService implements ITransactionService {
             return hdfcCreditCardParser.parse(buffer, userId);
           }
           case EBankType.current: {
-            const hdfcBankParser = new HdfcBankParser();
-            return hdfcBankParser.parse(buffer, userId);
+            const hdfcCurrentParser = new HdfcCurrentParser();
+            return hdfcCurrentParser.parse(buffer, userId);
           }
           case EBankType.savings: {
             const hdfcBankParser = new HdfcBankParser();
@@ -329,8 +332,8 @@ export class TransactionService implements ITransactionService {
             return axisCreditCardParser.parse(buffer, userId);
           }
           case EBankType.savings: {
-            const axisCreditCardParser = new AxisCreditCardParser();
-            return axisCreditCardParser.parse(buffer, userId);
+            const axisSavingsParser = new AxisSavingsParser();
+            return axisSavingsParser.parse(buffer, userId);
           }
           default: {
             console.warn(`No parser implemented for bank type: ${bankType}`);
