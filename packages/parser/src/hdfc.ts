@@ -3,6 +3,17 @@ import { IBankParser, ITransaction, EBankName, EBankType } from "@common";
 import { Readable } from "stream";
 
 export class HdfcBankParser implements IBankParser {
+  /**
+   * Parse the provided CSV buffer and return a list of transaction
+   * descriptors.  The returned objects omit the `createdAt` and `tenantId`
+   * fields defined on `ITransaction` because those are assigned by the
+   * service later.  Both debit and credit amounts are returned as
+   * positive numbers; callers should rely on the `debit`/`credit`
+   * distinction rather than the sign.
+   *
+   * @param buffer Raw CSV file contents
+   * @param userId ID of the user owning these transactions
+   */
   public async parse(
     buffer: Buffer,
     userId: string

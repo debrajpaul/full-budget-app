@@ -19,6 +19,8 @@ import {
 import {
   HdfcBankParser,
   SbiBankParser,
+  HdfcCurrentParser,
+  AxisSavingsParser,
   AxisCreditCardParser,
   HdfcCreditCardParser,
 } from "@parser";
@@ -310,8 +312,8 @@ export class TransactionService implements ITransactionService {
             return hdfcCreditCardParser.parse(buffer, userId);
           }
           case EBankType.current: {
-            const hdfcBankParser = new HdfcBankParser();
-            return hdfcBankParser.parse(buffer, userId);
+            const hdfcCurrentParser = new HdfcCurrentParser();
+            return hdfcCurrentParser.parse(buffer, userId);
           }
           case EBankType.savings: {
             const hdfcBankParser = new HdfcBankParser();
@@ -330,8 +332,8 @@ export class TransactionService implements ITransactionService {
             return axisCreditCardParser.parse(buffer, userId);
           }
           case EBankType.savings: {
-            const axisCreditCardParser = new AxisCreditCardParser();
-            return axisCreditCardParser.parse(buffer, userId);
+            const axisSavingsParser = new AxisSavingsParser();
+            return axisSavingsParser.parse(buffer, userId);
           }
           default: {
             console.warn(`No parser implemented for bank type: ${bankType}`);
