@@ -38,5 +38,19 @@ export const authResolvers = {
       const { email, tenantId, password } = LoginArgs.parse(args.input);
       return await authService.login({ email, tenantId, password });
     },
+
+    refreshToken: async (
+      _: unknown,
+      args: { refreshToken: string },
+      ctx: IGraphQLContext
+    ) => {
+      const authService = ctx.dataSources.authorizationService;
+      if (!authService)
+        throw new CustomError(
+          "Authorization service not found",
+          "SERVICE_NOT_FOUND"
+        );
+      return await authService.refreshToken(args.refreshToken);
+    },
   },
 };

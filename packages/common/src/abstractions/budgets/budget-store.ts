@@ -20,4 +20,17 @@ export interface IBudgetStore {
     month: number,
     year: number
   ): Promise<Record<string, number>>;
+
+  listBudgetsByPeriod(
+    tenantId: ETenantType,
+    userId: string,
+    month: number,
+    year: number
+  ): Promise<IBudget[]>;
+
+  deleteBudget(
+    tenantId: ETenantType,
+    userId: string,
+    budgetId: string
+  ): Promise<void>;
 }

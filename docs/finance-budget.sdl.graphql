@@ -1,4 +1,9 @@
 """
+ISO-8601 calendar date (YYYY-MM-DD). Validated on input; serialized as string.
+"""
+scalar Date
+
+"""
 Supported banks for statement import and transaction parsing.
 """
 enum BankName {
@@ -65,11 +70,12 @@ type User {
 }
 
 """
-Result of the login mutation containing user and token.
+Result of the login mutation containing user, access token, and a single-use refresh token.
 """
 type LoginResponse {
   user: User!
   token: String!
+  refreshToken: String!
 }
 
 """
@@ -83,7 +89,7 @@ type Transaction {
   credit: Float!
   debit: Float!
   balance: Float
-  txnDate: String!
+  txnDate: Date!
   description: String
   category: String
   taggedBy: String
@@ -96,7 +102,7 @@ Simplified transaction representation used for listings.
 """
 type TransactionItem {
   id: String!
-  date: String!
+  date: Date!
   description: String
   credit: Float!
   debit: Float!
@@ -133,6 +139,19 @@ input TransactionsFilter {
 }
 
 """
+A single keyword-based classification rule to add for the tenant.
+keyword is treated as a case-insensitive substring match.
+"""
+input AddTransactionCategoryInput {
+  keyword:    String!
+  category:   BaseCategory!
+  subCategory: String
+  when:        String
+  confidence:  Float
+  reason:      String
+}
+
+"""
 Category with its aggregated amount.
 """
 type CategoryAmount {
@@ -144,7 +163,7 @@ type CategoryAmount {
 Budget vs actual values for a specific date.
 """
 type ReviewSeriesPoint {
-  date: String!
+  date: Date!
   budget: Float!
   actual: Float!
 }
@@ -161,13 +180,13 @@ type MonthlyReview {
 }
 
 """
-Yearly aggregates and the list of transactions.
+Yearly aggregates and a cursor-paginated list of transactions.
 """
 type AnnualReview {
   totalIncome: Float!
   totalExpense: Float!
   netSavings: Float!
-  transactions: [Transaction!]!
+  transactions: TransactionsPage!
 }
 
 """
@@ -207,6 +226,33 @@ type AggregatedSummary {
 }
 
 """
+Input to create a new savings goal.
+"""
+input CreateSavingsGoalInput {
+  name: String!
+  target: Float!
+  deadline: Date!
+  initialAmount: Float
+}
+
+"""
+Input to update an existing savings goal (PATCH semantics – all fields optional).
+"""
+input UpdateSavingsGoalInput {
+  name: String
+  target: Float
+  deadline: Date
+}
+
+"""
+Input to contribute an amount toward a savings goal.
+"""
+input ContributeSavingsGoalInput {
+  id: ID!
+  amount: Float!
+}
+
+"""
 Payload to upload a bank statement (base64 content).
 """
 input StatementInput {
@@ -214,6 +260,35 @@ input StatementInput {
   bankType: BankType!
   fileName: String!
   contentBase64: String!
+}
+
+"""
+Input to request a pre-signed S3 upload URL for a bank statement.
+"""
+input CreateUploadUrlInput {
+  bankName: BankName!
+  bankType: BankType!
+  fileName: String!
+}
+
+"""
+Result of the createUploadUrl mutation: a pre-signed URL for direct S3 upload.
+"""
+type UploadUrlResult {
+  jobId: String!
+  uploadUrl: String!
+  expiresInSeconds: Int!
+}
+
+"""
+Rich result returned after a statement upload is accepted for processing.
+accepted is always true on success (errors are thrown); warnings surface
+non-fatal issues such as oversized files or unusual column layouts.
+"""
+type StatementUploadResult {
+  jobId: String!
+  accepted: Boolean!
+  warnings: [String!]!
 }
 
 """
@@ -228,7 +303,7 @@ type Tenant {
 Historical point representing savings value on a date.
 """
 type SavingsHistoryPoint {
-  date: String!
+  date: Date!
   value: Float!
 }
 
@@ -240,7 +315,7 @@ type SavingsGoal {
   name: String!
   target: Float!
   current: Float!
-  deadline: String!
+  deadline: Date!
   history: [SavingsHistoryPoint!]!
 }
 
@@ -248,7 +323,7 @@ type SavingsGoal {
 Historical point representing sinking fund value on a date.
 """
 type SinkingFundHistoryPoint {
-  date: String!
+  date: Date!
   value: Float!
 }
 
@@ -261,15 +336,43 @@ type SinkingFund {
   target: Float!
   current: Float!
   monthlyContribution: Float
-  deadline: String
+  deadline: Date
   history: [SinkingFundHistoryPoint!]!
+}
+
+"""
+Input to create a new sinking fund.
+"""
+input CreateSinkingFundInput {
+  name: String!
+  target: Float!
+  monthlyContribution: Float
+  deadline: Date
+}
+
+"""
+Input to update sinking fund metadata (PATCH semantics — omitted fields unchanged).
+"""
+input UpdateSinkingFundInput {
+  name: String
+  target: Float
+  monthlyContribution: Float
+  deadline: Date
+}
+
+"""
+Input to record a contribution to a sinking fund.
+"""
+input ContributeSinkingFundInput {
+  id: ID!
+  amount: Float!
 }
 
 """
 Per-day forecast metrics and running balance.
 """
 type ForecastDay {
-  date: String!
+  date: Date!
   inflow: Float!
   outflow: Float!
   net: Float!
@@ -286,11 +389,19 @@ enum AlertSeverity {
 }
 
 """
+Classification of forecast alerts.
+"""
+enum AlertType {
+  LOW_BALANCE
+  LARGE_EXPENSE
+}
+
+"""
 Alert generated during forecasting with severity and message.
 """
 type ForecastAlert {
-  date: String!
-  type: String!
+  date: Date!
+  type: AlertType!
   message: String!
   severity: AlertSeverity!
 }
@@ -327,6 +438,14 @@ enum RecurringFrequency {
 }
 
 """
+Whether a recurring transaction represents an inflow or outflow.
+"""
+enum TransactionType {
+  INCOME
+  EXPENSE
+}
+
+"""
 Definition and schedule of a recurring transaction.
 """
 type RecurringTransaction {
@@ -334,13 +453,14 @@ type RecurringTransaction {
   description: String!
   amount: Float!
   category: String
+  type: TransactionType!
   frequency: RecurringFrequency!
   dayOfMonth: Int
   dayOfWeek: Int
   monthOfYear: Int
-  startDate: String!
-  endDate: String
-  nextRunDate: String
+  startDate: Date!
+  endDate: Date
+  nextRunDate: Date
 }
 
 """
@@ -350,12 +470,13 @@ input CreateRecurringTransactionInput {
   description: String!
   amount: Float!
   category: String
+  type: TransactionType
   frequency: RecurringFrequency!
   dayOfMonth: Int
   dayOfWeek: Int
   monthOfYear: Int
-  startDate: String!
-  endDate: String
+  startDate: Date!
+  endDate: Date
 }
 
 """
@@ -390,9 +511,9 @@ type Query {
   """
   healthCheck: String
   """
-  Returns yearly income, expenses, net savings, and transactions.
+  Returns yearly income, expenses, net savings, and a paged transaction list.
   """
-  annualReview(year: Int!): AnnualReview!
+  annualReview(year: Int!, cursor: String): AnnualReview!
   """
   Returns monthly income, expenses, savings, category breakdown, and series.
   """
@@ -437,6 +558,10 @@ type Query {
   Lists all recurring transactions for the current tenant/user.
   """
   recurringTransactions: [RecurringTransaction!]!
+  """
+  Lists all budgets for the authenticated user for the given period.
+  """
+  budgets(period: PeriodInput!): [Budget!]!
 }
 
 """
@@ -448,13 +573,20 @@ type Mutation {
   """
   register(input: RegisterInput!): RegisterResponse!
   """
-  Authenticates a user and returns a login token.
+  Authenticates a user and returns an access token and a single-use refresh token.
   """
   login(input: LoginInput!): LoginResponse!
   """
-  Adds or syncs transaction category rules for the current tenant.
+  Issues a new LoginResponse using a valid refresh token (single-use rotation).
+  Revokes the supplied token; replaying a used token revokes the entire family.
   """
-  addTransactionCategory: Boolean!
+  refreshToken(refreshToken: String!): LoginResponse!
+  """
+  Adds a single keyword-based classification rule for the current tenant.
+  Pass the built-in preset instead by omitting input and calling with no args,
+  or supply explicit keyword/category pairs to extend the rule set.
+  """
+  addTransactionCategory(input: AddTransactionCategoryInput!): Boolean!
   """
   Reclassifies a transaction to a new category and returns the updated item.
   """
@@ -465,7 +597,17 @@ type Mutation {
   """
   Uploads a bank statement file (base64) for processing and import.
   """
-  uploadStatement(input: StatementInput!): Boolean!
+  uploadStatement(input: StatementInput!): StatementUploadResult! @deprecated(reason: "Use createUploadUrl + notifyUploadComplete instead. Will be removed in the next release.")
+  """
+  Creates a pre-signed S3 URL for direct statement upload. After the client PUTs
+  the file to uploadUrl, call notifyUploadComplete(jobId) to trigger processing.
+  """
+  createUploadUrl(input: CreateUploadUrlInput!): UploadUrlResult!
+  """
+  Notifies that a direct S3 upload has completed, enqueuing the transaction
+  processing job. Idempotent: replaying the same jobId is safe.
+  """
+  notifyUploadComplete(jobId: String!): StatementUploadResult!
   """
   Creates a recurring transaction definition.
   """
@@ -480,4 +622,40 @@ type Mutation {
   Sets the budget amount for a category in the specified month/year.
   """
   setBudget(period: PeriodInput!, category: String!, amount: Float!): Budget!
+  """
+  Deletes a budget entry by its id. Returns true on success.
+  """
+  deleteBudget(id: String!): Boolean!
+  """
+  Creates a new savings goal and seeds an initial history point.
+  """
+  createSavingsGoal(input: CreateSavingsGoalInput!): SavingsGoal!
+  """
+  Updates an existing savings goal using PATCH semantics (only provided fields change).
+  """
+  updateSavingsGoal(id: ID!, input: UpdateSavingsGoalInput!): SavingsGoal!
+  """
+  Deletes a savings goal by id. Returns true on success.
+  """
+  deleteSavingsGoal(id: ID!): Boolean!
+  """
+  Adds a contribution to a savings goal, appending a history point.
+  """
+  contributeSavingsGoal(input: ContributeSavingsGoalInput!): SavingsGoal!
+  """
+  Creates a new sinking fund and seeds an initial history point with value 0.
+  """
+  createSinkingFund(input: CreateSinkingFundInput!): SinkingFund!
+  """
+  Updates sinking fund metadata using PATCH semantics (only provided fields change).
+  """
+  updateSinkingFund(id: ID!, input: UpdateSinkingFundInput!): SinkingFund!
+  """
+  Records a contribution to a sinking fund, updating current and appending history.
+  """
+  contributeSinkingFund(input: ContributeSinkingFundInput!): SinkingFund!
+  """
+  Deletes a sinking fund by id. Returns true on success.
+  """
+  deleteSinkingFund(id: ID!): Boolean!
 }

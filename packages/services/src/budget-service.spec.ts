@@ -145,7 +145,6 @@ describe("BudgetService - default recommended budgets", () => {
   beforeEach(() => {
     logger = mock<ILogger>();
     budgetStore = {
-      // Default: no budgets saved
       getBudgetsByPeriod: jest.fn().mockResolvedValue({}),
       setBudget: jest.fn() as any,
     } as any;
@@ -239,7 +238,6 @@ describe("BudgetService - annual analyzeAnnualSpend", () => {
   });
 
   it("provides 80/20 defaults across the year when no budgets exist and income > 0", async () => {
-    // Only January has income, others are zero -> annual income = 60000
     (transactionStore.aggregateSpendByCategory as jest.Mock).mockImplementation(
       async (_tenant: any, _user: any, month: number) => {
         if (month === 1) return { [EBaseCategories.income]: 60000 };
@@ -263,7 +261,6 @@ describe("BudgetService - annual analyzeAnnualSpend", () => {
   });
 
   it("sums monthly budgets across the year without applying defaults", async () => {
-    // Budgets exist for 2 months: Jan and Feb
     (budgetStore.getBudgetsByPeriod as jest.Mock).mockImplementation(
       async (_tenant: any, _user: any, month: number) => {
         if (month === 1)
@@ -279,7 +276,6 @@ describe("BudgetService - annual analyzeAnnualSpend", () => {
         return {};
       }
     );
-    // Actuals not important for recommended check, but provide some values
     (transactionStore.aggregateSpendByCategory as jest.Mock).mockResolvedValue({
       [EBaseCategories.expenses]: -2200,
       [EBaseCategories.income]: 3000,
@@ -316,5 +312,150 @@ describe("BudgetService - annual analyzeAnnualSpend", () => {
 
     const deviations = await svc.analyzeAnnualSpend(tenantId, userId, year);
     expect(deviations.length).toBe(0);
+  });
+});
+
+describe("BudgetService - getBudgets", () => {
+  const tenantId = ETenantType.default;
+  const userId = "user-1";
+
+  let logger: ReturnType<typeof mock<ILogger>>;
+  let budgetStore: Pick<
+    BudgetStore,
+    "listBudgetsByPeriod" | "getBudgetsByPeriod" | "setBudget"
+  >;
+  let transactionStore: Pick<ITransactionStore, "aggregateSpendByCategory">;
+
+  const fakeBudget: IBudget = {
+    tenantId,
+    budgetId: `${userId}#2024-01#${EBaseCategories.expenses}`,
+    userId,
+    year: 2024,
+    month: 1,
+    category: EBaseCategories.expenses,
+    amount: 5000,
+    createdAt: "2024-01-01T00:00:00Z",
+  };
+
+  beforeEach(() => {
+    logger = mock<ILogger>();
+    budgetStore = {
+      getBudgetsByPeriod: jest.fn(),
+      setBudget: jest.fn() as any,
+      listBudgetsByPeriod: jest.fn(),
+    } as any;
+    transactionStore = { aggregateSpendByCategory: jest.fn() } as any;
+  });
+
+  it("returns IBudget[] for a matching period", async () => {
+    (budgetStore.listBudgetsByPeriod as jest.Mock).mockResolvedValue([
+      fakeBudget,
+    ]);
+    const svc = new BudgetService(
+      logger,
+      budgetStore as BudgetStore,
+      transactionStore as ITransactionStore
+    );
+
+    const result = await svc.getBudgets(tenantId, userId, {
+      month: 1,
+      year: 2024,
+    });
+
+    expect(budgetStore.listBudgetsByPeriod).toHaveBeenCalledWith(
+      tenantId,
+      userId,
+      1,
+      2024
+    );
+    expect(result).toEqual([fakeBudget]);
+  });
+
+  it("returns [] when no budgets exist for the period", async () => {
+    (budgetStore.listBudgetsByPeriod as jest.Mock).mockResolvedValue([]);
+    const svc = new BudgetService(
+      logger,
+      budgetStore as BudgetStore,
+      transactionStore as ITransactionStore
+    );
+
+    const result = await svc.getBudgets(tenantId, userId, {
+      month: 6,
+      year: 2024,
+    });
+
+    expect(result).toEqual([]);
+  });
+
+  it("passes tenantId to store — different tenants are isolated", async () => {
+    (budgetStore.listBudgetsByPeriod as jest.Mock).mockResolvedValue([]);
+    const svc = new BudgetService(
+      logger,
+      budgetStore as BudgetStore,
+      transactionStore as ITransactionStore
+    );
+
+    await svc.getBudgets(ETenantType.client, userId, { month: 1, year: 2024 });
+
+    expect(budgetStore.listBudgetsByPeriod).toHaveBeenCalledWith(
+      ETenantType.client,
+      userId,
+      1,
+      2024
+    );
+  });
+});
+
+describe("BudgetService - deleteBudget", () => {
+  const tenantId = ETenantType.default;
+  const userId = "user-1";
+  const otherUser = "user-2";
+
+  let logger: ReturnType<typeof mock<ILogger>>;
+  let budgetStore: Pick<
+    BudgetStore,
+    "deleteBudget" | "getBudgetsByPeriod" | "setBudget"
+  >;
+  let transactionStore: Pick<ITransactionStore, "aggregateSpendByCategory">;
+
+  beforeEach(() => {
+    logger = mock<ILogger>();
+    budgetStore = {
+      getBudgetsByPeriod: jest.fn(),
+      setBudget: jest.fn() as any,
+      deleteBudget: jest.fn(),
+    } as any;
+    transactionStore = { aggregateSpendByCategory: jest.fn() } as any;
+  });
+
+  it("calls store.deleteBudget and returns true on success", async () => {
+    (budgetStore.deleteBudget as jest.Mock).mockResolvedValue(undefined);
+    const svc = new BudgetService(
+      logger,
+      budgetStore as BudgetStore,
+      transactionStore as ITransactionStore
+    );
+
+    const id = `${userId}#2024-01#${EBaseCategories.expenses}`;
+    const result = await svc.deleteBudget(tenantId, userId, id);
+
+    expect(budgetStore.deleteBudget).toHaveBeenCalledWith(tenantId, userId, id);
+    expect(result).toBe(true);
+  });
+
+  it("propagates store error when budget belongs to a different user", async () => {
+    (budgetStore.deleteBudget as jest.Mock).mockRejectedValue(
+      new Error("Budget does not belong to this user")
+    );
+    const svc = new BudgetService(
+      logger,
+      budgetStore as BudgetStore,
+      transactionStore as ITransactionStore
+    );
+
+    const foreignId = `${otherUser}#2024-01#${EBaseCategories.expenses}`;
+    await expect(svc.deleteBudget(tenantId, userId, foreignId)).rejects.toThrow(
+      "Budget does not belong to this user"
+    );
   });
 });

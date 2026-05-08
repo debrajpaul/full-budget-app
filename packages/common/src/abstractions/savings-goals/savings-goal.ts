@@ -11,3 +11,21 @@ export interface ISavingsGoal {
   deadline: string;
   history: ISavingsHistoryPoint[];
 }
+
+export interface ICreateSavingsGoalInput {
+  name: string;
+  target: number;
+  deadline: string;
+  initialAmount?: number;
+}
+
+export interface IUpdateSavingsGoalInput {
+  name?: string;
+  target?: number;
+  deadline?: string;
+}
+
+export interface IContributeSavingsGoalInput {
+  id: string;
+  amount: number;
+}

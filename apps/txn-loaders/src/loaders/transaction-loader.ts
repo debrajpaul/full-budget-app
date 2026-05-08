@@ -2,6 +2,10 @@ import { SQSRecord, SQSBatchResponse, SQSBatchItemFailure } from "aws-lambda";
 import { ILogger, ITransactionService, ITransactionSqsRequest } from "@common";
 
 export class TransactionLoader {
+  // Instance-level dedup: prevents the same jobId being processed twice
+  // within a single Lambda invocation (handles SQS at-least-once re-delivery).
+  private readonly processedJobIds = new Set<string>();
+
   constructor(
     private readonly logger: ILogger,
     private readonly transactionService: ITransactionService
@@ -15,7 +19,17 @@ export class TransactionLoader {
       try {
         this.logger.debug(`Processing loader record: ${record.messageId}`);
         const body = JSON.parse(record.body) as ITransactionSqsRequest;
+
+        if (this.processedJobIds.has(body.jobId)) {
+          this.logger.debug("Skipping duplicate jobId within this invocation", {
+            jobId: body.jobId,
+            messageId: record.messageId,
+          });
+          continue;
+        }
+
         await this.transactionService.process(body);
+        this.processedJobIds.add(body.jobId);
       } catch (error) {
         this.logger.error(
           "[transaction worker] failed to process message",

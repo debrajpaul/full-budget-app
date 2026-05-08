@@ -32,7 +32,7 @@ export class TransactionLoaderStack extends Stack {
 
     const transactionLambda = new lambda.Function(this, "TransactionLambda", {
       functionName,
-      runtime: lambda.Runtime.NODEJS_20_X,
+      runtime: lambda.Runtime.NODEJS_22_X,
       handler: "index.handler",
       code: lambda.Code.fromAsset(
         path.resolve(__dirname, "../../apps/txn-loaders/dist")

@@ -10,6 +10,14 @@ export const recurringTransactionTypeDefs = /* GraphQL */ `
   }
 
   """
+  Whether a recurring transaction represents an inflow or outflow.
+  """
+  enum TransactionType {
+    INCOME
+    EXPENSE
+  }
+
+  """
   Definition and schedule of a recurring transaction.
   """
   type RecurringTransaction {
@@ -17,13 +25,14 @@ export const recurringTransactionTypeDefs = /* GraphQL */ `
     description: String!
     amount: Float!
     category: String
+    type: TransactionType!
     frequency: RecurringFrequency!
     dayOfMonth: Int
     dayOfWeek: Int
     monthOfYear: Int
-    startDate: String!
-    endDate: String
-    nextRunDate: String
+    startDate: Date!
+    endDate: Date
+    nextRunDate: Date
   }
 
   """
@@ -33,12 +42,13 @@ export const recurringTransactionTypeDefs = /* GraphQL */ `
     description: String!
     amount: Float!
     category: String
+    type: TransactionType
     frequency: RecurringFrequency!
     dayOfMonth: Int
     dayOfWeek: Int
     monthOfYear: Int
-    startDate: String!
-    endDate: String
+    startDate: Date!
+    endDate: Date
   }
 
   extend type Query {

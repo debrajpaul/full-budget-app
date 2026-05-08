@@ -35,6 +35,7 @@ describe("TransactionService", () => {
 
   it("should process a valid SQS message", async () => {
     const msg: ITransactionSqsRequest = {
+      jobId: "job-1",
       fileKey: "file.pdf",
       fileName: "file.pdf",
       bankName: EBankName.hdfc,
@@ -58,6 +59,7 @@ describe("TransactionService", () => {
 
   it("should process a file and save transactions", async () => {
     const req: ITransactionSqsRequest = {
+      jobId: "job-2",
       fileKey: "file.pdf",
       fileName: "file.pdf",
       bankName: EBankName.hdfc,
@@ -101,6 +103,7 @@ describe("TransactionService", () => {
 
   it("ingests an Axis credit card statement and persists canonical transactions", async () => {
     const req: ITransactionSqsRequest = {
+      jobId: "job-5",
       fileKey: "axis.csv",
       fileName: "axis.csv",
       bankName: EBankName.axis,
@@ -150,6 +153,7 @@ describe("TransactionService", () => {
 
   it("returns false and does not persist when statement format is invalid", async () => {
     const req: ITransactionSqsRequest = {
+      jobId: "job-3",
       fileKey: "bad-axis.csv",
       fileName: "bad-axis.csv",
       bankName: EBankName.axis,
@@ -172,6 +176,7 @@ describe("TransactionService", () => {
   it("should return false if process throws", async () => {
     s3.getFile.mockRejectedValue(new Error("fail"));
     const req: ITransactionSqsRequest = {
+      jobId: "job-4",
       fileKey: "file.pdf",
       fileName: "file.pdf",
       bankName: EBankName.hdfc,

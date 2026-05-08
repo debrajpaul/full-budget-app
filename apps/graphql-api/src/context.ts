@@ -24,6 +24,7 @@ const {
   transactionService,
   authorizationService,
   uploadStatementService,
+  uploadUrlService,
   transactionCategoryService,
   savingsGoalService,
   sinkingFundService,
@@ -91,6 +92,7 @@ export const createContext = async (
     dataSources: {
       authorizationService: authorizationService,
       uploadStatementService: uploadStatementService,
+      uploadUrlService: uploadUrlService,
       transactionService: transactionService,
       transactionCategoryService: transactionCategoryService,
       savingsGoalService: savingsGoalService,

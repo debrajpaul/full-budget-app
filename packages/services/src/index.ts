@@ -1,5 +1,6 @@
 export * from "./transaction-category-service";
 export * from "./upload-statement-service";
+export * from "./upload-url-service";
 export * from "./authorization-service";
 export * from "./transaction-service";
 export * from "./custom-error";

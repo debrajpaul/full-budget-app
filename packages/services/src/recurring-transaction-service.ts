@@ -7,6 +7,8 @@ import {
   IRecurringTransactionService,
   IRecurringTransaction,
   ERecurringFrequency,
+  ETransactionType,
+  inferTransactionType,
   EBankName,
   EBankType,
 } from "@common";
@@ -46,6 +48,7 @@ export class RecurringTransactionService implements RecurringServiceContract {
       description: string;
       amount: number;
       category?: string;
+      type?: ETransactionType;
       frequency: ERecurringFrequency;
       dayOfMonth?: number;
       dayOfWeek?: number;
@@ -54,12 +57,16 @@ export class RecurringTransactionService implements RecurringServiceContract {
       endDate?: string;
     }
   ): Promise<IRecurringTransaction> {
+    const type =
+      payload.type ?? inferTransactionType(payload.amount, payload.category);
+
     const recurring: Omit<IRecurringTransaction, "tenantId" | "createdAt"> = {
       userId,
       recurringId: `${userId}#${Date.now()}`,
       description: payload.description,
       amount: payload.amount,
       category: payload.category,
+      type,
       frequency: payload.frequency,
       dayOfMonth: payload.dayOfMonth,
       dayOfWeek: payload.dayOfWeek,

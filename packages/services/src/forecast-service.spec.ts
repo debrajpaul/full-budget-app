@@ -5,6 +5,7 @@ import {
   IRecurringTransactionStore,
   IRecurringTransaction,
   ERecurringFrequency,
+  EForecastAlertType,
   ETenantType,
 } from "@common";
 
@@ -87,11 +88,15 @@ describe("ForecastService", () => {
     // Alerts should include a LARGE_EXPENSE on the 5th (>= 1000)
     expect(
       result.alerts.some(
-        (a) => a.type === "LARGE_EXPENSE" && a.date.endsWith("-09-05")
+        (a) =>
+          a.type === EForecastAlertType.LARGE_EXPENSE &&
+          a.date.endsWith("-09-05")
       )
     ).toBe(true);
     // No low balance alerts since running balance stays above 200
-    expect(result.alerts.some((a) => a.type === "LOW_BALANCE")).toBe(false);
+    expect(
+      result.alerts.some((a) => a.type === EForecastAlertType.LOW_BALANCE)
+    ).toBe(false);
   });
 
   it("emits LOW_BALANCE critical alert when balance goes negative", async () => {
@@ -117,8 +122,89 @@ describe("ForecastService", () => {
     });
 
     // On day 2, running balance should be -500, triggering critical low balance
-    const lowAlerts = result.alerts.filter((a) => a.type === "LOW_BALANCE");
+    const lowAlerts = result.alerts.filter(
+      (a) => a.type === EForecastAlertType.LOW_BALANCE
+    );
     expect(lowAlerts.length).toBeGreaterThanOrEqual(1);
     expect(lowAlerts.some((a) => a.severity === "critical")).toBe(true);
+  });
+});
+
+// ── EForecastAlertType coverage ─────────────────────────────────────────────
+describe("EForecastAlertType — all enum values are producible by the service", () => {
+  const logger = mock<ILogger>();
+  const store = mock<IRecurringTransactionStore>();
+  const service = new ForecastService(logger, store);
+  const tenantId = ETenantType.default;
+  const userId = "user-enum-test";
+
+  const cases: Array<[EForecastAlertType, IRecurringTransaction[], object]> = [
+    [
+      EForecastAlertType.LOW_BALANCE,
+      [
+        {
+          tenantId,
+          userId,
+          recurringId: `${userId}#bill`,
+          description: "Bill",
+          amount: -500,
+          frequency: ERecurringFrequency.monthly,
+          dayOfMonth: 1,
+          startDate: "2024-01-01",
+          createdAt: "2024-01-01T00:00:00Z",
+        },
+      ],
+      { startingBalance: 0, lowBalanceThreshold: 100 },
+    ],
+    [
+      EForecastAlertType.LARGE_EXPENSE,
+      [
+        {
+          tenantId,
+          userId,
+          recurringId: `${userId}#large`,
+          description: "Large",
+          amount: -2000,
+          frequency: ERecurringFrequency.monthly,
+          dayOfMonth: 5,
+          startDate: "2024-01-01",
+          createdAt: "2024-01-01T00:00:00Z",
+        },
+      ],
+      { startingBalance: 10000, largeExpenseThreshold: 1000 },
+    ],
+  ];
+
+  it.each(cases)(
+    "service emits alert type %s given the right threshold",
+    async (alertType, recurrences, options) => {
+      store.listByUser.mockResolvedValue(recurrences);
+
+      const result = await service.forecastMonth(
+        tenantId,
+        userId,
+        2025,
+        9,
+        options
+      );
+
+      expect(result.alerts.some((a) => a.type === alertType)).toBe(true);
+    }
+  );
+
+  it("alert.type values are always members of EForecastAlertType", async () => {
+    const allValues = new Set(Object.values(EForecastAlertType));
+    const allRecurrences: IRecurringTransaction[] = cases.flatMap(([, r]) => r);
+    store.listByUser.mockResolvedValue(allRecurrences);
+
+    const result = await service.forecastMonth(tenantId, userId, 2025, 9, {
+      startingBalance: 0,
+      lowBalanceThreshold: 10000,
+      largeExpenseThreshold: 500,
+    });
+
+    for (const alert of result.alerts) {
+      expect(allValues).toContain(alert.type);
+    }
   });
 });

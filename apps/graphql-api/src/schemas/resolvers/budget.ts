@@ -1,6 +1,28 @@
 import { IGraphQLContext, EBaseCategories } from "@common";
 
 export const budgetResolvers = {
+  Query: {
+    budgets: async (
+      _: unknown,
+      args: { period: { month: number; year: number } },
+      ctx: IGraphQLContext
+    ) => {
+      if (!ctx.userId) throw new Error("Unauthorized");
+      if (!ctx.tenantId) throw new Error("Tenant ID is required");
+      const budgets = await ctx.dataSources.budgetService.getBudgets(
+        ctx.tenantId,
+        ctx.userId,
+        args.period
+      );
+      return budgets.map((b) => ({
+        id: b.budgetId,
+        month: b.month,
+        year: b.year,
+        category: b.category,
+        amount: b.amount,
+      }));
+    },
+  },
   Mutation: {
     setBudget: async (
       _: unknown,
@@ -31,6 +53,19 @@ export const budgetResolvers = {
         category: budget.category,
         amount: budget.amount,
       };
+    },
+    deleteBudget: async (
+      _: unknown,
+      args: { id: string },
+      ctx: IGraphQLContext
+    ) => {
+      if (!ctx.userId) throw new Error("Unauthorized");
+      if (!ctx.tenantId) throw new Error("Tenant ID is required");
+      return ctx.dataSources.budgetService.deleteBudget(
+        ctx.tenantId,
+        ctx.userId,
+        args.id
+      );
     },
   },
 };

@@ -1,4 +1,5 @@
 import { makeExecutableSchema } from "@graphql-tools/schema";
+import { DateScalar } from "./scalars";
 import {
   authResolvers,
   uploadStatementResolvers,
@@ -37,6 +38,7 @@ export const schema = makeExecutableSchema({
     budgetTypeDefs,
   ],
   resolvers: [
+    { Date: DateScalar },
     authResolvers,
     uploadStatementResolvers,
     transactionResolvers,

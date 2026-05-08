@@ -1,6 +1,7 @@
 import { ETenantType } from "../users";
 import { EBankName, EBankType } from "../bank-parser";
 export interface ITransactionSqsRequest {
+  jobId: string;
   bankName: EBankName;
   bankType: EBankType;
   fileName: string;

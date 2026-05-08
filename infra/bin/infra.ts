@@ -11,6 +11,9 @@ import {
   TransactionsCategoryTableStack,
   RecurringTransactionsTableStack,
   BudgetsTableStack,
+  SavingsGoalsTableStack,
+  SinkingFundsTableStack,
+  RefreshTokensTableStack,
   XRayStack,
 } from "../lib";
 
@@ -32,6 +35,18 @@ const recurringTransactionsTableStack = new RecurringTransactionsTableStack(
   "RecurringTransactionsTableStack"
 );
 const budgetsTableStack = new BudgetsTableStack(app, "BudgetsTableStack");
+const savingsGoalsTableStack = new SavingsGoalsTableStack(
+  app,
+  "SavingsGoalsTableStack"
+);
+const sinkingFundsTableStack = new SinkingFundsTableStack(
+  app,
+  "SinkingFundsTableStack"
+);
+const refreshTokensTableStack = new RefreshTokensTableStack(
+  app,
+  "RefreshTokensTableStack"
+);
 const usersTableStack = new UsersTableStack(app, "UsersTableStack");
 
 new GraphQLApiStack(app, "GraphQLApiStack", {
@@ -43,6 +58,9 @@ new GraphQLApiStack(app, "GraphQLApiStack", {
   recurringTableArn:
     recurringTransactionsTableStack.recurringTransactionsTable.tableArn,
   budgetTableArn: budgetsTableStack.budgetsTable.tableArn,
+  savingsGoalTableArn: savingsGoalsTableStack.savingsGoalsTable.tableArn,
+  sinkingFundTableArn: sinkingFundsTableStack.sinkingFundsTable.tableArn,
+  refreshTokenTableArn: refreshTokensTableStack.refreshTokensTable.tableArn,
   userTableArn: usersTableStack.usersTable.tableArn,
   jwtParameter: ssmParamStack.parameter,
   environment: {
@@ -55,6 +73,9 @@ new GraphQLApiStack(app, "GraphQLApiStack", {
     DYNAMO_RECURRING_TABLE:
       recurringTransactionsTableStack.recurringTransactionsTable.tableName,
     DYNAMO_BUDGET_TABLE: budgetsTableStack.budgetsTable.tableName,
+    DYNAMO_SAVINGS_GOAL_TABLE: savingsGoalsTableStack.savingsGoalsTable.tableName,
+    DYNAMO_SINKING_FUND_TABLE: sinkingFundsTableStack.sinkingFundsTable.tableName,
+    DYNAMO_REFRESH_TOKEN_TABLE: refreshTokensTableStack.refreshTokensTable.tableName,
     DYNAMO_USER_TABLE: usersTableStack.usersTable.tableName,
     SQS_QUEUE_URL: queueStack.statementProcessingQueue.queueUrl,
     AWS_S3_BUCKET: storageStack.uploadBucket.bucketName,

@@ -27,10 +27,12 @@ export interface User {
 export interface ILoginResponse {
   user: User;
   token: string;
+  refreshToken: string;
 }
 
 export interface IAuthorizationService {
   register(registerInput: IRegisterInput): Promise<IRegisterResponse>;
   login(loginInput: ILoginInput): Promise<ILoginResponse>;
   verifyToken(token: string): Promise<{ email: string }>;
+  refreshToken(rawRefreshToken: string): Promise<ILoginResponse>;
 }

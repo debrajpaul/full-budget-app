@@ -11,4 +11,7 @@ export * from "./transaction-category-loader.stack";
 export * from "./transaction-category-table.stack";
 export * from "./recurring-transactions-table.stack";
 export * from "./budgets-table.stack";
+export * from "./savings-goals-table.stack";
+export * from "./sinking-funds-table.stack";
+export * from "./refresh-tokens-table.stack";
 export * from "./xray.stack";

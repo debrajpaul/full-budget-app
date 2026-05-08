@@ -1,5 +1,10 @@
 export const commonTypeDefs = /* GraphQL */ `
   """
+  ISO-8601 calendar date (YYYY-MM-DD). Validated on input; serialized as string.
+  """
+  scalar Date
+
+  """
   Supported banks for statement import and transaction parsing.
   """
   enum BankName {

@@ -8,11 +8,15 @@ import {
   CategoryRulesStore,
   RecurringTransactionStore,
   BudgetStore,
+  SavingsGoalStore,
+  SinkingFundStore,
+  RefreshTokenStore,
 } from "@db";
 import {
   TransactionService,
   AuthorizationService,
   UploadStatementService,
+  UploadUrlService,
   TransactionCategoryService,
   BedrockClassifierService,
   SavingsGoalService,
@@ -68,13 +72,29 @@ export function setupServices(
     config.dynamoBudgetTable,
     dynamoDBDocumentClient
   );
+  const savingsGoalStore = new SavingsGoalStore(
+    logger.child("SavingsGoalStore"),
+    config.dynamoSavingsGoalTable,
+    dynamoDBDocumentClient
+  );
+  const refreshTokenStore = new RefreshTokenStore(
+    logger.child("RefreshTokenStore"),
+    config.dynamoRefreshTokenTable,
+    dynamoDBDocumentClient
+  );
   const authorizationService = new AuthorizationService(
     logger.child("AuthorizationService"),
     config.jwtSecret,
-    userStore
+    userStore,
+    refreshTokenStore
   );
   const uploadStatementService = new UploadStatementService(
     logger.child("UploadStatementService"),
+    s3Service,
+    sqsService
+  );
+  const uploadUrlService = new UploadUrlService(
+    logger.child("UploadUrlService"),
     s3Service,
     sqsService
   );
@@ -97,11 +117,18 @@ export function setupServices(
     config.aiTaggingEnabled
   );
 
+  const sinkingFundStore = new SinkingFundStore(
+    logger.child("SinkingFundStore"),
+    config.dynamoSinkingFundTable,
+    dynamoDBDocumentClient
+  );
   const savingsGoalService = new SavingsGoalService(
-    logger.child("SavingsGoalService")
+    logger.child("SavingsGoalService"),
+    savingsGoalStore
   );
   const sinkingFundService = new SinkingFundService(
-    logger.child("SinkingFundService")
+    logger.child("SinkingFundService"),
+    sinkingFundStore
   );
   const recurringTransactionService = new RecurringTransactionService(
     logger.child("RecurringTransactionService"),
@@ -122,6 +149,7 @@ export function setupServices(
     transactionService,
     authorizationService,
     uploadStatementService,
+    uploadUrlService,
     transactionCategoryService,
     savingsGoalService,
     sinkingFundService,

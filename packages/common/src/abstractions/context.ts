@@ -6,6 +6,7 @@ import { ITransactionCategoryService } from "./categories";
 import { ISavingsGoalService } from "./savings-goals";
 import { ISinkingFundService } from "./sinking-funds";
 import { IUploadStatementService } from "./upload-statement-service";
+import { IUploadUrlService } from "./upload-url-service";
 import { IAuthorizationService } from "./users/authorization-service";
 import { APIGatewayProxyEvent, Context as LambdaCtx } from "aws-lambda";
 import { IRecurringTransactionService } from "./recurring";
@@ -22,6 +23,7 @@ export interface IGraphQLContext {
   dataSources: {
     authorizationService: IAuthorizationService;
     uploadStatementService: IUploadStatementService;
+    uploadUrlService: IUploadUrlService;
     transactionService: ITransactionService;
     transactionCategoryService: ITransactionCategoryService;
     savingsGoalService: ISavingsGoalService;

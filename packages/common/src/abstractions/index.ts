@@ -7,6 +7,7 @@ export * from "./clients";
 export * from "./bank-parser";
 export * from "./transactions";
 export * from "./upload-statement-service";
+export * from "./upload-url-service";
 export * from "./savings-goals";
 export * from "./sinking-funds";
 export * from "./recurring";

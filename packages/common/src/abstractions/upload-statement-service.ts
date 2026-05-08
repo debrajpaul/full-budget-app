@@ -15,6 +15,12 @@ export interface IUploadRequest {
   userId: string;
   tenantId: ETenantType;
 }
+export interface IStatementUploadResult {
+  jobId: string;
+  accepted: boolean;
+  warnings: string[];
+}
+
 export interface IUploadStatementService {
-  uploadStatement(request: IUploadRequest): Promise<boolean>;
+  uploadStatement(request: IUploadRequest): Promise<IStatementUploadResult>;
 }

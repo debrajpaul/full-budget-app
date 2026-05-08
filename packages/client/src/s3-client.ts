@@ -6,6 +6,7 @@ import {
   GetObjectCommand,
   PutObjectCommand,
 } from "@aws-sdk/client-s3";
+import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
 
 export type { S3ClientConfig };
 
@@ -41,7 +42,8 @@ export class S3Service implements IS3Service {
    */
   async putFile(
     key: string,
-    body: Buffer | Uint8Array | string
+    body: Buffer | Uint8Array | string,
+    contentType = "application/pdf"
   ): Promise<void> {
     this.logger.info("#PuttingS3");
     this.logger.debug("PuttingS3", { key });
@@ -50,8 +52,17 @@ export class S3Service implements IS3Service {
         Bucket: this.bucketName,
         Key: key,
         Body: body,
-        ContentType: "application/pdf", // Adjust based on actual file type
+        ContentType: contentType,
       })
+    );
+  }
+
+  async getSignedUploadUrl(key: string, ttlSeconds: number): Promise<string> {
+    this.logger.debug("GeneratingSignedUploadUrl", { key, ttlSeconds });
+    return getSignedUrl(
+      this.s3Client,
+      new PutObjectCommand({ Bucket: this.bucketName, Key: key }),
+      { expiresIn: ttlSeconds }
     );
   }
 }
