@@ -17,6 +17,9 @@ export interface IConfig {
   dynamoCategoryRulesTable: string;
   dynamoRecurringTable: string;
   dynamoBudgetTable: string;
+  dynamoSavingsGoalTable: string;
+  dynamoSinkingFundTable: string;
+  dynamoRefreshTokenTable: string;
   jwtSecret: string;
   aiTaggingEnabled: boolean;
   bedrockModelId?: string;

@@ -9,6 +9,7 @@
     "outDir": "./dist",
     "noEmit": true,
     "baseUrl": ".",
+    "types": ["jest", "node"],
     "paths": {
       "@common/*": ["packages/common/src/*"],
       "@services/*": ["packages/services/src/*"],

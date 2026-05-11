@@ -126,6 +126,9 @@ dist
 # TernJS port file
 .tern-port
 
+# Claude Code internal memory / session files
+.claude/
+
 # Stores VSCode versions used for testing VSCode extensions
 .vscode-test
 
@@ -138,3 +141,4 @@ dist
 
 # custom
 artifacts/
+.DS_Store

@@ -18,8 +18,5 @@
     "@nlp-tagger": "workspace:*",
     "bcryptjs": "^3.0.2",
     "@aws-sdk/client-bedrock-runtime": "^3.873.0"
-  },
-  "devDependencies": {
-    "@types/bcryptjs": "^3.0.0"
   }
 }

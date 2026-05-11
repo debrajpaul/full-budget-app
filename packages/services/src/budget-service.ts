@@ -211,4 +211,24 @@ export class BudgetService implements IBudgetService {
 
     return deviations;
   }
+
+  public async getBudgets(
+    tenantId: ETenantType,
+    userId: string,
+    period: { month: number; year: number }
+  ): Promise<IBudget[]> {
+    const { month, year } = period;
+    this.logger.debug("Getting budgets", { tenantId, userId, month, year });
+    return this.budgetStore.listBudgetsByPeriod(tenantId, userId, month, year);
+  }
+
+  public async deleteBudget(
+    tenantId: ETenantType,
+    userId: string,
+    id: string
+  ): Promise<boolean> {
+    this.logger.debug("Deleting budget", { tenantId, userId, id });
+    await this.budgetStore.deleteBudget(tenantId, userId, id);
+    return true;
+  }
 }

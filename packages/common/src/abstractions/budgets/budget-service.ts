@@ -31,4 +31,16 @@ export interface IBudgetService {
     userId: string,
     year: number
   ): Promise<ICategoryDeviation[]>;
+
+  getBudgets(
+    tenantId: ETenantType,
+    userId: string,
+    period: { month: number; year: number }
+  ): Promise<IBudget[]>;
+
+  deleteBudget(
+    tenantId: ETenantType,
+    userId: string,
+    id: string
+  ): Promise<boolean>;
 }

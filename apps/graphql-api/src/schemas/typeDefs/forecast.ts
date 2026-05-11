@@ -3,7 +3,7 @@ export const forecastTypeDefs = /* GraphQL */ `
   Per-day forecast metrics and running balance.
   """
   type ForecastDay {
-    date: String!
+    date: Date!
     inflow: Float!
     outflow: Float!
     net: Float!
@@ -20,11 +20,19 @@ export const forecastTypeDefs = /* GraphQL */ `
   }
 
   """
+  Classification of forecast alerts.
+  """
+  enum AlertType {
+    LOW_BALANCE
+    LARGE_EXPENSE
+  }
+
+  """
   Alert generated during forecasting with severity and message.
   """
   type ForecastAlert {
-    date: String!
-    type: String!
+    date: Date!
+    type: AlertType!
     message: String!
     severity: AlertSeverity!
   }

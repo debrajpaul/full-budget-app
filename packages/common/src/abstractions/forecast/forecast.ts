@@ -10,9 +10,14 @@ export interface IForecastDay {
 
 export type AlertSeverity = "info" | "warning" | "critical";
 
+export enum EForecastAlertType {
+  LOW_BALANCE = "LOW_BALANCE",
+  LARGE_EXPENSE = "LARGE_EXPENSE",
+}
+
 export interface IForecastAlert {
   date: string; // ISO
-  type: string; // e.g., LOW_BALANCE, LARGE_EXPENSE
+  type: EForecastAlertType;
   message: string;
   severity: AlertSeverity;
 }

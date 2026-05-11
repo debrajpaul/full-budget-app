@@ -62,7 +62,7 @@ export const transactionResolvers = {
 
     annualReview: async (
       _: unknown,
-      args: { year: number },
+      args: { year: number; cursor?: string },
       ctx: IGraphQLContext
     ) => {
       if (!ctx.userId) throw new CustomError("Unauthorized", "UNAUTHORIZED");
@@ -79,7 +79,20 @@ export const transactionResolvers = {
           "No transactions found for the selected year",
           "NOT_FOUND"
         );
-      return result;
+      // Apply the same cursor-offset pattern used by transactions(filters, cursor).
+      const PAGE_SIZE = 20;
+      const start = args.cursor ? parseInt(args.cursor, 10) : 0;
+      const items = result.transactions.slice(start, start + PAGE_SIZE);
+      const nextCursor =
+        start + PAGE_SIZE < result.transactions.length
+          ? String(start + PAGE_SIZE)
+          : null;
+      return {
+        totalIncome: result.totalIncome,
+        totalExpense: result.totalExpense,
+        netSavings: result.netSavings,
+        transactions: { items, cursor: nextCursor },
+      };
     },
 
     categoryBreakdown: async (
@@ -192,15 +205,24 @@ export const transactionResolvers = {
   Mutation: {
     addTransactionCategory: async (
       _: unknown,
-      __: unknown,
+      args: {
+        input: {
+          keyword: string;
+          category: string;
+          subCategory?: string;
+          when?: string;
+          confidence?: number;
+          reason?: string;
+        };
+      },
       ctx: IGraphQLContext
     ) => {
       if (!ctx.userId) throw new CustomError("Unauthorized", "UNAUTHORIZED");
       if (!ctx.tenantId)
         throw new CustomError("Tenant ID is required", "TENANT_ID_REQUIRED");
-      // const { name, keyword } = AddTransactionCategoryArgs.parse(args);
-      await ctx.dataSources.transactionCategoryService.addRulesByTenant(
-        ctx.tenantId
+      await ctx.dataSources.transactionCategoryService.addRule(
+        ctx.tenantId,
+        args.input as any
       );
       return true;
     },

@@ -51,11 +51,12 @@ export const authTypeDefs = /* GraphQL */ `
   }
 
   """
-  Result of the login mutation containing user and token.
+  Result of the login mutation containing user, access token, and a single-use refresh token.
   """
   type LoginResponse {
     user: User!
     token: String!
+    refreshToken: String!
   }
 
   """
@@ -67,8 +68,13 @@ export const authTypeDefs = /* GraphQL */ `
     """
     register(input: RegisterInput!): RegisterResponse!
     """
-    Authenticates a user and returns a login token.
+    Authenticates a user and returns an access token and a single-use refresh token.
     """
     login(input: LoginInput!): LoginResponse!
+    """
+    Issues a new LoginResponse using a valid refresh token (single-use rotation).
+    Revokes the supplied token; replaying a used token revokes the entire family.
+    """
+    refreshToken(refreshToken: String!): LoginResponse!
   }
 `;

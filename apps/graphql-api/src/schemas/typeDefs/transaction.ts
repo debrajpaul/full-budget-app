@@ -10,7 +10,7 @@ export const transactionTypeDefs = /* GraphQL */ `
     credit: Float!
     debit: Float!
     balance: Float
-    txnDate: String!
+    txnDate: Date!
     description: String
     category: String
     subCategory: String
@@ -36,6 +36,19 @@ export const transactionTypeDefs = /* GraphQL */ `
   }
 
   """
+  A single keyword-based classification rule to add for the tenant.
+  keyword is treated as a case-insensitive substring match.
+  """
+  input AddTransactionCategoryInput {
+    keyword: String!
+    category: BaseCategory!
+    subCategory: String
+    when: String
+    confidence: Float
+    reason: String
+  }
+
+  """
   Filters to list transactions for a given period and category.
   """
   input TransactionsFilter {
@@ -57,7 +70,7 @@ export const transactionTypeDefs = /* GraphQL */ `
   Budget vs actual values for a specific date.
   """
   type ReviewSeriesPoint {
-    date: String!
+    date: Date!
     budget: Float!
     actual: Float!
   }
@@ -73,13 +86,13 @@ export const transactionTypeDefs = /* GraphQL */ `
   }
 
   """
-  Yearly aggregates and the list of transactions.
+  Yearly aggregates and a cursor-paginated list of transactions.
   """
   type AnnualReview {
     totalIncome: Float!
     totalExpense: Float!
     netSavings: Float!
-    transactions: [Transaction!]!
+    transactions: TransactionsPage!
   }
 
   """
@@ -123,9 +136,9 @@ export const transactionTypeDefs = /* GraphQL */ `
   """
   type Query {
     """
-    Returns yearly income, expenses, net savings, and transactions.
+    Returns yearly income, expenses, net savings, and a paged transaction list.
     """
-    annualReview(year: Int!): AnnualReview!
+    annualReview(year: Int!, cursor: String): AnnualReview!
     """
     Returns monthly income, expenses, savings, category breakdown, and series.
     """
@@ -158,7 +171,7 @@ export const transactionTypeDefs = /* GraphQL */ `
     """
     Adds or syncs transaction category rules for the current tenant.
     """
-    addTransactionCategory: Boolean!
+    addTransactionCategory(input: AddTransactionCategoryInput!): Boolean!
     """
     Reclassifies a transaction to a new category and returns the updated item.
     """

@@ -3,6 +3,7 @@ import {
   ETenantType,
   ITransactionStore,
   ITransactionCategoryService,
+  IAddCategoryRuleInput,
   ICategoryRulesStore,
   ITransactionCategoryRequest,
   EBaseCategories,
@@ -112,6 +113,28 @@ export class TransactionCategoryService implements ITransactionCategoryService {
       tenantId,
       keywordBaseCategoryMap
     );
+  }
+
+  public async addRule(
+    tenantId: ETenantType,
+    input: IAddCategoryRuleInput
+  ): Promise<void> {
+    this.logger.debug("Adding category rule", {
+      tenantId,
+      keyword: input.keyword,
+      category: input.category,
+    });
+    // Escape the keyword so it is treated as a literal substring, not a regex.
+    const escaped = input.keyword.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+    await this.categoryRulesStore.addRule(tenantId, {
+      match: new RegExp(escaped, "i"),
+      category: input.category as EBaseCategories,
+      subCategory: input.subCategory as EAllSubCategories | undefined,
+      when: input.when as "CREDIT" | "DEBIT" | "ANY" | undefined,
+      confidence: input.confidence,
+      reason: input.reason,
+      taggedBy: "USER",
+    });
   }
 
   public async getCategoriesByTenant(

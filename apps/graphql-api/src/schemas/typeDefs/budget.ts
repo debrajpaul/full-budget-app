@@ -18,10 +18,21 @@ export const budgetTypeDefs = /* GraphQL */ `
     year: Int!
   }
 
+  extend type Query {
+    """
+    Lists all budgets for the authenticated user for the given period.
+    """
+    budgets(period: PeriodInput!): [Budget!]!
+  }
+
   extend type Mutation {
     """
     Sets the budget amount for a category in the specified month/year.
     """
     setBudget(period: PeriodInput!, category: String!, amount: Float!): Budget!
+    """
+    Deletes a budget entry by its id. Returns true on success.
+    """
+    deleteBudget(id: String!): Boolean!
   }
 `;

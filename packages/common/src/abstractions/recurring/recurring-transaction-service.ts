@@ -2,6 +2,7 @@ import { ITransaction } from "../transactions";
 import { ETenantType } from "../users";
 import {
   ERecurringFrequency,
+  ETransactionType,
   IRecurringTransaction,
 } from "./recurring-transaction";
 
@@ -13,6 +14,7 @@ export interface IRecurringTransactionService {
       description: string;
       amount: number;
       category?: string;
+      type?: ETransactionType;
       frequency: ERecurringFrequency;
       dayOfMonth?: number;
       dayOfWeek?: number;

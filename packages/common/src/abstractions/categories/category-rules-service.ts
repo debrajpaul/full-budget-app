@@ -14,9 +14,19 @@ export interface ITransactionCategoryRequest {
   confidence?: number;
 }
 
+export interface IAddCategoryRuleInput {
+  keyword: string;
+  category: EBaseCategories;
+  subCategory?: EAllSubCategories | string;
+  when?: "CREDIT" | "DEBIT" | "ANY";
+  confidence?: number;
+  reason?: string;
+}
+
 export interface ITransactionCategoryService {
   process(request: ITransactionCategoryRequest): Promise<boolean>;
   addRulesByTenant(tenantId: ETenantType): Promise<void>;
+  addRule(tenantId: ETenantType, input: IAddCategoryRuleInput): Promise<void>;
   getCategoriesByTenant(
     tenantId: ETenantType
   ): Promise<Record<string, string[]>>;

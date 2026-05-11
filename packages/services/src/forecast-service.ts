@@ -5,6 +5,7 @@ import {
   IForecastResult,
   IForecastDay,
   IForecastAlert,
+  EForecastAlertType,
   IRecurringTransactionStore,
   IRecurringTransaction,
   ERecurringFrequency,
@@ -139,7 +140,7 @@ export class ForecastService implements IForecastService {
       if (running < lowThreshold) {
         alerts.push({
           date: d.date,
-          type: "LOW_BALANCE",
+          type: EForecastAlertType.LOW_BALANCE,
           message: `Projected balance ${running.toFixed(2)} falls below ${lowThreshold}`,
           severity: running < 0 ? "critical" : "warning",
         });
@@ -148,7 +149,7 @@ export class ForecastService implements IForecastService {
       if (absOutflow >= largeExpenseThreshold) {
         alerts.push({
           date: d.date,
-          type: "LARGE_EXPENSE",
+          type: EForecastAlertType.LARGE_EXPENSE,
           message: `Large projected outflow ${absOutflow.toFixed(2)}`,
           severity: "info",
         });

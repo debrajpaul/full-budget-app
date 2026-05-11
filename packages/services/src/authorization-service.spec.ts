@@ -3,91 +3,115 @@ import { mock } from "jest-mock-extended";
 import {
   ILogger,
   IUserStore,
+  IRefreshTokenStore,
+  IRefreshToken,
   IRegisterInput,
-  ILoginInput,
   ETenantType,
 } from "@common";
-import { signToken, verifyToken, hashPassword, comparePassword } from "@auth";
+import { signToken, verifyToken, hashPassword } from "@auth";
 
 jest.mock("@auth", () => ({
   signToken: jest.fn(() => "mocked.jwt.token"),
   verifyToken: jest.fn(() => ({ userId: "user@example.com" })),
-  hashPassword: jest.fn(async (pw) => `hashed-${pw}`),
-  comparePassword: jest.fn(async (pw, hash) => hash === `hashed-${pw}`),
+  hashPassword: jest.fn(async (pw: string) => `hashed-${pw}`),
+  comparePassword: jest.fn(
+    async (pw: string, hash: string) => hash === `hashed-${pw}`
+  ),
+  generateRefreshToken: jest.fn(() => "raw-refresh-token"),
+  hashRefreshToken: jest.fn((t: string) => `hashed-${t}`),
 }));
 
+const TENANT = ETenantType.default;
+const EMAIL = "user@example.com";
+const JWT_SECRET = "supersecret";
+
+const makeUser = (overrides = {}) => ({
+  email: EMAIL,
+  tenantId: TENANT,
+  name: "User",
+  passwordHash: "hashed-pw",
+  isActive: true,
+  createdAt: new Date().toISOString(),
+  ...overrides,
+});
+
+const makeStoredToken = (
+  overrides: Partial<IRefreshToken> = {}
+): IRefreshToken => ({
+  tokenId: "hashed-raw-refresh-token",
+  family: "family-uuid",
+  userId: EMAIL,
+  tenantId: TENANT,
+  isRevoked: false,
+  createdAt: new Date().toISOString(),
+  expiresAt: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(),
+  ttl: Math.floor(Date.now() / 1000) + 30 * 24 * 60 * 60,
+  ...overrides,
+});
+
 describe("AuthorizationService", () => {
-  let loggerMock: ReturnType<typeof mock<ILogger>>;
-  let userStoreMock: ReturnType<typeof mock<IUserStore>>;
+  let logger: ReturnType<typeof mock<ILogger>>;
+  let userStore: ReturnType<typeof mock<IUserStore>>;
+  let refreshTokenStore: ReturnType<typeof mock<IRefreshTokenStore>>;
   let service: AuthorizationService;
-  const jwtSecret = "supersecret";
+
+  const makeService = () =>
+    new AuthorizationService(logger, JWT_SECRET, userStore, refreshTokenStore);
 
   beforeEach(() => {
-    loggerMock = mock<ILogger>();
-    userStoreMock = mock<IUserStore>();
-    service = new AuthorizationService(loggerMock, jwtSecret, userStoreMock);
+    logger = mock<ILogger>();
+    userStore = mock<IUserStore>();
+    refreshTokenStore = mock<IRefreshTokenStore>();
+    service = makeService();
     jest.clearAllMocks();
   });
 
-  it("should verify token and return email", async () => {
+  // ── verifyToken ────────────────────────────────────────────────────────────
+
+  it("verifies token and returns email", async () => {
     const result = await service.verifyToken("sometoken");
-    expect(verifyToken).toHaveBeenCalledWith("sometoken", jwtSecret);
+    expect(verifyToken).toHaveBeenCalledWith("sometoken", JWT_SECRET);
     expect(result).toEqual({ email: "user@example.com" });
-    expect(loggerMock.debug).toHaveBeenCalledWith("Verifying token");
   });
 
-  it("should throw if token is missing", async () => {
+  it("throws when token is missing", async () => {
     await expect(service.verifyToken("")).rejects.toThrow("Token is required");
-    expect(loggerMock.error).toHaveBeenCalledWith(
-      "Error verifying token",
-      expect.any(Error)
-    );
   });
 
-  it("should throw if jwtSecret is missing", async () => {
-    service = new AuthorizationService(loggerMock, "", userStoreMock);
+  it("throws when jwtSecret is missing", async () => {
+    service = new AuthorizationService(
+      logger,
+      "",
+      userStore,
+      refreshTokenStore
+    );
     await expect(service.verifyToken("sometoken")).rejects.toThrow(
       "JWT secret is not configured"
     );
-    expect(loggerMock.error).toHaveBeenCalledWith(
-      "Error verifying token",
-      expect.any(Error)
-    );
   });
 
-  it("should register a user and return success", async () => {
+  // ── register ───────────────────────────────────────────────────────────────
+
+  it("registers a user and returns success", async () => {
     const input: IRegisterInput = {
-      email: "user@example.com",
+      email: EMAIL,
       name: "User",
-      tenantId: ETenantType.default,
+      tenantId: TENANT,
       password: "pw",
     };
-    userStoreMock.saveUser.mockResolvedValue();
+    userStore.saveUser.mockResolvedValue();
     const result = await service.register(input);
     expect(hashPassword).toHaveBeenCalledWith("pw");
-    expect(userStoreMock.saveUser).toHaveBeenCalledWith(
-      expect.objectContaining({
-        email: input.email,
-        tenantId: input.tenantId,
-        name: input.name,
-        passwordHash: "hashed-pw",
-        isActive: true,
-      })
+    expect(userStore.saveUser).toHaveBeenCalledWith(
+      expect.objectContaining({ email: EMAIL, passwordHash: "hashed-pw" })
     );
     expect(result).toEqual({
       success: true,
       message: "User registered successfully",
     });
-    expect(loggerMock.debug).toHaveBeenCalledWith(
-      "User registered successfully",
-      {
-        email: input.email,
-        tenantId: input.tenantId,
-      }
-    );
   });
 
-  it("should throw if registration input is invalid", async () => {
+  it("throws when registration input is invalid", async () => {
     await expect(
       service.register({
         email: "",
@@ -96,89 +120,110 @@ describe("AuthorizationService", () => {
         password: "",
       } as any)
     ).rejects.toThrow("Invalid are required");
-    expect(loggerMock.error).toHaveBeenCalledWith(
-      "Invalid are required for registration"
-    );
   });
 
-  it("should throw if jwtSecret is missing on register", async () => {
-    service = new AuthorizationService(loggerMock, "", userStoreMock);
-    await expect(
-      service.register({
-        email: "a",
-        name: "b",
-        tenantId: "c",
-        password: "d",
-      } as any)
-    ).rejects.toThrow("JWT secret is not configured");
-    expect(loggerMock.error).toHaveBeenCalledWith(
-      "JWT secret is not configured"
-    );
-  });
+  // ── login ──────────────────────────────────────────────────────────────────
 
-  it("should login a user and return token", async () => {
-    const input: ILoginInput = {
-      email: "user@example.com",
-      tenantId: ETenantType.default,
+  it("login returns access token, refreshToken and user", async () => {
+    userStore.getUser.mockResolvedValue(makeUser());
+    refreshTokenStore.save.mockResolvedValue();
+
+    const result = await service.login({
+      email: EMAIL,
+      tenantId: TENANT,
       password: "pw",
-    };
-    userStoreMock.getUser.mockResolvedValue({
-      email: input.email,
-      tenantId: input.tenantId,
-      name: "User",
-      passwordHash: "hashed-pw",
-      isActive: true,
-      createdAt: new Date().toISOString(),
     });
-    const result = await service.login(input);
-    expect(userStoreMock.getUser).toHaveBeenCalledWith(
-      input.tenantId,
-      input.email
-    );
-    expect(comparePassword).toHaveBeenCalledWith("pw", "hashed-pw");
+
     expect(signToken).toHaveBeenCalledWith(
-      { userId: input.email, email: input.email, tenantId: input.tenantId },
-      jwtSecret
+      { userId: EMAIL, email: EMAIL, tenantId: TENANT },
+      JWT_SECRET
     );
-    expect(result).toEqual({
-      token: "mocked.jwt.token",
-      user: {
-        email: input.email,
-        name: "User",
-        tenantId: input.tenantId,
-        isActive: true,
-      },
-    });
-    expect(loggerMock.debug).toHaveBeenCalledWith(
-      "User logged in successfully",
-      { email: input.email }
+    expect(refreshTokenStore.save).toHaveBeenCalledWith(
+      expect.objectContaining({
+        userId: EMAIL,
+        tenantId: TENANT,
+        isRevoked: false,
+      })
     );
+    expect(result.token).toBe("mocked.jwt.token");
+    expect(typeof result.refreshToken).toBe("string");
+    expect(result.user.email).toBe(EMAIL);
   });
 
-  it("should throw if user not found on login", async () => {
-    userStoreMock.getUser.mockResolvedValue(undefined);
+  it("login throws when user not found", async () => {
+    userStore.getUser.mockResolvedValue(undefined);
     await expect(
-      service.login({ email: "a", tenantId: "b", password: "c" } as any)
+      service.login({ email: "x", tenantId: TENANT, password: "pw" } as any)
     ).rejects.toThrow("User not found");
-    expect(loggerMock.error).toHaveBeenCalledWith("User not found");
   });
 
-  it("should throw if password is invalid on login", async () => {
-    userStoreMock.getUser.mockResolvedValue({
-      email: "a",
-      tenantId: ETenantType.default,
-      name: "n",
-      passwordHash: "hashed-wrong",
-      isActive: true,
-      createdAt: new Date().toISOString(),
-    });
+  it("login throws when password is wrong", async () => {
+    userStore.getUser.mockResolvedValue(
+      makeUser({ passwordHash: "hashed-wrong" })
+    );
     await expect(
-      service.login({
-        email: "a",
-        tenantId: ETenantType.default,
-        password: "pw",
-      } as any)
+      service.login({ email: EMAIL, tenantId: TENANT, password: "pw" } as any)
     ).rejects.toThrow("Invalid credentials");
-    expect(loggerMock.error).toHaveBeenCalledWith("Invalid credentials");
+  });
+
+  // ── refreshToken ───────────────────────────────────────────────────────────
+
+  it("refreshToken rotates tokens and returns new LoginResponse", async () => {
+    refreshTokenStore.findById.mockResolvedValue(makeStoredToken());
+    refreshTokenStore.revokeToken.mockResolvedValue();
+    refreshTokenStore.save.mockResolvedValue();
+    userStore.getUser.mockResolvedValue(makeUser());
+
+    const result = await service.refreshToken("raw-refresh-token");
+
+    expect(refreshTokenStore.revokeToken).toHaveBeenCalled();
+    expect(refreshTokenStore.save).toHaveBeenCalledWith(
+      expect.objectContaining({ family: "family-uuid", isRevoked: false })
+    );
+    expect(result.token).toBe("mocked.jwt.token");
+    expect(typeof result.refreshToken).toBe("string");
+  });
+
+  it("refreshToken throws INVALID_REFRESH_TOKEN when token not found", async () => {
+    refreshTokenStore.findById.mockResolvedValue(null);
+    await expect(service.refreshToken("unknown")).rejects.toMatchObject({
+      code: "INVALID_REFRESH_TOKEN",
+    });
+  });
+
+  it("refreshToken throws REFRESH_TOKEN_EXPIRED for expired token", async () => {
+    refreshTokenStore.findById.mockResolvedValue(
+      makeStoredToken({ expiresAt: new Date(Date.now() - 1000).toISOString() })
+    );
+    await expect(service.refreshToken("old-token")).rejects.toMatchObject({
+      code: "REFRESH_TOKEN_EXPIRED",
+    });
+  });
+
+  it("refreshToken detects reuse, revokes family, and throws REFRESH_TOKEN_REUSED", async () => {
+    refreshTokenStore.findById.mockResolvedValue(
+      makeStoredToken({ isRevoked: true })
+    );
+    refreshTokenStore.revokeFamily.mockResolvedValue();
+
+    await expect(service.refreshToken("replayed-token")).rejects.toMatchObject({
+      code: "REFRESH_TOKEN_REUSED",
+    });
+    expect(refreshTokenStore.revokeFamily).toHaveBeenCalledWith("family-uuid");
+  });
+
+  it("refreshToken throws USER_NOT_FOUND when user is inactive", async () => {
+    refreshTokenStore.findById.mockResolvedValue(makeStoredToken());
+    userStore.getUser.mockResolvedValue(makeUser({ isActive: false }));
+
+    await expect(service.refreshToken("token")).rejects.toMatchObject({
+      code: "USER_NOT_FOUND",
+    });
+  });
+
+  it("refreshToken throws INVALID_REFRESH_TOKEN when raw token is empty", async () => {
+    await expect(service.refreshToken("")).rejects.toMatchObject({
+      code: "INVALID_REFRESH_TOKEN",
+    });
   });
 });

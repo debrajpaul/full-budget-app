@@ -12,3 +12,17 @@ export interface ISinkingFund {
   deadline?: string;
   history: ISinkingFundHistoryPoint[];
 }
+
+export interface ICreateSinkingFundInput {
+  name: string;
+  target: number;
+  monthlyContribution?: number;
+  deadline?: string;
+}
+
+export interface IUpdateSinkingFundInput {
+  name?: string;
+  target?: number;
+  monthlyContribution?: number;
+  deadline?: string;
+}

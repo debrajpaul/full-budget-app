@@ -5,6 +5,8 @@ import {
   ITransactionStore,
   ETenantType,
   ERecurringFrequency,
+  ETransactionType,
+  inferTransactionType,
   IRecurringTransaction,
   EBankName,
   EBankType,
@@ -61,6 +63,7 @@ describe("RecurringTransactionService", () => {
         description: payload.description,
         amount: payload.amount,
         category: payload.category,
+        type: ETransactionType.expense, // inferred from category "housing"
         frequency: payload.frequency,
         dayOfMonth: payload.dayOfMonth,
         startDate: payload.startDate,
@@ -68,6 +71,26 @@ describe("RecurringTransactionService", () => {
       })
     );
     expect(created.recurringId).toBe(expectedId);
+    expect(created.type).toBe(ETransactionType.expense);
+  });
+
+  it("stores explicit type when caller provides it", async () => {
+    recurringStore.create.mockImplementation(async (_tenant, rec) => ({
+      ...(rec as any),
+      tenantId,
+      createdAt: new Date().toISOString(),
+    }));
+
+    const created = await service.create(tenantId, userId, {
+      description: "Side income",
+      amount: -500, // negative amount but caller says INCOME
+      type: ETransactionType.income,
+      frequency: ERecurringFrequency.monthly,
+      dayOfMonth: 1,
+      startDate: "2025-08-01",
+    });
+
+    expect(created.type).toBe(ETransactionType.income);
   });
 
   it("lists recurring by user", async () => {
@@ -367,5 +390,47 @@ describe("RecurringTransactionService", () => {
       "Skipping duplicate or failed recurring save",
       expect.objectContaining({ error: "dup" })
     );
+  });
+});
+
+// ── inferTransactionType ────────────────────────────────────────────────────
+describe("inferTransactionType", () => {
+  it("returns INCOME for category=INCOME regardless of amount sign", () => {
+    expect(inferTransactionType(-100, "INCOME")).toBe(ETransactionType.income);
+    expect(inferTransactionType(100, "income")).toBe(ETransactionType.income);
+  });
+
+  it("returns EXPENSE for any recognised non-INCOME category", () => {
+    for (const cat of [
+      "EXPENSES",
+      "SAVINGS",
+      "INVESTMENT",
+      "LOAN",
+      "expenses",
+    ]) {
+      expect(inferTransactionType(500, cat)).toBe(ETransactionType.expense);
+    }
+  });
+
+  it("falls back to amount sign for UNCLASSIFIED category", () => {
+    expect(inferTransactionType(200, "UNCLASSIFIED")).toBe(
+      ETransactionType.income
+    );
+    expect(inferTransactionType(-200, "UNCLASSIFIED")).toBe(
+      ETransactionType.expense
+    );
+  });
+
+  it("falls back to amount sign for TRANSFER category", () => {
+    expect(inferTransactionType(50, "TRANSFER")).toBe(ETransactionType.income);
+    expect(inferTransactionType(-50, "TRANSFER")).toBe(
+      ETransactionType.expense
+    );
+  });
+
+  it("falls back to amount sign when category is absent", () => {
+    expect(inferTransactionType(1000)).toBe(ETransactionType.income);
+    expect(inferTransactionType(-1000)).toBe(ETransactionType.expense);
+    expect(inferTransactionType(0)).toBe(ETransactionType.expense); // zero treated as non-positive
   });
 });

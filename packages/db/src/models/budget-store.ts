@@ -8,6 +8,7 @@ import {
 import {
   PutCommand,
   QueryCommand,
+  DeleteCommand,
   DynamoDBDocumentClient,
 } from "@aws-sdk/lib-dynamodb";
 
@@ -90,5 +91,50 @@ export class BudgetStore implements IBudgetStore {
       map[b.category] = (map[b.category] || 0) + Number(b.amount || 0);
     }
     return map;
+  }
+
+  public async listBudgetsByPeriod(
+    tenantId: ETenantType,
+    userId: string,
+    month: number,
+    year: number
+  ): Promise<IBudget[]> {
+    const keyMonth = String(month).padStart(2, "0");
+    const prefix = `${userId}#${year}-${keyMonth}#`;
+    this.logger.debug("Listing budgets by period", {
+      tenantId,
+      userId,
+      month,
+      year,
+    });
+
+    const command = new QueryCommand({
+      TableName: this.tableName,
+      KeyConditionExpression:
+        "tenantId = :tenantId AND begins_with(budgetId, :prefix)",
+      ExpressionAttributeValues: {
+        ":tenantId": tenantId,
+        ":prefix": prefix,
+      },
+    });
+
+    const result = await this.store.send(command);
+    return (result.Items as IBudget[]) || [];
+  }
+
+  public async deleteBudget(
+    tenantId: ETenantType,
+    userId: string,
+    budgetId: string
+  ): Promise<void> {
+    if (!budgetId.startsWith(`${userId}#`)) {
+      throw new Error("Budget does not belong to this user");
+    }
+    this.logger.debug("Deleting budget", { tenantId, budgetId });
+    const command = new DeleteCommand({
+      TableName: this.tableName,
+      Key: { tenantId, budgetId },
+    });
+    await this.store.send(command);
   }
 }

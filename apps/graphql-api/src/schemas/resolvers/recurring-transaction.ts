@@ -1,4 +1,26 @@
-import { IGraphQLContext, ERecurringFrequency } from "@common";
+import {
+  IGraphQLContext,
+  IRecurringTransaction,
+  ERecurringFrequency,
+  ETransactionType,
+  inferTransactionType,
+} from "@common";
+
+const mapRecurring = (r: IRecurringTransaction) => ({
+  id: r.recurringId,
+  description: r.description,
+  amount: r.amount,
+  category: r.category,
+  // Prefer the stored value; fall back to inference for records that predate the migration.
+  type: r.type ?? inferTransactionType(r.amount, r.category),
+  frequency: r.frequency,
+  dayOfMonth: r.dayOfMonth,
+  dayOfWeek: r.dayOfWeek,
+  monthOfYear: r.monthOfYear,
+  startDate: r.startDate,
+  endDate: r.endDate,
+  nextRunDate: r.nextRunDate,
+});
 
 export const recurringTransactionResolvers = {
   Query: {
@@ -13,19 +35,7 @@ export const recurringTransactionResolvers = {
         ctx.tenantId,
         ctx.userId
       );
-      return items.map((r) => ({
-        id: r.recurringId,
-        description: r.description,
-        amount: r.amount,
-        category: r.category,
-        frequency: r.frequency,
-        dayOfMonth: r.dayOfMonth,
-        dayOfWeek: r.dayOfWeek,
-        monthOfYear: r.monthOfYear,
-        startDate: r.startDate,
-        endDate: r.endDate,
-        nextRunDate: r.nextRunDate,
-      }));
+      return items.map(mapRecurring);
     },
   },
   Mutation: {
@@ -36,6 +46,7 @@ export const recurringTransactionResolvers = {
           description: string;
           amount: number;
           category?: string;
+          type?: ETransactionType;
           frequency: ERecurringFrequency;
           dayOfMonth?: number;
           dayOfWeek?: number;
@@ -53,19 +64,7 @@ export const recurringTransactionResolvers = {
         ctx.userId,
         args.input
       );
-      return {
-        id: r.recurringId,
-        description: r.description,
-        amount: r.amount,
-        category: r.category,
-        frequency: r.frequency,
-        dayOfMonth: r.dayOfMonth,
-        dayOfWeek: r.dayOfWeek,
-        monthOfYear: r.monthOfYear,
-        startDate: r.startDate,
-        endDate: r.endDate,
-        nextRunDate: r.nextRunDate,
-      };
+      return mapRecurring(r);
     },
     generateRecurringTransactions: async (
       _: unknown,

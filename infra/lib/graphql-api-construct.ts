@@ -17,6 +17,9 @@ export interface GraphQLApiConstructProps {
   userTableArn: string;
   recurringTableArn: string;
   budgetTableArn: string;
+  savingsGoalTableArn: string;
+  sinkingFundTableArn: string;
+  refreshTokenTableArn: string;
   jwtParameter: StringParameter;
   environment: Record<string, string>;
 }
@@ -28,7 +31,7 @@ export class GraphQLApiConstruct extends Construct {
     super(scope, id);
 
     const graphqlFunction = new lambda.Function(this, "GraphQLLambda", {
-      runtime: lambda.Runtime.NODEJS_20_X,
+      runtime: lambda.Runtime.NODEJS_22_X,
       handler: "index.handler",
       code: lambda.Code.fromAsset(
         path.resolve(__dirname, "../../apps/graphql-api/dist")
@@ -62,6 +65,11 @@ export class GraphQLApiConstruct extends Construct {
           props.categoryTableArn,
           props.recurringTableArn,
           props.budgetTableArn,
+          props.savingsGoalTableArn,
+          props.sinkingFundTableArn,
+          props.refreshTokenTableArn,
+          // GSI ARN pattern — grants access to the FamilyIndex used by revokeFamily
+          `${props.refreshTokenTableArn}/index/*`,
         ],
       })
     );
