@@ -10,8 +10,8 @@
     "test": "jest --config jest.config.js"
   },
   "dependencies": {
-    "@aws-sdk/client-dynamodb": "^3.844.0",
-    "@aws-sdk/lib-dynamodb": "^3.844.0",
+    "@aws-sdk/client-dynamodb": "^3.873.0",
+    "@aws-sdk/lib-dynamodb": "^3.873.0",
     "@common": "workspace:*",
     "@logger": "workspace:*",
     "lodash": "^4.17.21"
