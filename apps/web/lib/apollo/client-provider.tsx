@@ -1,10 +1,10 @@
 "use client";
-import { ApolloNextAppProvider } from "@apollo/experimental-nextjs-app-support";
-import { ApolloClient, InMemoryCache, HttpLink } from "@apollo/client";
-import { type ReactNode } from "react";
+import { ApolloClient, ApolloProvider, InMemoryCache, HttpLink } from "@apollo/client";
+import { useMemo, type ReactNode } from "react";
 
-// Called once per browser session — always points at the BFF proxy so the
-// raw JWT never leaves the server.
+// Standard ApolloProvider for client components.
+// Uses a same-origin /api/graphql BFF so the raw JWT never leaves the server.
+// RSC components use the separate server-client.ts (registerApolloClient) instead.
 function makeClient() {
   return new ApolloClient({
     cache: new InMemoryCache(),
@@ -13,9 +13,6 @@ function makeClient() {
 }
 
 export function ApolloClientProvider({ children }: { children: ReactNode }) {
-  return (
-    <ApolloNextAppProvider makeClient={makeClient}>
-      {children}
-    </ApolloNextAppProvider>
-  );
+  const client = useMemo(makeClient, []);
+  return <ApolloProvider client={client}>{children}</ApolloProvider>;
 }
