@@ -1,5 +1,10 @@
 "use client";
-import { ApolloClient, ApolloProvider, InMemoryCache, HttpLink } from "@apollo/client";
+import {
+  ApolloClient,
+  ApolloProvider,
+  InMemoryCache,
+  HttpLink,
+} from "@apollo/client";
 import { useMemo, type ReactNode } from "react";
 
 // Standard ApolloProvider for client components.
