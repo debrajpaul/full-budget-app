@@ -18,9 +18,10 @@
       "@logger/*": ["packages/logger/src/*"],
       "@parser/*": ["packages/parser/src/*"],
       "@client/*": ["packages/client/src/*"],
-      "@nlp-tagger/*": ["packages/nlp-tagger/src/*"]
+      "@nlp-tagger/*": ["packages/nlp-tagger/src/*"],
+      "@api-client/*": ["packages/api-client/src/*"]
     }
   },
   "include": ["apps", "packages", "Infra"],
-  "exclude": ["node_modules", "data", ".github"]
+  "exclude": ["node_modules", "data", ".github", "apps/web", "packages/api-client/src/generated"]
 }
