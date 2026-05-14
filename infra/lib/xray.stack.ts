@@ -11,7 +11,7 @@ export class XRayStack extends Stack {
         ruleName: "FullBudgetAppDefaultSampling",
         version: 1,
         priority: 1,
-        fixedRate: 0.1,
+        fixedRate: 0.05,
         reservoirSize: 1,
         host: "*",
         httpMethod: "*",

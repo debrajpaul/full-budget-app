@@ -7,6 +7,7 @@ import {
   aws_sqs as sqs,
   aws_s3 as s3,
 } from "aws-cdk-lib";
+import * as logs from "aws-cdk-lib/aws-logs";
 import { Construct } from "constructs";
 import * as path from "path";
 import * as eventSources from "aws-cdk-lib/aws-lambda-event-sources";
@@ -38,6 +39,7 @@ export class TransactionLoaderStack extends Stack {
         path.resolve(__dirname, "../../apps/txn-loaders/dist")
       ),
       timeout: Duration.seconds(30),
+      logRetention: logs.RetentionDays.ONE_WEEK,
       logRetentionRetryOptions: { base: Duration.hours(8), maxRetries: 10 },
       tracing: lambda.Tracing.ACTIVE,
       environment: props.environment,
