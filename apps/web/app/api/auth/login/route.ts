@@ -2,12 +2,13 @@ import { NextRequest, NextResponse } from "next/server";
 import { env } from "@/lib/env";
 import { loginSchema } from "@/lib/schemas/auth";
 
-// __Host- / __Secure- prefixed cookies require Secure=true unconditionally.
-const isSecurePrefix =
-  env.SESSION_COOKIE_NAME.startsWith("__Host-") ||
-  env.SESSION_COOKIE_NAME.startsWith("__Secure-");
-
 export async function POST(req: NextRequest) {
+  // __Host- / __Secure- prefixed cookies require Secure=true unconditionally.
+  // Evaluated inside the handler (request time) so the env Proxy is never
+  // triggered at module-load time during next build static analysis.
+  const isSecurePrefix =
+    env.SESSION_COOKIE_NAME.startsWith("__Host-") ||
+    env.SESSION_COOKIE_NAME.startsWith("__Secure-");
   const body = await req.json().catch(() => null);
   const parsed = loginSchema.safeParse(body);
   if (!parsed.success) {
