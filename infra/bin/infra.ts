@@ -65,7 +65,7 @@ new GraphQLApiStack(app, "GraphQLApiStack", {
   jwtParameter: ssmParamStack.parameter,
   environment: {
     NODE_ENV: "dev",
-    LOG_LEVEL: "debug", //'info'
+    LOG_LEVEL: "info",
     DYNAMO_CATEGORY_RULES_TABLE:
       transactionsCategoryTableStack.transactionsCategoryTable.tableName,
     DYNAMO_TRANSACTION_TABLE:
@@ -90,7 +90,7 @@ new TransactionLoaderStack(app, "TransactionLoaderStack", {
   transactionTableArn: transactionsTableStack.transactionsTable.tableArn,
   environment: {
     NODE_ENV: "dev",
-    LOG_LEVEL: "debug", //'info'
+    LOG_LEVEL: "info",
     DYNAMO_TRANSACTION_TABLE:
       transactionsTableStack.transactionsTable.tableName,
     SQS_QUEUE_URL: queueStack.statementProcessingQueue.queueUrl,
@@ -106,7 +106,7 @@ new TransactionCategoryStack(app, "TransactionCategoryStack", {
     transactionsCategoryTableStack.transactionsCategoryTable,
   environment: {
     NODE_ENV: "dev",
-    LOG_LEVEL: "debug", //'info'
+    LOG_LEVEL: "info",
     DYNAMO_TRANSACTION_TABLE:
       transactionsTableStack.transactionsTable.tableName,
     DYNAMO_CATEGORY_RULES_TABLE:
