@@ -6,6 +6,7 @@ import {
   aws_apigateway as apigateway,
   aws_iam as iam,
 } from "aws-cdk-lib";
+import * as logs from "aws-cdk-lib/aws-logs";
 import { StringParameter } from "aws-cdk-lib/aws-ssm";
 import { LambdaAlarmsConstruct } from "./lambda-alarms-construct";
 
@@ -38,6 +39,7 @@ export class GraphQLApiConstruct extends Construct {
       ), // Adjust to match your output dir
       memorySize: 1024,
       timeout: Duration.seconds(15),
+      logRetention: logs.RetentionDays.ONE_WEEK,
       logRetentionRetryOptions: { base: Duration.hours(8), maxRetries: 10 },
       environment: props.environment,
       tracing: lambda.Tracing.ACTIVE,
