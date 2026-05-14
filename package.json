@@ -81,6 +81,7 @@
     "format": "pnpm -r format",
     "test": "pnpm -r test",
     "typecheck": "tsc --noEmit",
+    "codegen": "pnpm --filter @api-client codegen",
     "clean": "rimraf apps/*/dist && rimraf packages/*/dist",
     "build": "pnpm clean && node esbuild.config.js",
     "dev": "pnpm clean && node esbuild.config.js --watch",
