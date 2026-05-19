@@ -40,7 +40,7 @@ export const NAV_ITEMS: NavItem[] = [
     label: "Dashboard",
     href: "/dashboard",
     icon: LayoutDashboard,
-    built: false,
+    built: true,
   },
   {
     label: "Transactions",

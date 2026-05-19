@@ -41,15 +41,20 @@ describe("AppSidebar", () => {
     }
   });
 
-  it("marks every item as aria-disabled while no pages are built", () => {
+  it("marks unbuilt items as aria-disabled and built items as links", () => {
     render(<AppSidebar />, { wrapper: Wrapper });
 
-    const disabledItems = screen
+    const expectedDisabled = NAV_ITEMS.filter((i) => !i.built).length;
+    const expectedLinks = NAV_ITEMS.filter((i) => i.built).length;
+
+    const disabledButtons = screen
       .getAllByRole("button")
       .filter((el) => el.getAttribute("aria-disabled") === "true");
 
-    // All 9 nav items should be disabled (built: false for all)
-    expect(disabledItems.length).toBe(NAV_ITEMS.length);
+    const navLinks = screen.getAllByRole("link");
+
+    expect(disabledButtons.length).toBe(expectedDisabled);
+    expect(navLinks.length).toBe(expectedLinks);
   });
 
   it("shows the app name in the header", () => {
@@ -57,17 +62,15 @@ describe("AppSidebar", () => {
     expect(screen.getByText("full-budget")).toBeDefined();
   });
 
-  it("highlights the active route based on pathname", () => {
-    // usePathname is mocked to return '/dashboard' — the Dashboard item
-    // should receive data-active="true".
+  it("renders the active route (Dashboard) as a link when built", () => {
+    // usePathname is mocked to '/dashboard'; Dashboard has built: true
+    // so it renders as an <a> link, not a disabled button.
     render(<AppSidebar />, { wrapper: Wrapper });
 
-    const dashboardButton = screen
-      .getAllByRole("button")
+    const dashboardLink = screen
+      .getAllByRole("link")
       .find((el) => el.textContent?.includes("Dashboard"));
 
-    // aria-disabled items will have the active attribute set even though
-    // they are not clickable, so we verify the attribute is present.
-    expect(dashboardButton).toBeDefined();
+    expect(dashboardLink).toBeDefined();
   });
 });
