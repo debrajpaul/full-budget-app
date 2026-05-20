@@ -7,7 +7,7 @@ Full Budget App is a multi-tenant, serverless budgeting platform that ingests ra
 Key principles:
 
 - **Serverless first** — Lambda, DynamoDB, S3, and SQS supply elastic scale without maintaining servers.
-- **Local-first parity** — All SDK clients can point at LocalStack via `USE_LOCALSTACK=true`, and helper scripts and CDK targets create buckets, queues, tables, and SSM params locally.
+- **AWS-native** — Lambda, DynamoDB, S3, SQS, and Parameter Store; deploy against the real AWS environment.
 - **SDL as source of truth** — `docs/finance-budget.sdl.graphql` drives the schema. Every change flows SDL → typeDefs → resolvers → services; resolvers contain no business logic.
 - **Shared domain services** — Business logic (budgets, categorization, savings, recurring transactions) lives in `packages/services` and is imported by any runtime needing the functionality.
 - **Tenant isolation** — Every store method takes `(tenantId, userId)`; request context carries tenant metadata so data access and logging remain scoped per tenant.
@@ -82,7 +82,7 @@ JWT signing/verification, bcrypt password hashing, and refresh-token primitives:
 
 ### `client`
 
-Typed AWS SDK wrappers with LocalStack-friendly endpoint injection:
+Typed AWS SDK wrappers:
 
 - `S3Service` — `getObject`, `putObject`, `getSignedUploadUrl` (via `@aws-sdk/s3-request-presigner`).
 - `SqsService` — `sendMessage`, `receiveMessages`, `deleteMessage`.
@@ -312,7 +312,7 @@ full-budget-app/
 ├── docs/
 │   ├── ARCHITECTURE.md     This document
 │   └── finance-budget.sdl.graphql   Canonical GraphQL SDL
-├── scripts/                LocalStack seed/teardown helpers
+├── scripts/                One-off migration and seed scripts
 ├── artifacts/              Sample training data
 ├── tsconfig.json           Root TypeScript config (extended by all packages)
 ├── package.json            Root devDependencies + pnpm workspace config
@@ -326,7 +326,7 @@ full-budget-app/
 - Run `pnpm install` once to hydrate all workspace dependencies.
 - Use `pnpm dev` to build packages in watch mode; start individual apps with `pnpm --filter @app/<service> dev`.
 - Tests live alongside their packages (`*.spec.ts`). Run `pnpm test`, `pnpm lint`, and `pnpm typecheck` before shipping.
-- For LocalStack: export `USE_LOCALSTACK=true`, run `./scripts/create_localstack_resources.sh`, then `pnpm --filter ./infra cdklocal:deploy:all`.
+- Deploy with `pnpm deploy:all` and ensure AWS credentials are set in the environment.
 - Postman collections (`docs/postman/`) and sample data (`artifacts/training.csv`) support manual verification.
 
 ---

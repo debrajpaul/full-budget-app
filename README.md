@@ -29,7 +29,7 @@ A modular, multi-tenant budgeting platform that ingests bank statements, enriche
 | `apps/txn-loaders` | SQS-driven statement ingestion | Pulls bank statement jobs from SQS, fetches uploads from S3, normalises transactions with `@parser`, persists via `TransactionStore` |
 | `apps/tag-loaders` | Transaction categorisation worker | Triggered by DynamoDB streams on transactions; runs rule engine from `@nlp-tagger`, falls back to Bedrock, persists categories/confidence |
 | `packages/services` | Domain orchestrators | AuthorizationService (register/login/refresh), UploadUrlService, UploadStatementService, TransactionService, BudgetService, ForecastService, RecurringTransactionService, SavingsGoalService, SinkingFundService, BedrockClassifierService |
-| `packages/client` | AWS client helpers | Typed wrappers around S3 (incl. signed upload URLs), SQS, and BedrockRuntime with LocalStack-friendly configs |
+| `packages/client` | AWS client helpers | Typed wrappers around S3 (incl. signed upload URLs), SQS, and BedrockRuntime |
 | `packages/parser` | Bank statement parsers | HDFC, SBI, Axis credit card, HDFC credit card — plus abstractions for adding more banks |
 | `packages/nlp-tagger` | Rule-based tagging | Keyword rules, training utilities, entry point for alternative models |
 | `packages/auth` | Auth primitives | JWT sign/verify, bcrypt hashing, refresh token generation (`randomUUID`), SHA-256 hashing |
@@ -93,8 +93,7 @@ A modular, multi-tenant budgeting platform that ingests bank statements, enriche
 - Node.js 24+ and pnpm (`pnpm@10.x` is pinned via `packageManager` in `package.json`)
 - AWS credentials with access to S3, SQS, DynamoDB, Lambda, Parameter Store, and optionally `bedrock:InvokeModel`
 - Amazon Bedrock access in your AWS region when enabling AI tagging
-- Docker + AWS CDK CLI (`npm install -g aws-cdk`) for infrastructure deployments
-- Optional: LocalStack + AWS CLI for local emulation (`USE_LOCALSTACK=true`)
+- AWS CDK CLI (`npm install -g aws-cdk`) for infrastructure deployments
 
 ## Environment Configuration
 
@@ -109,9 +108,6 @@ LOG_LEVEL=debug
 AWS_ACCESS_KEY_ID=your-access-key-id
 AWS_SECRET_ACCESS_KEY=your-secret-access-key
 AWS_REGION=ap-south-1
-USE_LOCALSTACK=false
-LOCALSTACK_HOST=localhost
-LOCALSTACK_EDGE_PORT=4566
 
 # S3
 AWS_S3_BUCKET=full-budget-bank-uploads
@@ -142,8 +138,6 @@ AI_CONFIDENCE_THRESHOLD=0.65
 
 | Variable | Purpose |
 |----------|---------|
-| `USE_LOCALSTACK` | Toggle AWS SDK clients to point at LocalStack |
-| `LOCALSTACK_HOST`, `LOCALSTACK_EDGE_PORT` | Host/port for LocalStack endpoints |
 | `JWT_SECRET` | Secret used for signing/verifying access tokens |
 | `DYNAMO_REFRESH_TOKENS_TABLE` | DynamoDB table backing refresh-token rotation |
 | `DYNAMO_SAVINGS_GOAL_TABLE` | DynamoDB table for savings goals |
@@ -174,11 +168,6 @@ AI_CONFIDENCE_THRESHOLD=0.65
    pnpm --filter @app/graphql-api dev   # GraphQL API at http://localhost:4005/graphql
    pnpm --filter @app/tag-loaders dev   # Categorisation worker
    pnpm --filter @app/txn-loaders dev   # Statement ingestion worker
-   ```
-5. LocalStack setup:
-   ```bash
-   USE_LOCALSTACK=true ./scripts/create_localstack_resources.sh
-   pnpm --filter ./infra cdklocal:deploy:all
    ```
 
 ### Testing & Quality Gates
@@ -213,10 +202,6 @@ Husky + commitlint enforce Conventional Commits on every staged change.
    ```bash
    pnpm --filter ./infra cdk:deploy:all
    ```
-4. For LocalStack:
-   ```bash
-   pnpm --filter ./infra cdklocal:deploy:all
-   ```
 
 CDK helper aliases (from root):
 
@@ -225,8 +210,6 @@ CDK helper aliases (from root):
 | `pnpm synth` | Synthesize CloudFormation templates |
 | `pnpm deploy:all` | Build + deploy all stacks |
 | `pnpm destroy:all` | Tear down all deployed stacks |
-| `pnpm local:deploy:all` | Build + deploy to LocalStack |
-| `pnpm local:destroy:all` | Tear down LocalStack stacks |
 
 ## Directory Reference
 
@@ -255,7 +238,7 @@ docs/
   finance-budget.sdl.graphql   Canonical GraphQL schema (SDL source of truth)
   postman/                     Postman collection & environment
 
-scripts/           LocalStack seed/teardown helpers
+scripts/           One-off migration and seed scripts
 artifacts/         Sample training data
 ```
 

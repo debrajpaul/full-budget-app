@@ -4,9 +4,6 @@ export interface IConfig {
   port: string;
   nodeEnv: string;
   logLevel: LogLevel;
-  useLocalstack: boolean;
-  localstackHost: string;
-  localstackEdgePort: string;
   awsAccessKeyId: string;
   awsSecretAccessKey: string;
   awsRegion: string;

@@ -28,11 +28,7 @@ Thanks for helping improve `full-budget-app`. This guide covers setup, conventio
    DYNAMO_SAVINGS_GOAL_TABLE=savings-goals
    DYNAMO_SINKING_FUND_TABLE=sinking-funds
    ```
-6. For local emulation set `USE_LOCALSTACK=true`, run `./scripts/create_localstack_resources.sh`, and deploy CDK locally:
-   ```bash
-   pnpm --filter ./infra cdklocal:deploy:all
-   ```
-7. Make your changes, write matching tests, and run all quality gates before committing (see below).
+6. Make your changes, write matching tests, and run all quality gates before committing (see below).
 8. Commit using Conventional Commits and open a pull request describing what changed, why, and any setup steps.
 
 Minor edits (docs, comments) can be made via the GitHub web editor — open the file, click the pencil icon, and submit a PR.
@@ -169,7 +165,7 @@ Do not attempt to merge your own PR. Once your branch is ready and all CI checks
 - [ ] New AWS SDK packages use `^3.873.0`.
 - [ ] New DynamoDB tables have a matching CDK stack and env var documented in `README.md`.
 - [ ] `docs/ARCHITECTURE.md` updated if topology, security model, or data flow changed.
-- [ ] PR description explains what changed, why, any rollout concerns, and whether LocalStack was exercised.
+- [ ] PR description explains what changed, why, and any rollout concerns.
 - [ ] Commits follow Conventional Commits (`feat:`, `fix:`, `chore:`, `docs:`, etc.).
 - [ ] Review requested from **@debrajpaul** (auto-assigned via CODEOWNERS, but confirm it appears in the Reviewers panel).
 

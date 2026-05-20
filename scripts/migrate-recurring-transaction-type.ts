@@ -2,20 +2,16 @@
  * One-off migration: backfill `type` (INCOME | EXPENSE) on RecurringTransaction records.
  *
  * Targets the table in DYNAMO_RECURRING_TABLE (defaults to "recurring-transactions").
- * Points at LocalStack when USE_LOCALSTACK=true (the default for local development).
+ * Connects directly to AWS using the credentials in the environment.
  *
  * Usage
  * ─────
- *   # Dry run (no writes) against LocalStack:
- *   USE_LOCALSTACK=true pnpm exec ts-node -r tsconfig-paths/register \
+ *   # Dry run (no writes):
+ *   pnpm exec ts-node -r tsconfig-paths/register \
  *     scripts/migrate-recurring-transaction-type.ts --dry-run
  *
- *   # Live run against LocalStack:
- *   USE_LOCALSTACK=true pnpm exec ts-node -r tsconfig-paths/register \
- *     scripts/migrate-recurring-transaction-type.ts
- *
- *   # Live run against AWS (ensure AWS_REGION / credentials are set):
- *   USE_LOCALSTACK=false pnpm exec ts-node -r tsconfig-paths/register \
+ *   # Live run (ensure AWS_REGION / credentials are set):
+ *   pnpm exec ts-node -r tsconfig-paths/register \
  *     scripts/migrate-recurring-transaction-type.ts
  *
  * Exit codes
@@ -40,19 +36,9 @@ dotenv.config();
 
 const DRY_RUN = process.argv.includes("--dry-run");
 const TABLE = process.env.DYNAMO_RECURRING_TABLE ?? "recurring-transactions";
-const USE_LOCALSTACK = process.env.USE_LOCALSTACK !== "false"; // default true
-const LOCALSTACK_HOST = process.env.LOCALSTACK_HOST ?? "localhost";
-const LOCALSTACK_EDGE_PORT = process.env.LOCALSTACK_EDGE_PORT ?? "4566";
 
 const rawClient = new DynamoDB({
-  region: process.env.AWS_REGION ?? "us-east-1",
-  ...(USE_LOCALSTACK && {
-    endpoint: `http://${LOCALSTACK_HOST}:${LOCALSTACK_EDGE_PORT}`,
-    credentials: {
-      accessKeyId: process.env.AWS_ACCESS_KEY_ID ?? "test",
-      secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY ?? "test",
-    },
-  }),
+  region: process.env.AWS_REGION ?? "ap-south-1",
 });
 
 const db = DynamoDBDocumentClient.from(rawClient, {
@@ -64,9 +50,7 @@ async function run(): Promise<void> {
   console.log("║  migrate-recurring-transaction-type                   ║");
   console.log("╚══════════════════════════════════════════════════════╝");
   console.log(`  table    : ${TABLE}`);
-  console.log(
-    `  endpoint : ${USE_LOCALSTACK ? `LocalStack @ ${LOCALSTACK_HOST}:${LOCALSTACK_EDGE_PORT}` : "AWS"}`
-  );
+  console.log(`  endpoint : AWS`);
   console.log(`  dry-run  : ${DRY_RUN}`);
   console.log("");
 
