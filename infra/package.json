@@ -9,11 +9,7 @@
     "cdk:synth": "cdk synth",
     "cdk:bootstrap": "cdk bootstrap",
     "cdk:deploy:all": "cdk deploy --all",
-    "cdk:destroy:all": "cdk destroy --all",
-    "cdklocal:bootstrap": "CDK_LEGACY_BOOTSTRAP=1 cdklocal bootstrap aws://000000000000/ap-south-1",
-    "cdklocal:synth": "cdklocal synth",
-    "cdklocal:deploy:all": "cdklocal deploy --all",
-    "cdklocal:destroy:all": "cdklocal destroy --all"
+    "cdk:destroy:all": "cdk destroy --all"
   },
   "dependencies": {
     "aws-cdk-lib": "2.206.0",
