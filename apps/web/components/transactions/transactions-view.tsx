@@ -18,12 +18,12 @@ interface CategoriesByBaseItem {
 }
 
 interface TransactionsViewProps {
-  initialItems:      TxnItem[];
-  initialCursor:     string | null;
-  categoriesByBase:  CategoriesByBaseItem[];
-  period:            MonthYear;
-  bankFilter?:       string;
-  categoryFilter?:   string;
+  initialItems: TxnItem[];
+  initialCursor: string | null;
+  categoriesByBase: CategoriesByBaseItem[];
+  period: MonthYear;
+  bankFilter?: string;
+  categoryFilter?: string;
 }
 
 export function TransactionsView({
@@ -41,17 +41,17 @@ export function TransactionsView({
   const { data, fetchMore, loading } = useQuery(TransactionsDocument, {
     variables: {
       filters: {
-        year:     period.year,
-        month:    period.month,
-        ...(bankFilter     ? { bankName: bankFilter as never }    : {}),
-        ...(categoryFilter ? { category: categoryFilter }         : {}),
+        year: period.year,
+        month: period.month,
+        ...(bankFilter ? { bankName: bankFilter as never } : {}),
+        ...(categoryFilter ? { category: categoryFilter } : {}),
       },
     },
     // ssr: false — page.tsx already ran this server-side; skip duplicate fetch.
     notifyOnNetworkStatusChange: true,
   });
 
-  const items  = data?.transactions.items  ?? initialItems;
+  const items = data?.transactions.items ?? initialItems;
   const cursor = data?.transactions.cursor ?? initialCursor;
 
   const allCategories = categoriesByBase.flatMap((g) => g.categories).sort();

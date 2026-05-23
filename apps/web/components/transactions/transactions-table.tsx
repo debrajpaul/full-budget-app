@@ -25,7 +25,10 @@ const BANK_LABELS: Record<string, string> = {
   OTHER: "Other",
 };
 
-export function TransactionsTable({ items, onRowClick }: TransactionsTableProps) {
+export function TransactionsTable({
+  items,
+  onRowClick,
+}: TransactionsTableProps) {
   if (items.length === 0) {
     return (
       <div className="rounded-xl border py-16 text-center text-sm text-muted-foreground">
@@ -67,7 +70,9 @@ export function TransactionsTable({ items, onRowClick }: TransactionsTableProps)
               <TableCell
                 className={cn(
                   "text-right tabular-nums",
-                  txn.credit > 0 ? "text-emerald-600" : "text-muted-foreground/40"
+                  txn.credit > 0
+                    ? "text-emerald-600"
+                    : "text-muted-foreground/40"
                 )}
               >
                 {txn.credit > 0 ? formatCurrency(txn.credit) : "—"}

@@ -65,6 +65,8 @@ describe("formatCurrency (backward-compat wrapper)", () => {
   });
 
   it("delegates to formatCompact when compact: true", () => {
-    expect(formatCurrency(150000, { compact: true })).toBe(formatCompact(150000));
+    expect(formatCurrency(150000, { compact: true })).toBe(
+      formatCompact(150000)
+    );
   });
 });

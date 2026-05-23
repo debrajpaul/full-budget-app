@@ -24,9 +24,9 @@ interface TransactionFiltersProps {
 }
 
 const BANKS = [
-  { value: "HDFC",  label: "HDFC" },
-  { value: "SBI",   label: "SBI" },
-  { value: "AXIS",  label: "Axis" },
+  { value: "HDFC", label: "HDFC" },
+  { value: "SBI", label: "SBI" },
+  { value: "AXIS", label: "Axis" },
   { value: "OTHER", label: "Other" },
 ];
 
@@ -36,7 +36,7 @@ export function TransactionFilters({
   categoryFilter,
   categoriesByBase,
 }: TransactionFiltersProps) {
-  const router   = useRouter();
+  const router = useRouter();
   const pathname = usePathname();
   const [, startTransition] = useTransition();
 
@@ -46,8 +46,9 @@ export function TransactionFilters({
     const sp = new URLSearchParams();
     sp.set("m", String(period.month));
     sp.set("y", String(period.year));
-    if (key !== "bank"     && bankFilter)     sp.set("bank",     bankFilter);
-    if (key !== "category" && categoryFilter) sp.set("category", categoryFilter);
+    if (key !== "bank" && bankFilter) sp.set("bank", bankFilter);
+    if (key !== "category" && categoryFilter)
+      sp.set("category", categoryFilter);
     if (value) sp.set(key, value);
     startTransition(() => router.push(`${pathname}?${sp.toString()}`));
   }

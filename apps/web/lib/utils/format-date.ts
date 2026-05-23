@@ -19,7 +19,10 @@ export const formatDateLong = formatDate;
  * Short form without year — "12 Jan".
  * Use for chart X-axis labels where horizontal space is limited.
  */
-export function formatDateShort(input: string | Date, locale = "en-IN"): string {
+export function formatDateShort(
+  input: string | Date,
+  locale = "en-IN"
+): string {
   const d = input instanceof Date ? input : new Date(input);
   if (Number.isNaN(d.getTime())) return String(input);
   return new Intl.DateTimeFormat(locale, {
@@ -48,7 +51,7 @@ export interface MonthYear {
 }
 
 const VALID_MONTH = /^(1[0-2]|[1-9])$/;
-const VALID_YEAR  = /^(19|20|21)\d{2}$/;
+const VALID_YEAR = /^(19|20|21)\d{2}$/;
 
 /**
  * Read and validate `?m=&y=` search params.
@@ -66,13 +69,15 @@ export function parseMonthYearParams(
     return Array.isArray(v) ? v[0] : v;
   };
 
-  const now  = new Date();
+  const now = new Date();
   const mRaw = get("m");
   const yRaw = get("y");
 
   return {
-    month: mRaw && VALID_MONTH.test(mRaw) ? parseInt(mRaw, 10) : now.getMonth() + 1,
-    year:  yRaw && VALID_YEAR.test(yRaw)  ? parseInt(yRaw, 10) : now.getFullYear(),
+    month:
+      mRaw && VALID_MONTH.test(mRaw) ? parseInt(mRaw, 10) : now.getMonth() + 1,
+    year:
+      yRaw && VALID_YEAR.test(yRaw) ? parseInt(yRaw, 10) : now.getFullYear(),
   };
 }
 

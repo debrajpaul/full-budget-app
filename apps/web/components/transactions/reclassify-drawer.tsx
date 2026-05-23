@@ -53,7 +53,10 @@ export function ReclassifyDrawer({
     update(cache, { data }) {
       if (!data?.reclassifyTransaction || !txn) return;
       cache.modify({
-        id: cache.identify({ __typename: "Transaction", transactionId: txn.transactionId }),
+        id: cache.identify({
+          __typename: "Transaction",
+          transactionId: txn.transactionId,
+        }),
         fields: {
           category: () => data.reclassifyTransaction.category,
           taggedBy: () => data.reclassifyTransaction.taggedBy ?? "USER",
@@ -72,7 +75,7 @@ export function ReclassifyDrawer({
   if (!txn) return null;
 
   const isCredit = txn.credit > 0;
-  const amount   = isCredit ? txn.credit : txn.debit;
+  const amount = isCredit ? txn.credit : txn.debit;
 
   function handleSubmit() {
     if (!selected) return;
@@ -80,10 +83,17 @@ export function ReclassifyDrawer({
   }
 
   return (
-    <Sheet open={open} onOpenChange={(o) => { if (!o) onClose(); }}>
+    <Sheet
+      open={open}
+      onOpenChange={(o) => {
+        if (!o) onClose();
+      }}
+    >
       <SheetContent className="flex flex-col gap-4 sm:max-w-md">
         <SheetHeader>
-          <SheetTitle className="truncate">{txn.description ?? "Transaction"}</SheetTitle>
+          <SheetTitle className="truncate">
+            {txn.description ?? "Transaction"}
+          </SheetTitle>
           <SheetDescription>{formatDate(txn.txnDate)}</SheetDescription>
         </SheetHeader>
 
@@ -94,8 +104,11 @@ export function ReclassifyDrawer({
           </div>
           <div>
             <p className="text-xs text-muted-foreground">Amount</p>
-            <p className={`font-medium tabular-nums ${isCredit ? "text-emerald-600" : ""}`}>
-              {isCredit ? "+" : "−"}{formatCurrency(amount)}
+            <p
+              className={`font-medium tabular-nums ${isCredit ? "text-emerald-600" : ""}`}
+            >
+              {isCredit ? "+" : "−"}
+              {formatCurrency(amount)}
             </p>
           </div>
           <div>
@@ -105,7 +118,9 @@ export function ReclassifyDrawer({
                 {txn.category}
               </Badge>
             ) : (
-              <span className="text-xs text-muted-foreground">uncategorised</span>
+              <span className="text-xs text-muted-foreground">
+                uncategorised
+              </span>
             )}
           </div>
           <div>

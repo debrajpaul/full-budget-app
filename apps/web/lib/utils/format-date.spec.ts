@@ -65,7 +65,10 @@ describe("formatMonthYear", () => {
 
 describe("parseMonthYearParams", () => {
   it("parses valid m and y", () => {
-    expect(parseMonthYearParams({ m: "4", y: "2026" })).toEqual({ month: 4, year: 2026 });
+    expect(parseMonthYearParams({ m: "4", y: "2026" })).toEqual({
+      month: 4,
+      year: 2026,
+    });
   });
 
   it("falls back to current month when params are missing", () => {
@@ -95,7 +98,10 @@ describe("parseMonthYearParams", () => {
   });
 
   it("handles array params (Next.js catchall)", () => {
-    expect(parseMonthYearParams({ m: ["5"], y: ["2027"] })).toEqual({ month: 5, year: 2027 });
+    expect(parseMonthYearParams({ m: ["5"], y: ["2027"] })).toEqual({
+      month: 5,
+      year: 2027,
+    });
   });
 
   it("accepts URLSearchParams", () => {
@@ -104,11 +110,17 @@ describe("parseMonthYearParams", () => {
   });
 
   it("handles boundary month 1 (January)", () => {
-    expect(parseMonthYearParams({ m: "1", y: "2026" })).toEqual({ month: 1, year: 2026 });
+    expect(parseMonthYearParams({ m: "1", y: "2026" })).toEqual({
+      month: 1,
+      year: 2026,
+    });
   });
 
   it("handles boundary month 12 (December)", () => {
-    expect(parseMonthYearParams({ m: "12", y: "2026" })).toEqual({ month: 12, year: 2026 });
+    expect(parseMonthYearParams({ m: "12", y: "2026" })).toEqual({
+      month: 12,
+      year: 2026,
+    });
   });
 });
 
@@ -116,22 +128,37 @@ describe("parseMonthYearParams", () => {
 
 describe("stepMonth", () => {
   it("steps forward within the same year", () => {
-    expect(stepMonth({ month: 3, year: 2026 }, 1)).toEqual({ month: 4, year: 2026 });
+    expect(stepMonth({ month: 3, year: 2026 }, 1)).toEqual({
+      month: 4,
+      year: 2026,
+    });
   });
 
   it("wraps forward across year boundary (Dec → Jan)", () => {
-    expect(stepMonth({ month: 12, year: 2025 }, 1)).toEqual({ month: 1, year: 2026 });
+    expect(stepMonth({ month: 12, year: 2025 }, 1)).toEqual({
+      month: 1,
+      year: 2026,
+    });
   });
 
   it("steps backward within the same year", () => {
-    expect(stepMonth({ month: 5, year: 2026 }, -1)).toEqual({ month: 4, year: 2026 });
+    expect(stepMonth({ month: 5, year: 2026 }, -1)).toEqual({
+      month: 4,
+      year: 2026,
+    });
   });
 
   it("wraps backward across year boundary (Jan → Dec)", () => {
-    expect(stepMonth({ month: 1, year: 2026 }, -1)).toEqual({ month: 12, year: 2025 });
+    expect(stepMonth({ month: 1, year: 2026 }, -1)).toEqual({
+      month: 12,
+      year: 2025,
+    });
   });
 
   it("steps multiple months forward", () => {
-    expect(stepMonth({ month: 11, year: 2025 }, 3)).toEqual({ month: 2, year: 2026 });
+    expect(stepMonth({ month: 11, year: 2025 }, 3)).toEqual({
+      month: 2,
+      year: 2026,
+    });
   });
 });
