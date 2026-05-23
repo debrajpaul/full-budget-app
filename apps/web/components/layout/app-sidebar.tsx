@@ -46,7 +46,7 @@ export const NAV_ITEMS: NavItem[] = [
     label: "Transactions",
     href: "/transactions",
     icon: ArrowLeftRight,
-    built: false,
+    built: true,
   },
   { label: "Upload", href: "/upload", icon: Upload, built: false },
   { label: "Budgets", href: "/budgets", icon: PiggyBank, built: false },

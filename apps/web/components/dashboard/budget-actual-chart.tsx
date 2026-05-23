@@ -17,7 +17,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { formatCurrency, formatDate } from "@/lib/utils";
+import { formatCurrency, formatDateShort } from "@/lib/utils";
 
 interface BudgetActualChartProps {
   data: Array<{ date: string; budget: number; actual: number }>;
@@ -29,7 +29,7 @@ export function BudgetActualChart({ data }: BudgetActualChartProps) {
       data.map((d) => ({
         ...d,
         // Recharts needs primitives for XAxis dataKey; keep raw date for tooltip
-        label: formatDate(d.date),
+        label: formatDateShort(d.date),
       })),
     [data]
   );

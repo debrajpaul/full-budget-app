@@ -98,24 +98,10 @@ type Transaction {
 }
 
 """
-Simplified transaction representation used for listings.
-"""
-type TransactionItem {
-  id: String!
-  date: Date!
-  description: String
-  credit: Float!
-  debit: Float!
-  currency: String!
-  category: String
-  taggedBy: String
-}
-
-"""
-Cursor-paginated list of transaction items.
+Cursor-paginated list of transactions.
 """
 type TransactionsPage {
-  items: [TransactionItem!]!
+  items: [Transaction!]!
   cursor: String
 }
 

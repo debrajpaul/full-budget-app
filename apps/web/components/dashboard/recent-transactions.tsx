@@ -12,12 +12,11 @@ import { Button } from "@/components/ui/button";
 import { cn, formatCurrency, formatDate } from "@/lib/utils";
 
 interface TxnRow {
-  id: string;
-  date: string;
+  transactionId: string;
+  txnDate: string;
   description?: string | null;
   credit: number;
   debit: number;
-  currency: string;
   category?: string | null;
   taggedBy?: string | null;
 }
@@ -67,9 +66,12 @@ export function RecentTransactions({
                   const isCredit = t.credit > 0;
                   const amount = isCredit ? t.credit : t.debit;
                   return (
-                    <tr key={t.id} className="border-b last:border-b-0">
+                    <tr
+                      key={t.transactionId}
+                      className="border-b last:border-b-0"
+                    >
                       <td className="px-2 py-2 whitespace-nowrap text-muted-foreground">
-                        {formatDate(t.date)}
+                        {formatDate(t.txnDate)}
                       </td>
                       <td className="max-w-[18rem] truncate px-2 py-2">
                         {t.description ?? "—"}

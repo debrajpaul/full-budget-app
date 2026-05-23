@@ -33,12 +33,11 @@ export const DashboardRecentTransactionsDocument = graphql(`
   ) {
     transactions(filters: $filters, cursor: $cursor) {
       items {
-        id
-        date
+        transactionId
+        txnDate
         description
         credit
         debit
-        currency
         category
         taggedBy
       }
