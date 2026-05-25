@@ -33,7 +33,7 @@ function Wrapper({ children }: { children: React.ReactNode }) {
 // ── tests ──────────────────────────────────────────────────────────────────────
 
 describe("AppSidebar", () => {
-  it("renders all 9 navigation items", () => {
+  it("renders all navigation items", () => {
     render(<AppSidebar />, { wrapper: Wrapper });
 
     for (const { label } of NAV_ITEMS) {

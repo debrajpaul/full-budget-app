@@ -68,8 +68,9 @@ export class WinstonLogger implements ILogger {
     this.logger?.log(level, message, { error, data, tags });
   }
 
-  error(message: string, data?: object, tags?: string[]): void {
-    this.logger?.error(message, { data, tags });
+  error(message: string, error?: Error, data?: object, tags?: string[]): void {
+    const formattedError = WinstonLogger.formatError(error);
+    this.logger?.error(message, { error: formattedError, data, tags });
   }
 
   warn(message: string, data?: object, tags?: string[]): void {

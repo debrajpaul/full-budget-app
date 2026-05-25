@@ -101,7 +101,7 @@ export class TransactionCategoryService implements ITransactionCategoryService {
       return true;
     } catch (err) {
       this.logger.error("Error processing message", err as Error);
-      return false;
+      throw err;
     }
   }
 

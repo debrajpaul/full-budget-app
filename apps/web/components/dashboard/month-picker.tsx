@@ -7,13 +7,17 @@ import { formatMonthYear, stepMonth, type MonthYear } from "@/lib/utils";
 
 interface MonthPickerProps {
   current: MonthYear;
+  basePath?: string;
 }
 
-function hrefFor({ month, year }: MonthYear) {
-  return `/dashboard?m=${month}&y=${year}`;
+function hrefFor({ month, year }: MonthYear, basePath: string) {
+  return `${basePath}?m=${month}&y=${year}`;
 }
 
-export function MonthPicker({ current }: MonthPickerProps) {
+export function MonthPicker({
+  current,
+  basePath = "/dashboard",
+}: MonthPickerProps) {
   const router = useRouter();
   const prev = stepMonth(current, -1);
   const next = stepMonth(current, +1);
@@ -27,7 +31,7 @@ export function MonthPicker({ current }: MonthPickerProps) {
   return (
     <div className="flex items-center gap-1">
       <Button asChild variant="ghost" size="icon" aria-label="Previous month">
-        <Link href={hrefFor(prev)} prefetch={false}>
+        <Link href={hrefFor(prev, basePath)} prefetch={false}>
           <ChevronLeft />
         </Link>
       </Button>
@@ -37,7 +41,7 @@ export function MonthPicker({ current }: MonthPickerProps) {
       </div>
 
       <Button asChild variant="ghost" size="icon" aria-label="Next month">
-        <Link href={hrefFor(next)} prefetch={false}>
+        <Link href={hrefFor(next, basePath)} prefetch={false}>
           <ChevronRight />
         </Link>
       </Button>
@@ -47,7 +51,7 @@ export function MonthPicker({ current }: MonthPickerProps) {
           variant="outline"
           size="sm"
           className="ml-2"
-          onClick={() => router.push(hrefFor(thisMonth))}
+          onClick={() => router.push(hrefFor(thisMonth, basePath))}
         >
           Today
         </Button>

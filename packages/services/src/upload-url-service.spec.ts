@@ -49,7 +49,8 @@ describe("UploadUrlService.createUploadUrl", () => {
     );
     expect(s3.getSignedUploadUrl).toHaveBeenCalledWith(
       expect.stringContaining(`${TENANT}/${USER_ID}/`),
-      EXPIRES
+      EXPIRES,
+      "text/csv"
     );
   });
 

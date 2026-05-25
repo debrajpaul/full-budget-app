@@ -27,9 +27,20 @@ describe("WinstonLogger", () => {
     );
   });
 
-  it("should call error method", () => {
-    winstonLogger.error("error message", { foo: "bar" }, ["tag"]);
+  it("should call error method with error object", () => {
+    const err = new Error("boom");
+    winstonLogger.error("error message", err, { foo: "bar" }, ["tag"]);
     expect(loggerMock.error).toHaveBeenCalledWith("error message", {
+      error: expect.objectContaining({ message: "boom" }),
+      data: { foo: "bar" },
+      tags: ["tag"],
+    });
+  });
+
+  it("should call error method without error object", () => {
+    winstonLogger.error("error message", undefined, { foo: "bar" }, ["tag"]);
+    expect(loggerMock.error).toHaveBeenCalledWith("error message", {
+      error: undefined,
       data: { foo: "bar" },
       tags: ["tag"],
     });

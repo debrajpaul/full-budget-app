@@ -57,11 +57,19 @@ export class S3Service implements IS3Service {
     );
   }
 
-  async getSignedUploadUrl(key: string, ttlSeconds: number): Promise<string> {
+  async getSignedUploadUrl(
+    key: string,
+    ttlSeconds: number,
+    contentType?: string
+  ): Promise<string> {
     this.logger.debug("GeneratingSignedUploadUrl", { key, ttlSeconds });
     return getSignedUrl(
       this.s3Client,
-      new PutObjectCommand({ Bucket: this.bucketName, Key: key }),
+      new PutObjectCommand({
+        Bucket: this.bucketName,
+        Key: key,
+        ...(contentType ? { ContentType: contentType } : {}),
+      }),
       { expiresIn: ttlSeconds }
     );
   }

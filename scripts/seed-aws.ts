@@ -207,7 +207,12 @@ async function registerUser(): Promise<void> {
     }
   } catch (err) {
     const msg = (err as Error).message.toLowerCase();
-    if (msg.includes("exist") || msg.includes("duplicate") || msg.includes("already")) {
+    if (
+      msg.includes("exist") ||
+      msg.includes("duplicate") ||
+      msg.includes("already") ||
+      msg.includes("conditional request failed")
+    ) {
       log(`  ↻ User already exists, continuing`);
       return;
     }
@@ -242,9 +247,9 @@ async function uploadStatements(token: string): Promise<void> {
     const contentBase64 = Buffer.from(csv, "utf-8").toString("base64");
     const dateSlug = ref.toISOString().slice(0, 7);
 
-    await gql<{ uploadStatement: boolean }>(
+    await gql<{ uploadStatement: { jobId: string; accepted: boolean; warnings: string[] } }>(
       `mutation Upload($input: StatementInput!) {
-         uploadStatement(input: $input)
+         uploadStatement(input: $input) { jobId accepted warnings }
        }`,
       {
         input: {
@@ -484,62 +489,121 @@ async function createSinkingFunds(token: string): Promise<void> {
 // ── Step 9: Category rules ────────────────────────────────────────────────────
 
 interface CategoryRule {
-  keyword:     string;
-  category:    "INCOME" | "EXPENSES" | "SAVINGS" | "DEFAULT";
+  keyword:      string;
+  category:     "INCOME" | "EXPENSES" | "SAVINGS" | "DEFAULT";
   subCategory?: string;
-  confidence?: number;
+  when?:        "CREDIT" | "DEBIT" | "ANY";
+  confidence?:  number;
+  reason?:      string;
 }
 
 const SEED_RULES: CategoryRule[] = [
-  // Income
-  { keyword: "salary",           category: "INCOME",   subCategory: "Salary",        confidence: 0.98 },
-  { keyword: "interest credited",category: "INCOME",   subCategory: "Interest",      confidence: 0.95 },
-  { keyword: "dividend",         category: "INCOME",   subCategory: "Dividend",      confidence: 0.95 },
-  { keyword: "refund",           category: "INCOME",   subCategory: "Refund",        confidence: 0.85 },
-  { keyword: "cashback",         category: "INCOME",   subCategory: "Cashback",      confidence: 0.90 },
-  // Savings
-  { keyword: "mutual fund",      category: "SAVINGS",  subCategory: "Investments",   confidence: 0.97 },
-  { keyword: "sip",              category: "SAVINGS",  subCategory: "Investments",   confidence: 0.97 },
-  { keyword: "ppf",              category: "SAVINGS",  subCategory: "PPF",           confidence: 0.98 },
-  { keyword: "nps",              category: "SAVINGS",  subCategory: "NPS",           confidence: 0.98 },
-  // Housing
-  { keyword: "rent",             category: "EXPENSES", subCategory: "Housing",       confidence: 0.97 },
-  { keyword: "maintenance",      category: "EXPENSES", subCategory: "Housing",       confidence: 0.85 },
-  // Food
-  { keyword: "swiggy",           category: "EXPENSES", subCategory: "Food",          confidence: 0.99 },
-  { keyword: "zomato",           category: "EXPENSES", subCategory: "Food",          confidence: 0.99 },
-  { keyword: "restaurant",       category: "EXPENSES", subCategory: "Food",          confidence: 0.92 },
-  { keyword: "cafe",             category: "EXPENSES", subCategory: "Food",          confidence: 0.90 },
-  // Groceries
-  { keyword: "grocery",          category: "EXPENSES", subCategory: "Groceries",     confidence: 0.95 },
-  { keyword: "bigbasket",        category: "EXPENSES", subCategory: "Groceries",     confidence: 0.99 },
-  { keyword: "blinkit",          category: "EXPENSES", subCategory: "Groceries",     confidence: 0.99 },
-  // Transport
-  { keyword: "uber",             category: "EXPENSES", subCategory: "Transport",     confidence: 0.99 },
-  { keyword: "ola",              category: "EXPENSES", subCategory: "Transport",     confidence: 0.99 },
-  { keyword: "petrol",           category: "EXPENSES", subCategory: "Transport",     confidence: 0.97 },
-  { keyword: "fuel",             category: "EXPENSES", subCategory: "Transport",     confidence: 0.95 },
-  // Utilities
-  { keyword: "electricity",      category: "EXPENSES", subCategory: "Utilities",     confidence: 0.97 },
-  { keyword: "water bill",       category: "EXPENSES", subCategory: "Utilities",     confidence: 0.97 },
-  { keyword: "internet",         category: "EXPENSES", subCategory: "Utilities",     confidence: 0.95 },
-  { keyword: "mobile recharge",  category: "EXPENSES", subCategory: "Utilities",     confidence: 0.95 },
-  { keyword: "airtel",           category: "EXPENSES", subCategory: "Utilities",     confidence: 0.93 },
-  // Shopping
-  { keyword: "amazon",           category: "EXPENSES", subCategory: "Shopping",      confidence: 0.92 },
-  { keyword: "flipkart",         category: "EXPENSES", subCategory: "Shopping",      confidence: 0.92 },
-  { keyword: "myntra",           category: "EXPENSES", subCategory: "Shopping",      confidence: 0.92 },
-  // Insurance
-  { keyword: "insurance",        category: "EXPENSES", subCategory: "Insurance",     confidence: 0.95 },
-  { keyword: "lic",              category: "EXPENSES", subCategory: "Insurance",     confidence: 0.97 },
-  // Healthcare
-  { keyword: "pharmacy",         category: "EXPENSES", subCategory: "Healthcare",    confidence: 0.93 },
-  { keyword: "medplus",          category: "EXPENSES", subCategory: "Healthcare",    confidence: 0.97 },
-  { keyword: "hospital",         category: "EXPENSES", subCategory: "Healthcare",    confidence: 0.95 },
-  // Entertainment
-  { keyword: "netflix",          category: "EXPENSES", subCategory: "Entertainment", confidence: 0.99 },
-  { keyword: "spotify",          category: "EXPENSES", subCategory: "Entertainment", confidence: 0.99 },
-  { keyword: "prime video",      category: "EXPENSES", subCategory: "Entertainment", confidence: 0.99 },
+  // ── Income ─────────────────────────────────────────────────────────────────
+  { keyword: "salary",            category: "INCOME",   subCategory: "Salary",        when: "CREDIT", confidence: 0.98, reason: "Salary credit" },
+  { keyword: "interest credited", category: "INCOME",   subCategory: "Interest",      when: "CREDIT", confidence: 0.95, reason: "Interest credit" },
+  { keyword: "credit interest",   category: "INCOME",   subCategory: "Interest",      when: "CREDIT", confidence: 0.85, reason: "Interest credit (alt)" },
+  { keyword: "int cr",            category: "INCOME",   subCategory: "Interest",      when: "CREDIT", confidence: 0.85, reason: "Interest credit (short)" },
+  { keyword: "dividend",          category: "INCOME",   subCategory: "Dividend",      when: "CREDIT", confidence: 0.98, reason: "Dividend credit" },
+  { keyword: "interim dividend",  category: "INCOME",   subCategory: "Dividend",      when: "CREDIT", confidence: 0.98, reason: "Interim dividend" },
+  { keyword: "refund",            category: "INCOME",   subCategory: "Refund",        when: "CREDIT", confidence: 0.85, reason: "Refund credit" },
+  { keyword: "cashback",          category: "INCOME",   subCategory: "Cashback",      when: "CREDIT", confidence: 0.90, reason: "Cashback credit" },
+  { keyword: "achcr",             category: "INCOME",   subCategory: "Salary",        when: "CREDIT", confidence: 0.70, reason: "ACH credit / payroll" },
+  { keyword: "payroll",           category: "INCOME",   subCategory: "Salary",        when: "CREDIT", confidence: 0.70, reason: "Payroll credit" },
+  { keyword: "cashfree",          category: "INCOME",   subCategory: "Business",      when: "CREDIT", confidence: 0.80, reason: "Payment gateway payout" },
+  { keyword: "razorpay",          category: "INCOME",   subCategory: "Business",      when: "CREDIT", confidence: 0.80, reason: "Payment gateway payout" },
+  { keyword: "upi credit",        category: "INCOME",   subCategory: "Transfer",      when: "CREDIT", confidence: 0.60, reason: "Incoming UPI transfer" },
+  { keyword: "imps credit",       category: "INCOME",   subCategory: "Transfer",      when: "CREDIT", confidence: 0.60, reason: "Incoming IMPS transfer" },
+  { keyword: "neft credit",       category: "INCOME",   subCategory: "Transfer",      when: "CREDIT", confidence: 0.60, reason: "Incoming NEFT transfer" },
+  { keyword: "robosoft",          category: "INCOME",   subCategory: "Salary",        when: "CREDIT", confidence: 0.90, reason: "Salary credit (Robosoft)" },
+
+  // ── Savings / Investments ──────────────────────────────────────────────────
+  // BaseCategory.INVESTMENT maps to SAVINGS here — GraphQL enum only has
+  // SAVINGS | EXPENSES | INCOME | DEFAULT.
+  { keyword: "mutual fund",       category: "SAVINGS",  subCategory: "Investments",   when: "ANY",    confidence: 0.97, reason: "MF/SIP" },
+  { keyword: "sip",               category: "SAVINGS",  subCategory: "Investments",   when: "ANY",    confidence: 0.97, reason: "MF SIP" },
+  { keyword: "indian clearing",   category: "SAVINGS",  subCategory: "Investments",   when: "DEBIT",  confidence: 0.90, reason: "MF/SIP via Indian Clearing" },
+  { keyword: "ppf",               category: "SAVINGS",  subCategory: "PPF",           when: "DEBIT",  confidence: 0.98, reason: "PPF contribution" },
+  { keyword: "nps",               category: "SAVINGS",  subCategory: "NPS",           when: "ANY",    confidence: 0.98, reason: "NPS contribution" },
+  { keyword: "nsc",               category: "SAVINGS",  subCategory: "NPS",           when: "DEBIT",  confidence: 0.90, reason: "NSC investment" },
+  { keyword: "national pension",  category: "SAVINGS",  subCategory: "NPS",           when: "DEBIT",  confidence: 0.90, reason: "National Pension Scheme" },
+  { keyword: "rd installment",    category: "SAVINGS",  subCategory: "Emergency",     when: "DEBIT",  confidence: 0.90, reason: "Recurring Deposit installment" },
+  { keyword: "recurring deposit", category: "SAVINGS",  subCategory: "Emergency",     when: "DEBIT",  confidence: 0.90, reason: "Recurring Deposit" },
+  { keyword: "zerodha",           category: "SAVINGS",  subCategory: "Stocks",        when: "DEBIT",  confidence: 0.95, reason: "Broker/Zerodha debit" },
+  { keyword: "cdsl",              category: "SAVINGS",  subCategory: "Stocks",        when: "DEBIT",  confidence: 0.95, reason: "CDSL depository debit" },
+  { keyword: "hdfcsec",           category: "SAVINGS",  subCategory: "Stocks",        when: "DEBIT",  confidence: 0.95, reason: "HDFC Securities debit" },
+  { keyword: "icici direct",      category: "SAVINGS",  subCategory: "Stocks",        when: "DEBIT",  confidence: 0.95, reason: "ICICI Direct debit" },
+
+  // ── Housing ────────────────────────────────────────────────────────────────
+  { keyword: "rent",              category: "EXPENSES", subCategory: "Housing",       when: "DEBIT",  confidence: 0.97, reason: "Rent payment" },
+  { keyword: "maintenance",       category: "EXPENSES", subCategory: "Housing",       when: "DEBIT",  confidence: 0.85, reason: "Society/maintenance charge" },
+  { keyword: "maid salary",       category: "EXPENSES", subCategory: "Housing",       when: "DEBIT",  confidence: 0.90, reason: "Maid salary" },
+
+  // ── Food & Dining ──────────────────────────────────────────────────────────
+  { keyword: "swiggy",            category: "EXPENSES", subCategory: "Food",          when: "DEBIT",  confidence: 0.99, reason: "Food delivery" },
+  { keyword: "zomato",            category: "EXPENSES", subCategory: "Food",          when: "DEBIT",  confidence: 0.99, reason: "Food delivery" },
+  { keyword: "restaurant",        category: "EXPENSES", subCategory: "Food",          when: "DEBIT",  confidence: 0.92, reason: "Restaurant dining" },
+  { keyword: "cafe",              category: "EXPENSES", subCategory: "Food",          when: "DEBIT",  confidence: 0.90, reason: "Cafe / coffee shop" },
+
+  // ── Groceries ─────────────────────────────────────────────────────────────
+  { keyword: "grocery",           category: "EXPENSES", subCategory: "Groceries",     when: "DEBIT",  confidence: 0.95, reason: "Grocery purchase" },
+  { keyword: "bigbasket",         category: "EXPENSES", subCategory: "Groceries",     when: "DEBIT",  confidence: 0.99, reason: "BigBasket grocery" },
+  { keyword: "blinkit",           category: "EXPENSES", subCategory: "Groceries",     when: "DEBIT",  confidence: 0.99, reason: "Blinkit quick commerce" },
+  { keyword: "grofers",           category: "EXPENSES", subCategory: "Groceries",     when: "DEBIT",  confidence: 0.99, reason: "Grofers grocery" },
+
+  // ── Transport ─────────────────────────────────────────────────────────────
+  { keyword: "uber",              category: "EXPENSES", subCategory: "Transport",     when: "DEBIT",  confidence: 0.99, reason: "Uber ride" },
+  { keyword: "ola",               category: "EXPENSES", subCategory: "Transport",     when: "DEBIT",  confidence: 0.99, reason: "Ola ride" },
+  { keyword: "petrol",            category: "EXPENSES", subCategory: "Transport",     when: "DEBIT",  confidence: 0.97, reason: "Petrol/fuel" },
+  { keyword: "fuel",              category: "EXPENSES", subCategory: "Transport",     when: "DEBIT",  confidence: 0.95, reason: "Fuel" },
+  { keyword: "diesel",            category: "EXPENSES", subCategory: "Transport",     when: "DEBIT",  confidence: 0.95, reason: "Diesel" },
+  { keyword: "bmrcl",             category: "EXPENSES", subCategory: "Transport",     when: "DEBIT",  confidence: 0.95, reason: "Bangalore Metro (BMRCL)" },
+  { keyword: "irctc",             category: "EXPENSES", subCategory: "Transport",     when: "DEBIT",  confidence: 0.97, reason: "Train booking (IRCTC)" },
+  { keyword: "railway",           category: "EXPENSES", subCategory: "Transport",     when: "DEBIT",  confidence: 0.90, reason: "Railway ticket" },
+  { keyword: "metro",             category: "EXPENSES", subCategory: "Transport",     when: "DEBIT",  confidence: 0.90, reason: "Metro fare" },
+  { keyword: "flight",            category: "EXPENSES", subCategory: "Transport",     when: "DEBIT",  confidence: 0.90, reason: "Flight booking" },
+  { keyword: "airways",           category: "EXPENSES", subCategory: "Transport",     when: "DEBIT",  confidence: 0.90, reason: "Airline ticket" },
+
+  // ── Utilities ─────────────────────────────────────────────────────────────
+  { keyword: "electricity",       category: "EXPENSES", subCategory: "Utilities",     when: "DEBIT",  confidence: 0.97, reason: "Electricity bill" },
+  { keyword: "bescom",            category: "EXPENSES", subCategory: "Utilities",     when: "DEBIT",  confidence: 0.97, reason: "BESCOM electricity (Bangalore)" },
+  { keyword: "torrent power",     category: "EXPENSES", subCategory: "Utilities",     when: "DEBIT",  confidence: 0.97, reason: "Torrent Power electricity" },
+  { keyword: "water bill",        category: "EXPENSES", subCategory: "Utilities",     when: "DEBIT",  confidence: 0.97, reason: "Water bill" },
+  { keyword: "internet",          category: "EXPENSES", subCategory: "Utilities",     when: "DEBIT",  confidence: 0.95, reason: "Internet bill" },
+  { keyword: "broadband",         category: "EXPENSES", subCategory: "Utilities",     when: "DEBIT",  confidence: 0.95, reason: "Broadband bill" },
+  { keyword: "mobile recharge",   category: "EXPENSES", subCategory: "Utilities",     when: "DEBIT",  confidence: 0.95, reason: "Mobile recharge" },
+  { keyword: "airtel",            category: "EXPENSES", subCategory: "Utilities",     when: "DEBIT",  confidence: 0.93, reason: "Airtel telecom" },
+  { keyword: "jio",               category: "EXPENSES", subCategory: "Utilities",     when: "DEBIT",  confidence: 0.93, reason: "Jio telecom" },
+  { keyword: "bsnl",              category: "EXPENSES", subCategory: "Utilities",     when: "DEBIT",  confidence: 0.93, reason: "BSNL telecom" },
+  { keyword: "billpay",           category: "EXPENSES", subCategory: "Utilities",     when: "DEBIT",  confidence: 0.80, reason: "Bill payment" },
+  { keyword: "gst",               category: "EXPENSES", subCategory: "Utilities",     when: "DEBIT",  confidence: 0.75, reason: "GST/tax payment" },
+
+  // ── Shopping ──────────────────────────────────────────────────────────────
+  { keyword: "amazon",            category: "EXPENSES", subCategory: "Shopping",      when: "DEBIT",  confidence: 0.92, reason: "Amazon purchase" },
+  { keyword: "flipkart",          category: "EXPENSES", subCategory: "Shopping",      when: "DEBIT",  confidence: 0.92, reason: "Flipkart purchase" },
+  { keyword: "myntra",            category: "EXPENSES", subCategory: "Shopping",      when: "DEBIT",  confidence: 0.92, reason: "Myntra purchase" },
+
+  // ── Insurance ─────────────────────────────────────────────────────────────
+  { keyword: "insurance",         category: "EXPENSES", subCategory: "Insurance",     when: "DEBIT",  confidence: 0.95, reason: "Insurance premium" },
+  { keyword: "lic",               category: "EXPENSES", subCategory: "Insurance",     when: "DEBIT",  confidence: 0.97, reason: "LIC premium" },
+  { keyword: "tata aia",          category: "EXPENSES", subCategory: "Insurance",     when: "DEBIT",  confidence: 0.95, reason: "Tata AIA insurance premium" },
+  { keyword: "policybazaar",      category: "EXPENSES", subCategory: "Insurance",     when: "DEBIT",  confidence: 0.95, reason: "PolicyBazaar premium" },
+  { keyword: "mediclaim",         category: "EXPENSES", subCategory: "Healthcare",    when: "DEBIT",  confidence: 0.90, reason: "Mediclaim premium" },
+
+  // ── Healthcare ────────────────────────────────────────────────────────────
+  { keyword: "pharmacy",          category: "EXPENSES", subCategory: "Healthcare",    when: "DEBIT",  confidence: 0.93, reason: "Pharmacy purchase" },
+  { keyword: "medplus",           category: "EXPENSES", subCategory: "Healthcare",    when: "DEBIT",  confidence: 0.97, reason: "MedPlus pharmacy" },
+  { keyword: "hospital",          category: "EXPENSES", subCategory: "Healthcare",    when: "DEBIT",  confidence: 0.95, reason: "Hospital payment" },
+
+  // ── Entertainment ─────────────────────────────────────────────────────────
+  { keyword: "netflix",           category: "EXPENSES", subCategory: "Entertainment", when: "DEBIT",  confidence: 0.99, reason: "Netflix subscription" },
+  { keyword: "spotify",           category: "EXPENSES", subCategory: "Entertainment", when: "DEBIT",  confidence: 0.99, reason: "Spotify subscription" },
+  { keyword: "prime video",       category: "EXPENSES", subCategory: "Entertainment", when: "DEBIT",  confidence: 0.99, reason: "Amazon Prime Video" },
+
+  // ── Bank fees & charges ────────────────────────────────────────────────────
+  { keyword: "charge",            category: "EXPENSES", subCategory: "Fees",          when: "DEBIT",  confidence: 0.65, reason: "Bank charge" },
+  { keyword: "annual fee",        category: "EXPENSES", subCategory: "Fees",          when: "DEBIT",  confidence: 0.80, reason: "Annual fee" },
+  { keyword: "atm withdrawal",    category: "EXPENSES", subCategory: "Cash",          when: "DEBIT",  confidence: 0.85, reason: "ATM cash withdrawal" },
+  { keyword: "penalty",           category: "EXPENSES", subCategory: "Fees",          when: "DEBIT",  confidence: 0.70, reason: "Penalty charge" },
 ];
 
 async function addRulesByTenant(token: string): Promise<void> {
@@ -584,7 +648,7 @@ async function main(): Promise<void> {
     (SKIP_RECURRING ? "" : ", recurring×5, generate") +
     (SKIP_GOALS     ? "" : ", goals×3") +
     (SKIP_SINKING   ? "" : ", sinking×2") +
-    (SKIP_RULES     ? "" : ", rules×37"),
+    (SKIP_RULES     ? "" : ", rules×81"),
   );
 
   let optionalFailed = false;

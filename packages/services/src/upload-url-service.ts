@@ -66,7 +66,8 @@ export class UploadUrlService implements IUploadUrlService {
 
     const uploadUrl = await this.s3Service.getSignedUploadUrl(
       fileKey,
-      UPLOAD_URL_TTL_SECONDS
+      UPLOAD_URL_TTL_SECONDS,
+      "text/csv"
     );
 
     this.logger.debug("Created upload URL", {
