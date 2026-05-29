@@ -17,6 +17,7 @@ jobs:
           - apps/graphql-api
           - apps/txn-loaders
           - apps/tag-loaders
+          - packages/api-client
           - packages/auth
           - packages/client
           - packages/common
@@ -51,8 +52,9 @@ jobs:
 
       - name: Check Prettier formatting
         run: pnpm exec prettier --check .
-      # - name: Run tests
-      #   run: pnpm test
+
+      - name: Run tests
+        run: pnpm run --if-present test
 
   fe-typecheck:
     runs-on: ubuntu-latest
@@ -126,6 +128,26 @@ jobs:
         run: pnpm codegen
       - name: Assert no drift
         run: git diff --exit-code
+
+  # ── Infra typecheck ──────────────────────────────────────────────────────────
+  # Kept separate from the main matrix because infra uses its own CDK deps
+  # and is excluded from the root ESLint config.
+  infra-typecheck:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: infra
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: pnpm
+      - name: Install dependencies
+        run: pnpm install
+      - name: Type check
+        run: pnpm tsc --noEmit
 
   # ── E2E smoke suite ──────────────────────────────────────────────────────────
   # Runs on pushes to main and on the nightly schedule only.
