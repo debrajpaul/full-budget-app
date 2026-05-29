@@ -59,7 +59,7 @@ export const NAV_ITEMS: NavItem[] = [
     icon: Wallet,
     built: true,
   },
-  { label: "Settings", href: "/settings", icon: Settings, built: false },
+  { label: "Settings", href: "/settings", icon: Settings, built: true },
 ];
 
 export function AppSidebar() {

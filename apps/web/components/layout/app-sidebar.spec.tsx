@@ -48,7 +48,7 @@ describe("AppSidebar", () => {
     const expectedLinks = NAV_ITEMS.filter((i) => i.built).length;
 
     const disabledButtons = screen
-      .getAllByRole("button")
+      .queryAllByRole("button")
       .filter((el) => el.getAttribute("aria-disabled") === "true");
 
     const navLinks = screen.getAllByRole("link");
