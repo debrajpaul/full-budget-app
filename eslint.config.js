@@ -9,7 +9,14 @@ import eslintConfigPrettier from "eslint-config-prettier";
 /** @type {import("eslint").FlatConfig[]} */
 export default [
   {
-    ignores: ["**/data/**", "**/dist/**", "**/node_modules/**", "infra/**"],
+    ignores: [
+      "**/data/**",
+      "**/dist/**",
+      "**/node_modules/**",
+      "infra/**",
+      "**/src/generated/**",  // graphql-codegen output
+      "**/codegen.ts",        // graphql-codegen config files
+    ],
   },
   js.configs.recommended,
   {

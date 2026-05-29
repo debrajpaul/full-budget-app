@@ -59,7 +59,9 @@ export const createContext = async (
     response = ctx.res;
   } else {
     // Lambda context
-    authHeader = ctx.event.headers["Authorization"] as string | undefined;
+    // API Gateway REST API preserves header case; Node.js fetch sends lowercase.
+    authHeader = (ctx.event.headers["Authorization"] ??
+      ctx.event.headers["authorization"]) as string | undefined;
     request = ctx.event;
     lambdaContext = ctx.context;
   }

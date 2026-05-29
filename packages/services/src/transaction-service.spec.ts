@@ -163,9 +163,8 @@ describe("TransactionService", () => {
     };
     s3.getFile.mockResolvedValue(Buffer.from("no transactions here", "utf-8"));
 
-    const result = await service.process(req);
+    await expect(service.process(req)).rejects.toThrow();
 
-    expect(result).toBe(false);
     expect(store.saveTransactions).not.toHaveBeenCalled();
     expect(logger.error).toHaveBeenCalledWith(
       "Error processing message",
@@ -173,7 +172,7 @@ describe("TransactionService", () => {
     );
   });
 
-  it("should return false if process throws", async () => {
+  it("should throw if S3 getFile rejects", async () => {
     s3.getFile.mockRejectedValue(new Error("fail"));
     const req: ITransactionSqsRequest = {
       jobId: "job-4",
@@ -184,8 +183,7 @@ describe("TransactionService", () => {
       userId: "user1",
       tenantId: ETenantType.default,
     };
-    const result = await service.process(req);
-    expect(result).toBe(false);
+    await expect(service.process(req)).rejects.toThrow("fail");
     expect(logger.error).toHaveBeenCalledWith(
       "Error processing message",
       expect.any(Error)

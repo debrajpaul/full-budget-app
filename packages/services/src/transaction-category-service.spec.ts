@@ -243,7 +243,7 @@ describe("TransactionCategoryService", () => {
       );
     });
 
-    it("returns false and logs error when processing fails", async () => {
+    it("throws and logs error when processing fails", async () => {
       ruleEngine.categorize.mockReturnValue({
         category: EBaseCategories.expenses,
         taggedBy: "RULE",
@@ -252,9 +252,8 @@ describe("TransactionCategoryService", () => {
         new Error("DB down")
       );
 
-      const result = await service.process(makeRequest());
+      await expect(service.process(makeRequest())).rejects.toThrow("DB down");
 
-      expect(result).toBe(false);
       expect(logger.error).toHaveBeenCalledWith(
         "Error processing message",
         expect.any(Error)

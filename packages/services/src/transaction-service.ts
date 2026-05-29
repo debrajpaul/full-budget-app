@@ -94,7 +94,7 @@ export class TransactionService implements ITransactionService {
       return true;
     } catch (err) {
       this.logger.error("Error processing message", err as Error);
-      return false;
+      throw err;
     }
   }
 

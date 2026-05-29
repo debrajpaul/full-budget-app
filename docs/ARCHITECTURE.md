@@ -13,6 +13,50 @@ Key principles:
 - **Tenant isolation** — Every store method takes `(tenantId, userId)`; request context carries tenant metadata so data access and logging remain scoped per tenant.
 - **AI assist, deterministic core** — Keyword rules classify transactions first; Amazon Bedrock is only invoked for unclassified records or when extra signal is desired.
 
+### System Topology
+
+```mermaid
+graph TB
+    subgraph Browser
+        WEB["apps/web\n(Next.js 15)"]
+    end
+
+    subgraph AWS_Lambda["AWS Lambda"]
+        GQL["graphql-api\n(Apollo Server 5)"]
+        TXN["txn-loaders\n(SQS-triggered)"]
+        TAG["tag-loaders\n(DynamoDB stream)"]
+    end
+
+    subgraph AWS_Storage["AWS"]
+        DDB[("DynamoDB\n8 tables")]
+        S3[("S3\nuploads bucket")]
+        SQS_Q["SQS\ningestion queue"]
+        BEDROCK["Amazon Bedrock\n(AI tagging)"]
+        SSM["SSM Parameter\nStore"]
+    end
+
+    subgraph Packages["Shared Packages"]
+        SVC["services"]
+        DB["db"]
+        AUTH["auth"]
+        CLI["client"]
+        PARSER["parser"]
+        NLP["nlp-tagger"]
+    end
+
+    WEB -->|"/api/graphql BFF\n(httpOnly cookie)"| GQL
+    GQL --> SVC & DB & AUTH & CLI
+    SVC --> DB & AUTH & CLI & NLP & PARSER
+    DB --> DDB
+    CLI --> S3 & SQS_Q & BEDROCK
+    GQL --> SSM
+    SQS_Q --> TXN
+    TXN --> PARSER & DB & S3
+    DDB -->|"DynamoDB Stream"| TAG
+    TAG --> NLP & DB
+    TAG -->|"AI_TAGGING_ENABLED"| BEDROCK
+```
+
 ---
 
 ## Runtime Services (`apps/`)
@@ -50,6 +94,44 @@ Each service bundles with esbuild (`--target=node24`) for fast cold starts and p
 ---
 
 ## Shared Packages (`packages/`)
+
+### Package Dependency Graph
+
+```mermaid
+graph TD
+    subgraph apps["apps/"]
+        GQL_APP["graphql-api"]
+        TXN_APP["txn-loaders"]
+        TAG_APP["tag-loaders"]
+        WEB_APP["apps/web"]
+    end
+
+    subgraph pkgs["packages/"]
+        SVC["services"]
+        DB["db"]
+        AUTH["auth"]
+        CLI["client"]
+        COM["common"]
+        PARSER["parser"]
+        NLP["nlp-tagger"]
+        LOG["logger"]
+        APIC["api-client"]
+    end
+
+    GQL_APP --> SVC & DB & AUTH & CLI & NLP & LOG
+    TXN_APP --> SVC & DB & CLI & PARSER & LOG
+    TAG_APP --> SVC & DB & CLI & NLP & LOG
+    WEB_APP --> APIC & COM
+
+    SVC --> DB & AUTH & CLI & COM & NLP & PARSER & LOG
+    DB  --> COM & LOG
+    AUTH --> COM & LOG
+    CLI --> COM & LOG
+    PARSER --> COM
+    NLP --> COM & LOG
+    LOG --> COM
+    APIC --> COM
+```
 
 ### `services`
 
@@ -162,35 +244,74 @@ All CDK stacks use on-demand DynamoDB capacity and arm64 Lambda architecture whe
 | `LambdaAlarmsConstruct` | CloudWatch alarms for errors/throttles |
 | `XrayStack` | X-Ray sampling rule and group |
 
-### Dependency graph (abbreviated)
+### CDK Stack Dependency Graph
 
-```
-StorageStack
-QueueStack
-UsersTableStack ──────────────────────────┐
-TransactionsTableStack ───────────────────┤
-TransactionCategoryTableStack ────────────┤
-BudgetsTableStack ────────────────────────┤─► GraphQLApiStack
-RecurringTransactionsTableStack ──────────┤
-RefreshTokensTableStack ──────────────────┤
-SavingsGoalsTableStack ───────────────────┤
-SinkingFundsTableStack ───────────────────┘
-TransactionsTableStack ──► TransactionCategoryLoaderStack
-QueueStack ─────────────► TransactionLoaderStack
+```mermaid
+graph LR
+    Storage["StorageStack\n(S3)"]
+    Queue["QueueStack\n(SQS)"]
+    SSM["SsmParamStack"]
+    Users["UsersTableStack"]
+    Txn["TransactionsTableStack"]
+    Cat["CategoryTableStack"]
+    Budgets["BudgetsTableStack"]
+    Recurring["RecurringTableStack"]
+    Tokens["RefreshTokensTableStack"]
+    Goals["SavingsGoalsTableStack"]
+    Sinking["SinkingFundsTableStack"]
+    GQL["GraphQLApiStack"]
+    TxnLoader["TransactionLoaderStack"]
+    TagLoader["TransactionCategoryLoaderStack"]
+    Alarms["LambdaAlarms"]
+    XRay["XrayStack"]
+
+    Users & Txn & Cat & Budgets & Recurring --> GQL
+    Tokens & Goals & Sinking & Storage & Queue & SSM --> GQL
+    Queue --> TxnLoader
+    Txn --> TagLoader
+    GQL & TxnLoader & TagLoader --> Alarms
 ```
 
 ---
 
 ## Security Model
 
-### Authentication
+### Authentication & Refresh-Token Rotation
+
+```mermaid
+sequenceDiagram
+    actor Client
+    participant BFF as Next.js BFF
+    participant API as graphql-api Lambda
+    participant DB as RefreshTokenStore (DynamoDB)
+
+    Client->>BFF: POST /api/auth/login
+    BFF->>API: mutation login(email, password, tenantId)
+    API->>DB: save { tokenId: SHA-256(raw), family: UUID, isRevoked: false }
+    API-->>BFF: LoginResponse { token (JWT 24h), refreshToken (raw UUID) }
+    BFF-->>Client: Set httpOnly cookies: session + __Host-refresh
+
+    Note over Client,BFF: Access token expires (24 h)
+
+    Client->>BFF: POST /api/auth/refresh
+    BFF->>API: mutation refreshToken(refreshToken)
+    API->>DB: lookup SHA-256(incoming token)
+
+    alt Valid and not revoked
+        API->>DB: isRevoked = true (old token)
+        API->>DB: save new token in same family chain
+        API-->>BFF: new LoginResponse { token, refreshToken }
+        BFF-->>Client: update cookies
+    else Token already revoked — replay attack detected
+        API->>DB: revokeFamily(family) — invalidate entire chain
+        API-->>BFF: error REFRESH_TOKEN_REUSED
+        BFF-->>Client: 401 — force re-login
+    end
+```
 
 - Access tokens are short-lived JWTs (signed with `JWT_SECRET` from SSM).
-- Refresh tokens follow a **rotation + family revocation** scheme:
-  1. `login` issues a raw `UUID v4` refresh token. The SHA-256 hash is stored in DynamoDB (`RefreshTokenStore`), tagged with a `family` UUID.
-  2. `refreshToken` mutation: looks up the hash, issues a new access token + new refresh token, revokes the old token, and saves the new hash in the same family chain.
-  3. If a revoked token is presented (replay attack), the entire family is revoked and `REFRESH_TOKEN_REUSED` is thrown, forcing re-login.
-- Refresh token expiry is checked against `expiresAt` (ISO string) and `ttl` (DynamoDB TTL epoch) for automatic cleanup.
+- Raw refresh tokens are **never** stored — only the SHA-256 hex digest is written to DynamoDB.
+- `expiresAt` (ISO string) and `ttl` (DynamoDB TTL epoch) provide automatic cleanup.
 
 ### Multi-tenancy
 
@@ -198,7 +319,7 @@ QueueStack ─────────────► TransactionLoaderStack
 - Ownership guards in `SavingsGoalStore` and `SinkingFundStore` verify the stored item's SK begins with `userId#` before allowing mutations.
 - No cross-tenant data can be returned; resolvers surface only what the decoded JWT authorizes.
 
-### Upload security
+### Upload Security
 
 - Pre-signed S3 URLs are issued per-request with a short TTL. The `jobId` is a validated UUID before `notifyUploadComplete` proceeds.
 - Filenames are sanitized (`..+` → `_`, `/\` → `_`) to prevent path-traversal attacks.
@@ -222,41 +343,103 @@ The SDL (`docs/finance-budget.sdl.graphql`) is the single source of truth:
 
 ## Data Flow
 
+### End-to-End Request Flow
+
+```mermaid
+flowchart TD
+    C(["Client\n(Browser)"]) --> GQL
+
+    subgraph Lambda["graphql-api Lambda"]
+        GQL["Apollo Server"]
+    end
+
+    GQL -->|"register / login / refreshToken"| AUTH_S[("UserStore\nRefreshTokenStore")]
+    GQL -->|"createUploadUrl"| S3_URL["S3 pre-signed PUT URL"]
+    GQL -->|"notifyUploadComplete"| SQS_E["SQS enqueue job"]
+    GQL -->|"queries / analytics"| STORES[("TransactionStore\nBudgetStore\nSavingsGoalStore\n...")]
+
+    SQS_E --> TXN_L
+
+    subgraph TXN_L["txn-loaders Lambda"]
+        FETCH["1. fetch S3 file"]
+        PARSE["2. parse rows (@parser)"]
+        PERSIST["3. persist transactions"]
+        FETCH --> PARSE --> PERSIST
+    end
+
+    PERSIST --> TX_T[("TransactionStore")]
+    TX_T -->|"DynamoDB Stream"| TAG_L
+
+    subgraph TAG_L["tag-loaders Lambda"]
+        RULES["1. NLP keyword rules"]
+        BEDROCK_F{"classified?"}
+        BEDROCK_AI["2. Bedrock fallback"]
+        WRITE["3. write category + confidence"]
+        RULES --> BEDROCK_F
+        BEDROCK_F -->|"no"| BEDROCK_AI
+        BEDROCK_F -->|"yes"| WRITE
+        BEDROCK_AI --> WRITE
+    end
+
+    WRITE --> TX_T
 ```
-Client
-  │
-  ▼
-graphql-api (Lambda)
-  ├─ register / login / refreshToken  ──► UserStore, RefreshTokenStore
-  ├─ createUploadUrl                  ──► S3 (pre-signed PUT URL)
-  ├─ notifyUploadComplete             ──► SQS (enqueue job) + RefreshTokenStore
-  ├─ Queries / Analytics              ──► TransactionStore, BudgetStore, etc.
-  ├─ Savings / Sinking Fund CRUD      ──► SavingsGoalStore, SinkingFundStore
-  └─ Budget CRUD                      ──► BudgetStore
 
-S3 (bank statement file)
-  │
-  ▼
-SQS (ingestion job)
-  │
-  ▼
-txn-loaders (Lambda)
-  ├─ Fetch file from S3
-  ├─ Parse rows (HDFC / SBI / Axis / HDFC CC)
-  └─ Persist ──► TransactionStore
+### Two-Step Upload Flow
 
-DynamoDB stream (transactions table)
-  │
-  ▼
-tag-loaders (Lambda)
-  ├─ Run NLP keyword rules (@nlp-tagger)
-  ├─ Bedrock fallback (if AI_TAGGING_ENABLED)
-  └─ Write category + confidence ──► TransactionStore
+```mermaid
+sequenceDiagram
+    actor User
+    participant Web as apps/web
+    participant API as graphql-api
+    participant S3 as Amazon S3
+    participant SQS as Amazon SQS
+    participant TXN as txn-loaders
+
+    User->>Web: select bank statement file
+    Web->>API: mutation createUploadUrl(fileName, bankName, bankType)
+    API->>S3: generate pre-signed PUT URL (short TTL)
+    API-->>Web: UploadUrlResult { uploadUrl, jobId }
+
+    Web->>S3: PUT file directly (browser → S3, no backend proxy)
+    S3-->>Web: 200 OK
+
+    Web->>API: mutation notifyUploadComplete(jobId)
+    API->>API: validate jobId (UUID format + filename sanitize)
+    API->>SQS: enqueue { jobId, bucket, key, tenantId, userId, bankName }
+    API-->>Web: StatementUploadResult { jobId, bucket, key, fileSizeBytes, warnings }
+
+    SQS-->>TXN: trigger Lambda (async, ~30–60s)
+    TXN->>S3: fetch file by key
+    TXN->>TXN: parse rows via bank parser
+    TXN->>TXN: persist to TransactionStore
 ```
 
 ---
 
 ## AI-Assisted Categorization
+
+```mermaid
+flowchart LR
+    TX["New Transaction\n(INSERT/MODIFY)"]
+    RULES["NLP keyword\nrule engine\n(@nlp-tagger)"]
+    CHECK{"classified?"}
+    FLAG{"AI_TAGGING\n_ENABLED?"}
+    BEDROCK["Amazon Bedrock\n(Claude / Mistral)"]
+    CONF{"confidence ≥\nthreshold?"}
+    WRITE_RULE["write category\ntaggedBy: rule"]
+    WRITE_AI["write category\ntaggedBy: bedrock"]
+    UNCLASS["leave UNCLASSIFIED"]
+
+    TX --> RULES
+    RULES --> CHECK
+    CHECK -->|yes| WRITE_RULE
+    CHECK -->|no| FLAG
+    FLAG -->|no| UNCLASS
+    FLAG -->|yes| BEDROCK
+    BEDROCK --> CONF
+    CONF -->|yes| WRITE_AI
+    CONF -->|no| UNCLASS
+```
 
 - **Rule engine first** — `TransactionCategoryService` executes deterministic keyword rules stored per-tenant in `CategoryRulesStore`. This keeps behavior explainable and avoids unnecessary AI calls.
 - **Bedrock fallback** — When a transaction remains `UNCLASSIFIED`, `BedrockClassifierService` invokes the configured model (default: `anthropic.claude-3-haiku-20240307-v1:0`) via `@client`.
@@ -271,9 +454,10 @@ tag-loaders (Lambda)
 |---------|-----------|
 | Structured logging | `@logger` (Winston) injected into every service; includes `tenantId`, `requestId`, and correlation metadata |
 | Metrics | `/metrics` endpoint on `graphql-api`; extend counters/histograms under `apps/graphql-api/src/utils` |
-| Distributed tracing | Active X-Ray on all Lambdas; sampling rule + group provisioned by `XrayStack` |
+| Distributed tracing | Active X-Ray on all Lambdas; sampling rate 5%; rule + group provisioned by `XrayStack` |
 | Alarms | CloudWatch alarms for Lambda errors and throttles in `LambdaAlarmsConstruct` |
 | DLQ | SQS dead-letter queue captures failed ingestion jobs for replay |
+| Log retention | 7 days (`ONE_WEEK`) on all Lambda log groups via `logRetention` CDK property |
 | Configuration | Runtime config from `.env`, SSM Parameter Store, and feature flags injected at deploy time |
 
 ---
@@ -296,8 +480,10 @@ full-budget-app/
 ├── apps/
 │   ├── graphql-api/        Apollo Server Lambda
 │   ├── txn-loaders/        SQS ingestion Lambda
-│   └── tag-loaders/        DynamoDB stream Lambda
+│   ├── tag-loaders/        DynamoDB stream Lambda
+│   └── web/                Next.js 15 frontend
 ├── packages/
+│   ├── api-client/         GraphQL codegen output + typed hooks
 │   ├── auth/               JWT + bcrypt + refresh-token primitives
 │   ├── client/             AWS SDK wrappers (S3, SQS, Bedrock)
 │   ├── common/             DTOs, interfaces, enums, utilities

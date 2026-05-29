@@ -5,5 +5,9 @@ export interface IS3Service {
     body: Buffer | Uint8Array | string,
     contentType?: string
   ): Promise<void>;
-  getSignedUploadUrl(key: string, ttlSeconds: number): Promise<string>;
+  getSignedUploadUrl(
+    key: string,
+    ttlSeconds: number,
+    contentType?: string
+  ): Promise<string>;
 }

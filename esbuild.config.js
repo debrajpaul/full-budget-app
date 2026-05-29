@@ -42,6 +42,9 @@ async function buildPackages() {
   }
 }
 
+// Apps that have their own build pipeline and must not be bundled by esbuild.
+const ESBUILD_SKIP_APPS = new Set(["web"]);
+
 // ------------------------------
 // Build all apps/*
 // ------------------------------
@@ -49,6 +52,11 @@ async function buildApps() {
   const apps = getDirectories("./apps");
 
   for (const app of apps) {
+    const name = app.split("/").pop();
+    if (ESBUILD_SKIP_APPS.has(name)) {
+      console.log(`⏭  Skipping app: ${app} (has own build pipeline)`);
+      continue;
+    }
     console.log(`🚀 Building app: ${app}`);
 
     const options = {
