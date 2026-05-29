@@ -13,7 +13,7 @@
     "cdk:destroy:all": "cdk destroy --all"
   },
   "dependencies": {
-    "aws-cdk-lib": "2.1023.0",
-    "constructs": "^10.4.2"
+    "aws-cdk-lib": "2.257.0",
+    "constructs": "^10.5.0"
   }
 }
