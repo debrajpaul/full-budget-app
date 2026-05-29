@@ -51,7 +51,7 @@
     "@types/pdf-parse": "^1.1.5",
     "@typescript-eslint/eslint-plugin": "^8.37.0",
     "@typescript-eslint/parser": "^8.37.0",
-    "aws-cdk": "2.1023.0",
+    "aws-cdk": "2.1125.0",
     "commitlint": "^19.8.1",
     "cross-env": "^10.0.0",
     "dotenv": "^16.5.0",

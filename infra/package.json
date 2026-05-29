@@ -5,6 +5,7 @@
     "infra": "bin/infra.ts"
   },
   "scripts": {
+    "typecheck": "tsc --noEmit",
     "cdk:deploy": "cdk deploy",
     "cdk:synth": "cdk synth",
     "cdk:bootstrap": "cdk bootstrap",
@@ -12,7 +13,7 @@
     "cdk:destroy:all": "cdk destroy --all"
   },
   "dependencies": {
-    "aws-cdk-lib": "2.206.0",
-    "constructs": "^10.4.2"
+    "aws-cdk-lib": "2.257.0",
+    "constructs": "^10.5.0"
   }
 }

@@ -1,6 +1,7 @@
 "use client";
 import { useRouter } from "next/navigation";
-import { LogOut, Sun } from "lucide-react";
+import { useTheme } from "next-themes";
+import { LogOut, Moon, Sun } from "lucide-react";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import {
@@ -23,6 +24,7 @@ function initials(email: string): string {
 
 export function Topbar({ email }: TopbarProps) {
   const router = useRouter();
+  const { resolvedTheme, setTheme } = useTheme();
 
   async function handleLogout() {
     // Use redirect:'manual' so fetch doesn't follow the 303 redirect itself;
@@ -34,9 +36,14 @@ export function Topbar({ email }: TopbarProps) {
 
   return (
     <div className="ml-auto flex items-center gap-1">
-      {/* Theme toggle — stub until next-themes ThemeProvider is wired up */}
-      <Button variant="ghost" size="icon" aria-label="Toggle theme" disabled>
-        <Sun className="h-4 w-4" />
+      <Button
+        variant="ghost"
+        size="icon"
+        aria-label="Toggle theme"
+        onClick={() => setTheme(resolvedTheme === "dark" ? "light" : "dark")}
+      >
+        <Sun className="h-4 w-4 dark:hidden" />
+        <Moon className="hidden h-4 w-4 dark:block" />
       </Button>
 
       <DropdownMenu>

@@ -22,6 +22,6 @@
       "@api-client/*": ["packages/api-client/src/*"]
     }
   },
-  "include": ["apps", "packages", "Infra"],
+  "include": ["apps", "packages"],
   "exclude": ["node_modules", "data", ".github", "apps/web", "packages/api-client/src/generated"]
 }

@@ -13,6 +13,11 @@
 # testing
 /coverage
 
+# Playwright — generated auth state and output artefacts
+/e2e/.auth/
+/playwright-report/
+/test-results/
+
 # next.js
 /.next/
 /out/
