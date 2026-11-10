@@ -1,5 +1,5 @@
 {
-  "name": "@db",
+  "name": "@app/db",
   "description": "Database service for managing data storage and retrieval",
   "version": "1.0.0",
   "main": "src/index.ts",
@@ -12,8 +12,8 @@
   "dependencies": {
     "@aws-sdk/client-dynamodb": "^3.873.0",
     "@aws-sdk/lib-dynamodb": "^3.873.0",
-    "@common": "workspace:*",
-    "@logger": "workspace:*",
+    "@app/common": "workspace:*",
+    "@app/logger": "workspace:*",
     "lodash": "^4.17.21"
   }
 }

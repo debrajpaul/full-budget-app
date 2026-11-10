@@ -1,5 +1,9 @@
 import { SQSRecord, SQSBatchResponse, SQSBatchItemFailure } from "aws-lambda";
-import { ILogger, ITransactionService, ITransactionSqsRequest } from "@common";
+import {
+  ILogger,
+  ITransactionService,
+  ITransactionSqsRequest,
+} from "@app/common";
 
 export class TransactionLoader {
   // Instance-level dedup: prevents the same jobId being processed twice

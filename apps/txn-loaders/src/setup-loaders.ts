@@ -1,4 +1,4 @@
-import { ILogger, ITransactionService } from "@common";
+import { ILogger, ITransactionService } from "@app/common";
 import { TransactionLoader } from "./loaders/transaction-loader";
 
 export function setupLoaders(

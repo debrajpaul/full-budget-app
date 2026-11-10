@@ -5,9 +5,13 @@ import {
   ITransactionStore,
   EBaseCategories,
   IBudget,
-} from "@common";
+  ESpendSegment,
+  ESegmentStatus,
+  ESubExpenseCategories,
+  BUDGET_RULE_PRESETS,
+} from "@app/common";
 import { BudgetService } from "./budget-service";
-import { BudgetStore } from "@db";
+import { BudgetStore } from "@app/db";
 
 describe("BudgetService - setBudget validations", () => {
   const tenantId = ETenantType.default;
@@ -457,5 +461,87 @@ describe("BudgetService - deleteBudget", () => {
     await expect(svc.deleteBudget(tenantId, userId, foreignId)).rejects.toThrow(
       "Budget does not belong to this user"
     );
+  });
+});
+
+describe("BudgetService - getSegmentation", () => {
+  const tenantId = ETenantType.default;
+  const userId = "user-1";
+  let logger: ReturnType<typeof mock<ILogger>>;
+  let transactionStore: Pick<
+    ITransactionStore,
+    "aggregateSpendByCategoryAndSubCategory"
+  >;
+  let service: BudgetService;
+
+  beforeEach(() => {
+    logger = mock<ILogger>();
+    transactionStore = {
+      aggregateSpendByCategoryAndSubCategory: jest.fn().mockResolvedValue([
+        { category: EBaseCategories.income, net: 100000 },
+        {
+          category: EBaseCategories.expenses,
+          subCategory: ESubExpenseCategories.housing,
+          net: -50000,
+        },
+      ]),
+    };
+    service = new BudgetService(
+      logger,
+      {} as unknown as BudgetStore,
+      transactionStore as ITransactionStore
+    );
+  });
+
+  it("defaults to the 50/30/20 rule and delegates the aggregation", async () => {
+    const result = await service.getSegmentation(tenantId, userId, 5, 2026);
+
+    expect(
+      transactionStore.aggregateSpendByCategoryAndSubCategory
+    ).toHaveBeenCalledWith(tenantId, userId, 5, 2026);
+    const needs = result.segments.find(
+      (s) => s.segment === ESpendSegment.needs
+    );
+    expect(needs).toMatchObject({
+      actual: 50000,
+      targetPercent: 50,
+      status: ESegmentStatus.onTarget,
+    });
+  });
+
+  it("applies a custom rule", async () => {
+    const result = await service.getSegmentation(
+      tenantId,
+      userId,
+      5,
+      2026,
+      BUDGET_RULE_PRESETS.rule602020
+    );
+    const needs = result.segments.find(
+      (s) => s.segment === ESpendSegment.needs
+    );
+    expect(needs).toMatchObject({ targetPercent: 60, variance: -10000 });
+  });
+
+  it.each([0, 13, 1.5])("rejects month %p", async (month) => {
+    await expect(
+      service.getSegmentation(tenantId, userId, month, 2026)
+    ).rejects.toThrow("month must be an integer between 1 and 12");
+  });
+
+  it("rejects an out-of-range year", async () => {
+    await expect(
+      service.getSegmentation(tenantId, userId, 5, 1800)
+    ).rejects.toThrow("year must be");
+  });
+
+  it("rejects a rule that does not sum to 100", async () => {
+    await expect(
+      service.getSegmentation(tenantId, userId, 5, 2026, {
+        needs: 50,
+        wants: 50,
+        savings: 50,
+      })
+    ).rejects.toThrow("sum to 100");
   });
 });

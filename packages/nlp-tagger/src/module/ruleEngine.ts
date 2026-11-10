@@ -5,7 +5,7 @@ import {
   CategorizeResult,
   IRuleEngine,
   ERawTxnType,
-} from "@common";
+} from "@app/common";
 
 export class RuleEngine implements IRuleEngine {
   private readonly logger: ILogger;

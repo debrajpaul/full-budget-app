@@ -12,6 +12,7 @@ import { Construct } from "constructs";
 import * as path from "path";
 import * as eventSources from "aws-cdk-lib/aws-lambda-event-sources";
 import { LambdaAlarmsConstruct } from "./lambda-alarms-construct";
+import { LAMBDA_NODE_RUNTIME } from "./lambda-runtime";
 
 interface TransactionLoaderStackProps extends StackProps {
   jobsQueue: sqs.Queue;
@@ -33,7 +34,7 @@ export class TransactionLoaderStack extends Stack {
 
     const transactionLambda = new lambda.Function(this, "TransactionLambda", {
       functionName,
-      runtime: lambda.Runtime.NODEJS_22_X,
+      runtime: LAMBDA_NODE_RUNTIME,
       handler: "index.handler",
       code: lambda.Code.fromAsset(
         path.resolve(__dirname, "../../apps/txn-loaders/dist")

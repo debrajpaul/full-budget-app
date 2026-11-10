@@ -1,4 +1,4 @@
-import { graphql } from "@api-client";
+import { graphql } from "@app/api-client";
 
 export const TransactionsDocument = graphql(`
   query Transactions($filters: TransactionsFilter!, $cursor: String) {

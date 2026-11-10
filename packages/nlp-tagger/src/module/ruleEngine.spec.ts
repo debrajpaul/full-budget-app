@@ -10,7 +10,7 @@ import {
   ICategoryRules,
   ILogger,
   ERawTxnType,
-} from "@common";
+} from "@app/common";
 
 describe("RuleEngine.categorize", () => {
   const rules: ICategoryRules[] = keywordBaseCategoryMap.map((r, i) => ({

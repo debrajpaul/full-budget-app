@@ -1,7 +1,7 @@
 import { SinkingFundStore } from "./sinking-fund-store";
 import { mock } from "jest-mock-extended";
 import { DynamoDBDocumentClient } from "@aws-sdk/lib-dynamodb";
-import { ILogger, ETenantType, ISinkingFund } from "@common";
+import { ILogger, ETenantType, ISinkingFund } from "@app/common";
 
 const TABLE = "sinking-funds";
 const TENANT = ETenantType.default;

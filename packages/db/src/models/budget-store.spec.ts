@@ -7,7 +7,7 @@ import {
   ETenantType,
   EBaseCategories,
   ESubExpenseCategories,
-} from "@common";
+} from "@app/common";
 
 describe("BudgetStore", () => {
   let storeMock: { send: jest.Mock };

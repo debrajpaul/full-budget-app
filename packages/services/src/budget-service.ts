@@ -7,8 +7,12 @@ import {
   ITransactionStore,
   ICategoryDeviation,
   EBaseCategories,
-} from "@common";
-import { BudgetStore } from "@db";
+  IBudgetRule,
+  IBudgetSegmentation,
+  DEFAULT_BUDGET_RULE,
+} from "@app/common";
+import { BudgetStore } from "@app/db";
+import { buildSegmentation } from "./spend-segment";
 
 export class BudgetService implements IBudgetService {
   private readonly logger: ILogger;
@@ -125,6 +129,38 @@ export class BudgetService implements IBudgetService {
       });
     }
     return deviations;
+  }
+
+  public async getSegmentation(
+    tenantId: ETenantType,
+    userId: string,
+    month: number,
+    year: number,
+    rule: IBudgetRule = DEFAULT_BUDGET_RULE
+  ): Promise<IBudgetSegmentation> {
+    this.logger.debug("Segmenting spend against rule", {
+      tenantId,
+      userId,
+      month,
+      year,
+      rule,
+    });
+
+    if (!Number.isInteger(month) || month < 1 || month > 12) {
+      throw new Error("month must be an integer between 1 and 12");
+    }
+    if (!Number.isInteger(year) || year < 1900 || year > 3000) {
+      throw new Error("year must be a reasonable integer (1900-3000)");
+    }
+
+    const spends =
+      await this.transactionStore.aggregateSpendByCategoryAndSubCategory(
+        tenantId,
+        userId,
+        month,
+        year
+      );
+    return buildSegmentation(spends, rule, { month, year });
   }
 
   public async analyzeAnnualSpend(

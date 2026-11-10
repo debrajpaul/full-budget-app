@@ -6,7 +6,7 @@ import {
   ISinkingFundStore,
   ICreateSinkingFundInput,
   IUpdateSinkingFundInput,
-} from "@common";
+} from "@app/common";
 import { CustomError } from "./custom-error";
 
 export class SinkingFundService implements ISinkingFundService {

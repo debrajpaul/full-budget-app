@@ -1,5 +1,5 @@
 import { AxisSavingsParser } from "./axis-savings-parser";
-import { EBankName, EBankType } from "@common";
+import { EBankName, EBankType } from "@app/common";
 
 describe("AxisSavingsParser", () => {
   const parser = new AxisSavingsParser();

@@ -1,5 +1,5 @@
 import { config } from "./environment";
-import { WinstonLogger } from "@logger";
+import { WinstonLogger } from "@app/logger";
 import { S3 } from "@aws-sdk/client-s3";
 import { SQS } from "@aws-sdk/client-sqs";
 import { DynamoDBClient } from "@aws-sdk/client-dynamodb";

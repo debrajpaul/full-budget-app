@@ -21,3 +21,10 @@ export interface ITransaction {
   updatedAt?: string;
   deletedAt?: string;
 }
+
+/** Net movement (credit - debit) for one category/sub-category pair */
+export interface ICategorySpend {
+  category: EBaseCategories;
+  subCategory?: string;
+  net: number;
+}

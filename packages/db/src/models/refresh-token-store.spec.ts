@@ -1,7 +1,7 @@
 import { RefreshTokenStore } from "./refresh-token-store";
 import { mock } from "jest-mock-extended";
 import { DynamoDBDocumentClient } from "@aws-sdk/lib-dynamodb";
-import { ILogger, ETenantType, IRefreshToken } from "@common";
+import { ILogger, ETenantType, IRefreshToken } from "@app/common";
 
 const TABLE = "refresh-tokens";
 const TENANT = ETenantType.default;

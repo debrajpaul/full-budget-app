@@ -11,7 +11,7 @@ import {
   inferTransactionType,
   EBankName,
   EBankType,
-} from "@common";
+} from "@app/common";
 
 function clampDayOfMonth(year: number, month: number, day: number): number {
   const lastDay = new Date(year, month, 0).getDate();

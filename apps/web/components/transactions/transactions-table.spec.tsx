@@ -2,7 +2,7 @@ import { describe, it, expect, vi } from "vitest";
 import { render, screen, fireEvent } from "@testing-library/react";
 import { MockedProvider } from "@apollo/client/testing";
 import { TooltipProvider } from "@/components/ui/tooltip";
-import { BankName } from "@api-client";
+import { BankName } from "@app/api-client";
 import { TransactionsTable } from "./transactions-table";
 
 vi.mock("next/navigation", () => ({

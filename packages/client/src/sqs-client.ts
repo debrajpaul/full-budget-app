@@ -1,4 +1,4 @@
-import { ILogger, ISQSService, ITransactionSqsRequest } from "@common";
+import { ILogger, ISQSService, ITransactionSqsRequest } from "@app/common";
 import {
   SQS,
   SQSClientConfig,

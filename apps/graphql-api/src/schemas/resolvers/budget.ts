@@ -1,4 +1,4 @@
-import { IGraphQLContext, EBaseCategories } from "@common";
+import { IGraphQLContext, EBaseCategories, IBudgetRule } from "@app/common";
 
 export const budgetResolvers = {
   Query: {
@@ -21,6 +21,21 @@ export const budgetResolvers = {
         category: b.category,
         amount: b.amount,
       }));
+    },
+    budgetSegmentation: async (
+      _: unknown,
+      args: { period: { month: number; year: number }; rule?: IBudgetRule },
+      ctx: IGraphQLContext
+    ) => {
+      if (!ctx.userId) throw new Error("Unauthorized");
+      if (!ctx.tenantId) throw new Error("Tenant ID is required");
+      return ctx.dataSources.budgetService.getSegmentation(
+        ctx.tenantId,
+        ctx.userId,
+        args.period.month,
+        args.period.year,
+        args.rule ?? undefined
+      );
     },
   },
   Mutation: {

@@ -10,8 +10,8 @@ import {
   EAllSubCategories,
   IRuleEngine,
   IBedrockClassifierService,
-} from "@common";
-import { keywordBaseCategoryMap } from "@nlp-tagger";
+} from "@app/common";
+import { keywordBaseCategoryMap } from "@app/nlp-tagger";
 
 export class TransactionCategoryService implements ITransactionCategoryService {
   private readonly logger: ILogger;

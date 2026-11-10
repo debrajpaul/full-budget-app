@@ -21,13 +21,22 @@ A modular, multi-tenant budgeting platform that ingests bank statements, enriche
 - **DynamoDB stream-driven categorisation** – `apps/tag-loaders` is triggered directly from the transactions table stream, running the rule engine first and Bedrock fallback when enabled.
 - **Expanded parsers** – Added Axis credit card and HDFC credit card parsers alongside existing HDFC/SBI CSV support.
 
+## Architecture Map
+
+[![Interactive architecture map: pipeline flow, package graph, GraphQL surface, infra](docs/architecture-preview.png)](docs/architecture.html)
+
+An interactive, self-contained map of the codebase: upload-to-tagging **flow**, **package** dependency graph (layering verified: no upward imports, no cycles), **GraphQL** operations to resolvers to services, and **infra** (CDK).
+
+- Open [`docs/architecture.html`](docs/architecture.html) locally: download the file and open it in a browser (GitHub shows HTML as source, not rendered).
+- Rendered view without cloning: https://htmlpreview.github.io/?https://github.com/debrajpaul/full-budget-app/blob/main/docs/architecture.html (works once the file is on the default branch).
+
 ## System Topology
 
 | Area | Responsibility | Highlights |
 |------|----------------|------------|
-| `apps/graphql-api` | Public GraphQL + `/metrics` endpoint | Apollo Server 5 + Express, multi-tenant JWT auth, refresh-token rotation, resolver-thin design delegating to `@services`, exports schema from `docs/finance-budget.sdl.graphql` |
-| `apps/txn-loaders` | SQS-driven statement ingestion | Pulls bank statement jobs from SQS, fetches uploads from S3, normalises transactions with `@parser`, persists via `TransactionStore` |
-| `apps/tag-loaders` | Transaction categorisation worker | Triggered by DynamoDB streams on transactions; runs rule engine from `@nlp-tagger`, falls back to Bedrock, persists categories/confidence |
+| `apps/graphql-api` | Public GraphQL + `/metrics` endpoint | Apollo Server 5 + Express, multi-tenant JWT auth, refresh-token rotation, resolver-thin design delegating to `@app/services`, exports schema from `docs/finance-budget.sdl.graphql` |
+| `apps/txn-loaders` | SQS-driven statement ingestion | Pulls bank statement jobs from SQS, fetches uploads from S3, normalises transactions with `@app/parser`, persists via `TransactionStore` |
+| `apps/tag-loaders` | Transaction categorisation worker | Triggered by DynamoDB streams on transactions; runs rule engine from `@app/nlp-tagger`, falls back to Bedrock, persists categories/confidence |
 | `packages/services` | Domain orchestrators | AuthorizationService (register/login/refresh), UploadUrlService, UploadStatementService, TransactionService, BudgetService, ForecastService, RecurringTransactionService, SavingsGoalService, SinkingFundService, BedrockClassifierService |
 | `packages/client` | AWS client helpers | Typed wrappers around S3 (incl. signed upload URLs), SQS, and BedrockRuntime |
 | `packages/parser` | Bank statement parsers | HDFC, SBI, Axis credit card, HDFC credit card — plus abstractions for adding more banks |
@@ -82,7 +91,7 @@ A modular, multi-tenant budgeting platform that ingests bank statements, enriche
 
 1. **Authenticate & scope** – Tenants register/login via GraphQL; `refreshToken` rotates short-lived tokens. JWT secrets come from SSM.
 2. **Upload** – `createUploadUrl` issues a pre-signed S3 PUT URL. The client uploads directly to S3. `notifyUploadComplete` confirms and enqueues the ingestion job, returning a `StatementUploadResult`.
-3. **Ingest** – `txn-loaders` consumes the SQS job, fetches the file, parses rows via `@parser`, and persists canonical transactions via `TransactionStore`.
+3. **Ingest** – `txn-loaders` consumes the SQS job, fetches the file, parses rows via `@app/parser`, and persists canonical transactions via `TransactionStore`.
 4. **Auto-categorise** – The transactions table DynamoDB stream triggers `tag-loaders`, which runs keyword rules first, then optionally calls Bedrock, and writes category/confidence back.
 5. **Store insights** – Budgets, recurring transactions, savings goals, and sinking funds live in their respective DynamoDB tables.
 6. **Serve** – `graphql-api` surfaces queries/mutations for dashboards, paginated reviews, forecasts, and budget analytics.
@@ -90,7 +99,7 @@ A modular, multi-tenant budgeting platform that ingests bank statements, enriche
 
 ## Prerequisites
 
-- Node.js 24+ and pnpm (`pnpm@10.x` is pinned via `packageManager` in `package.json`)
+- Node.js 24+ and pnpm (`pnpm@12.x` is pinned via `packageManager` in `package.json`)
 - AWS credentials with access to S3, SQS, DynamoDB, Lambda, Parameter Store, and optionally `bedrock:InvokeModel`
 - Amazon Bedrock access in your AWS region when enabling AI tagging
 - AWS CDK CLI (`npm install -g aws-cdk`) for infrastructure deployments
@@ -183,7 +192,7 @@ Husky + commitlint enforce Conventional Commits on every staged change.
 
 ### Observability
 
-- Structured logging via `@logger` (Winston), injected into every service via DI.
+- Structured logging via `@app/logger` (Winston), injected into every service via DI.
 - `apps/graphql-api` exposes `/metrics` for Prometheus-compatible scraping.
 - CloudWatch alarms defined in `infra/lib/lambda-alarms-construct.ts`.
 - X-Ray tracing enabled on all Lambdas; `infra/lib/xray.stack.ts` provisions sampling rule/group.
@@ -254,6 +263,7 @@ artifacts/         Sample training data
 
 ## Additional Resources
 
+- [`docs/architecture.html`](docs/architecture.html) — interactive codebase map
 - `docs/ARCHITECTURE.md` — deep dive into data flow, security model, and workspace layout
 - `docs/finance-budget.sdl.graphql` — canonical GraphQL schema
 - `packages/services/src/**/*.spec.ts` — reference tests demonstrating service usage

@@ -8,9 +8,14 @@ import {
   ILogger,
   IUserStore,
   IRefreshTokenStore,
-} from "@common";
-import { signToken, verifyToken, hashPassword, comparePassword } from "@auth";
-import { generateRefreshToken, hashRefreshToken } from "@auth";
+} from "@app/common";
+import {
+  signToken,
+  verifyToken,
+  hashPassword,
+  comparePassword,
+} from "@app/auth";
+import { generateRefreshToken, hashRefreshToken } from "@app/auth";
 import { CustomError } from "./custom-error";
 
 const REFRESH_TOKEN_TTL_MS = 30 * 24 * 60 * 60 * 1000; // 30 days

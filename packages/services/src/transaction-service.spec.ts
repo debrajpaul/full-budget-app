@@ -9,7 +9,7 @@ import {
   ETenantType,
   EBankName,
   EBankType,
-} from "@common";
+} from "@app/common";
 
 describe("TransactionService", () => {
   let logger: ReturnType<typeof mock<ILogger>>;

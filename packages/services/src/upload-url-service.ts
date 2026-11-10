@@ -10,7 +10,7 @@ import {
   IUploadUrlResult,
   IStatementUploadResult,
   IUploadUrlService,
-} from "@common";
+} from "@app/common";
 import { CustomError } from "./custom-error";
 
 const UPLOAD_URL_TTL_SECONDS = 300;

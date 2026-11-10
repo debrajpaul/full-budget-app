@@ -1,4 +1,8 @@
-import { ILogger, IBedrockClient, IBedrockClassifierService } from "@common";
+import {
+  ILogger,
+  IBedrockClient,
+  IBedrockClassifierService,
+} from "@app/common";
 export class BedrockClassifierService implements IBedrockClassifierService {
   private readonly logger: ILogger;
   private readonly bedrockClient: IBedrockClient;

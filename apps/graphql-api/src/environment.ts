@@ -1,6 +1,6 @@
 import path from "path";
 import * as dotenv from "dotenv";
-import { IConfig, LogLevel } from "@common";
+import { IConfig, LogLevel } from "@app/common";
 
 console.log(`### path:${path.join(__dirname, "../../../.env")}`);
 dotenv.config({ path: path.join(__dirname, "../../../.env") });

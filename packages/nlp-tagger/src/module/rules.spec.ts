@@ -6,7 +6,7 @@ import {
   ESubIncomeCategories,
   ESubSavingCategories,
   ESubExpenseCategories,
-} from "@common";
+} from "@app/common";
 
 // Small helper to find the first matching rule for a normalized description
 const findRule = (description: string, when: ERawTxnType = ERawTxnType.any) => {
@@ -131,8 +131,29 @@ const ruleCases: RuleCase[] = [
     description: "swiggy order payment",
     when: ERawTxnType.debit,
     category: EBaseCategories.expenses,
+    subCategory: ESubExpenseCategories.dining,
+    reason: "Dining and food delivery",
+  },
+  {
+    description: "blinkit grocery order",
+    when: ERawTxnType.debit,
+    category: EBaseCategories.expenses,
     subCategory: ESubExpenseCategories.food,
-    reason: "Food/grocery delivery",
+    reason: "Grocery delivery",
+  },
+  {
+    description: "netflix.com monthly",
+    when: ERawTxnType.debit,
+    category: EBaseCategories.expenses,
+    subCategory: ESubExpenseCategories.subscriptions,
+    reason: "Streaming or app subscription",
+  },
+  {
+    description: "amazon pay india order",
+    when: ERawTxnType.debit,
+    category: EBaseCategories.expenses,
+    subCategory: ESubExpenseCategories.shopping,
+    reason: "Online shopping",
   },
   {
     description: "metro recharge bmrcl",

@@ -7,7 +7,7 @@ import {
   ICreateSavingsGoalInput,
   IUpdateSavingsGoalInput,
   IContributeSavingsGoalInput,
-} from "@common";
+} from "@app/common";
 import { CustomError } from "./custom-error";
 
 export class SavingsGoalService implements ISavingsGoalService {

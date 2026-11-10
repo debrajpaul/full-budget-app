@@ -1,5 +1,5 @@
 {
-  "name": "@parser",
+  "name": "@app/parser",
   "description": "Parser service for HDFC and SBI data processing",
   "version": "1.0.0",
   "main": "src/index.ts",
@@ -10,7 +10,7 @@
     "test": "jest --config jest.config.js"
   },
   "dependencies": {
-    "@common": "workspace:*",
+    "@app/common": "workspace:*",
     "pdf-parse": "^1.1.1",
     "csv-parse": "^5.5.0"
   }

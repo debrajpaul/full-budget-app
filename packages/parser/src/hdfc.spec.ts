@@ -1,5 +1,5 @@
 import { HdfcBankParser } from "./hdfc";
-import { EBankName, EBankType } from "@common";
+import { EBankName, EBankType } from "@app/common";
 
 describe("HdfcBankParser", () => {
   const parser = new HdfcBankParser();

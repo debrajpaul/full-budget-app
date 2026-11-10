@@ -3,7 +3,7 @@ import { render, screen, waitFor } from "@testing-library/react";
 import { MockedProvider } from "@apollo/client/testing";
 import type { MockedResponse } from "@apollo/client/testing";
 import { TooltipProvider } from "@/components/ui/tooltip";
-import { AlertSeverity, AlertType } from "@api-client";
+import { AlertSeverity, AlertType } from "@app/api-client";
 import { ForecastMonthDocument } from "@/lib/graphql/forecast";
 import { buildForecastCsv } from "./csv";
 

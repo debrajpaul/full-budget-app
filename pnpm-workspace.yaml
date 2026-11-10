@@ -2,3 +2,15 @@ packages:
   - "apps/*"
   - "infra"
   - "packages/*"
+
+allowBuilds:
+  '@apollo/protobufjs': false
+  '@prisma/client': false
+  aws-sdk: false
+  esbuild: true
+
+overrides:
+  "@smithy/types": "^4.5.0"
+  "@smithy/util-stream": "^4.1.2"
+  "@smithy/protocol-http": "^5.0.1"
+  "@smithy/signature-v4": "^5.0.1"

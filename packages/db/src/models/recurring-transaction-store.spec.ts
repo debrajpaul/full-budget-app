@@ -10,7 +10,7 @@ import {
   IRecurringTransaction,
   ERecurringFrequency,
   ETenantType,
-} from "@common";
+} from "@app/common";
 
 describe("RecurringTransactionStore", () => {
   let storeMock: { send: jest.Mock };

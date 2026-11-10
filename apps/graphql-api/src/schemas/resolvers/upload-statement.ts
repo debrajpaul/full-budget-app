@@ -2,10 +2,10 @@ import {
   IStatementInput,
   ICreateUploadUrlInput,
   IGraphQLContext,
-} from "@common";
+} from "@app/common";
 import { UploadStatementArgs } from "../../utils";
 
-import { CustomError } from "@services";
+import { CustomError } from "@app/services";
 
 const assertAuth = (ctx: IGraphQLContext) => {
   if (!ctx.userId) throw new CustomError("Unauthorized", "UNAUTHORIZED");

@@ -2,6 +2,7 @@
   "compilerOptions": {
     "target": "ES2022",
     "lib": ["ES2022", "DOM"],
+    "types": ["node", "jest"],
     "module": "CommonJS",
     "moduleResolution": "node",
     "strict": true,
@@ -11,15 +12,15 @@
     "forceConsistentCasingInFileNames": true,
     "baseUrl": ".",
     "paths": {
-      "@common/*": ["packages/common/src/*"],
-      "@services/*": ["packages/services/src/*"],
-      "@auth/*": ["packages/auth/src/*"],
-      "@db/*": ["packages/db/src/*"],
-      "@logger/*": ["packages/logger/src/*"],
-      "@parser/*": ["packages/parser/src/*"],
-      "@client/*": ["packages/client/src/*"],
-      "@nlp-tagger/*": ["packages/nlp-tagger/src/*"],
-      "@api-client/*": ["packages/api-client/src/*"]
+      "@app/common/*": ["packages/common/src/*"],
+      "@app/services/*": ["packages/services/src/*"],
+      "@app/auth/*": ["packages/auth/src/*"],
+      "@app/db/*": ["packages/db/src/*"],
+      "@app/logger/*": ["packages/logger/src/*"],
+      "@app/parser/*": ["packages/parser/src/*"],
+      "@app/client/*": ["packages/client/src/*"],
+      "@app/nlp-tagger/*": ["packages/nlp-tagger/src/*"],
+      "@app/api-client/*": ["packages/api-client/src/*"]
     }
   },
   "include": ["apps", "packages"],

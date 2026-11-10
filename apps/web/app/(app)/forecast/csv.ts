@@ -1,4 +1,4 @@
-import type { ForecastMonthQuery } from "@api-client";
+import type { ForecastMonthQuery } from "@app/api-client";
 
 type ForecastDay = ForecastMonthQuery["forecastMonth"]["days"][number];
 

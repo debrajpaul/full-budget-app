@@ -9,7 +9,7 @@ import {
 } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { cn, formatCurrency, formatDate } from "@/lib/utils";
-import type { TransactionsQuery } from "@api-client";
+import type { TransactionsQuery } from "@app/api-client";
 
 type TxnItem = TransactionsQuery["transactions"]["items"][number];
 

@@ -9,7 +9,7 @@ import {
   ITransactionCategoryRequest,
   ETenantType,
   EBaseCategories,
-} from "@common";
+} from "@app/common";
 
 export class TransactionCategoryLoader {
   constructor(

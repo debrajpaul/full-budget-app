@@ -7,7 +7,7 @@ import {
   EBaseCategories,
   ESubInvestmentCategories,
   ESubExpenseCategories,
-} from "@common";
+} from "@app/common";
 import { DynamoDBDocumentClient } from "@aws-sdk/lib-dynamodb";
 import { PutCommand, DeleteCommand } from "@aws-sdk/lib-dynamodb";
 

@@ -11,12 +11,14 @@ import {
 import {
   DashboardMonthlyReviewDocument,
   DashboardRecentTransactionsDocument,
+  DashboardSegmentationDocument,
 } from "@/lib/graphql/dashboard";
 import { KpiCards } from "@/components/dashboard/kpi-cards";
 import { CategoryDonut } from "@/components/dashboard/category-donut";
 import { BudgetActualChart } from "@/components/dashboard/budget-actual-chart";
 import { RecentTransactions } from "@/components/dashboard/recent-transactions";
 import { MonthPicker } from "@/components/dashboard/month-picker";
+import { SegmentationCard } from "@/components/dashboard/segmentation-card";
 
 export const dynamic = "force-dynamic";
 
@@ -68,6 +70,14 @@ export default async function DashboardPage({
         <MonthlyReviewSection period={period} />
       </Suspense>
 
+      {/* Streamed: needs / wants / savings against the budget rule */}
+      <Suspense
+        key={`sg-${period.month}-${period.year}`}
+        fallback={<Skeleton className="h-64 w-full rounded-xl" />}
+      >
+        <SegmentationSection period={period} />
+      </Suspense>
+
       {/* Streamed: recent transactions */}
       <Suspense
         key={`rt-${period.month}-${period.year}`}
@@ -113,6 +123,36 @@ async function MonthlyReviewSection({ period }: { period: MonthYear }) {
     return (
       <SectionError
         title="Couldn't load monthly review"
+        detail={(err as Error).message}
+      />
+    );
+  }
+}
+
+async function SegmentationSection({ period }: { period: MonthYear }) {
+  try {
+    const client = await getClient();
+    const { data } = await client.query({
+      query: DashboardSegmentationDocument,
+      variables: { period: { month: period.month, year: period.year } },
+      fetchPolicy: "no-cache",
+    });
+
+    const { totalIncome, segments, unsegmentedExpenses, unclassified } =
+      data.budgetSegmentation;
+
+    return (
+      <SegmentationCard
+        totalIncome={totalIncome}
+        segments={segments}
+        unsegmentedExpenses={unsegmentedExpenses}
+        unclassified={unclassified}
+      />
+    );
+  } catch (err) {
+    return (
+      <SectionError
+        title="Couldn't load spend segmentation"
         detail={(err as Error).message}
       />
     );

@@ -1,4 +1,4 @@
-import { graphql } from "@api-client";
+import { graphql } from "@app/api-client";
 
 export const BudgetsDocument = graphql(`
   query Budgets($period: PeriodInput!) {

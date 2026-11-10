@@ -1,5 +1,5 @@
-import {} from "@logger";
-import { IS3Service, ILogger } from "@common";
+import {} from "@app/logger";
+import { IS3Service, ILogger } from "@app/common";
 import {
   S3,
   S3ClientConfig,

@@ -1,5 +1,5 @@
 import { parse } from "csv-parse";
-import { IBankParser, ITransaction, EBankName, EBankType } from "@common";
+import { IBankParser, ITransaction, EBankName, EBankType } from "@app/common";
 import { Readable } from "stream";
 
 export class HdfcCreditCardParser implements IBankParser {

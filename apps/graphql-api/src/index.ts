@@ -9,7 +9,7 @@ import {
   handlers,
 } from "@as-integrations/aws-lambda";
 import { schema } from "./schemas/schema";
-import { IGraphQLContext } from "@common";
+import { IGraphQLContext } from "@app/common";
 import { createContext } from "./context";
 import { config } from "./environment";
 

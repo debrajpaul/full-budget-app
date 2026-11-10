@@ -9,7 +9,7 @@ import {
   IRecurringTransactionStore,
   IRecurringTransaction,
   ERecurringFrequency,
-} from "@common";
+} from "@app/common";
 
 function daysInMonth(year: number, month: number): number {
   return new Date(year, month, 0).getDate();

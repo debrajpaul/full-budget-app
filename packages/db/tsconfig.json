@@ -8,15 +8,14 @@
     "outDir": "./dist",
     "noEmit": true,
     "baseUrl": ".",
-    "types": ["jest", "node"],
     "paths": {
-      "@common/*": ["packages/common/src/*"],
-      "@services/*": ["packages/services/src/*"],
-      "@auth/*": ["packages/auth/src/*"],
-      "@db/*": ["packages/db/src/*"],
-      "@logger/*": ["packages/logger/src/*"],
-      "@parser/*": ["packages/parser/src/*"],
-      "@client/*": ["packages/client/src/*"]
+      "@app/common/*": ["packages/common/src/*"],
+      "@app/services/*": ["packages/services/src/*"],
+      "@app/auth/*": ["packages/auth/src/*"],
+      "@app/db/*": ["packages/db/src/*"],
+      "@app/logger/*": ["packages/logger/src/*"],
+      "@app/parser/*": ["packages/parser/src/*"],
+      "@app/client/*": ["packages/client/src/*"]
     }
   },
   "include": ["src"],

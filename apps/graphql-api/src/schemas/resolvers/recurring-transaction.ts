@@ -4,7 +4,7 @@ import {
   ERecurringFrequency,
   ETransactionType,
   inferTransactionType,
-} from "@common";
+} from "@app/common";
 
 const mapRecurring = (r: IRecurringTransaction) => ({
   id: r.recurringId,

@@ -1,5 +1,5 @@
-import { IGraphQLContext } from "@common";
-import { CustomError } from "@services";
+import { IGraphQLContext } from "@app/common";
+import { CustomError } from "@app/services";
 
 export const forecastResolvers = {
   Query: {

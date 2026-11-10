@@ -1,4 +1,4 @@
-import { ITransaction } from "./transaction";
+import { ITransaction, ICategorySpend } from "./transaction";
 import { ETenantType } from "../users";
 import { EBaseCategories, EAllSubCategories } from "../categories";
 
@@ -23,6 +23,12 @@ export interface ITransactionStore {
     month: number,
     year: number
   ): Promise<Record<string, number>>;
+  aggregateSpendByCategoryAndSubCategory(
+    tenantId: ETenantType,
+    userId: string,
+    month: number,
+    year: number
+  ): Promise<ICategorySpend[]>;
   updateTransactionCategory(
     tenantId: ETenantType,
     transactionId: string,

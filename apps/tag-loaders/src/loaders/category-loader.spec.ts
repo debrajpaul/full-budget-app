@@ -5,7 +5,7 @@ import {
   ITransactionCategoryService,
   ETenantType,
   EBaseCategories,
-} from "@common";
+} from "@app/common";
 import { TransactionCategoryLoader } from "./category-loader";
 
 describe("TransactionCategoryLoader", () => {

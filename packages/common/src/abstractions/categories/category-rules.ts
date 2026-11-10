@@ -24,6 +24,10 @@ export enum ESubExpenseCategories {
   food = "FOOD",
   utilities = "UTILITIES",
   healthcare = "HEALTHCARE",
+  dining = "DINING",
+  entertainment = "ENTERTAINMENT",
+  shopping = "SHOPPING",
+  subscriptions = "SUBSCRIPTIONS",
 }
 
 export enum ESubIncomeCategories {

@@ -7,7 +7,7 @@ import {
   ITransactionSqsRequest,
   IStatementUploadResult,
   IUploadStatementService,
-} from "@common";
+} from "@app/common";
 
 const LARGE_FILE_WARN_BYTES = 8 * 1024 * 1024; // 8 MB decoded
 

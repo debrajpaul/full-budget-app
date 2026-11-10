@@ -1,5 +1,10 @@
 import { mock } from "jest-mock-extended";
-import { ILogger, ETenantType, ISavingsGoalStore, ISavingsGoal } from "@common";
+import {
+  ILogger,
+  ETenantType,
+  ISavingsGoalStore,
+  ISavingsGoal,
+} from "@app/common";
 import { SavingsGoalService } from "./savings-goal-service";
 
 const today = new Date().toISOString().split("T")[0];

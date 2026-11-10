@@ -8,7 +8,7 @@ import { useMutation } from "@apollo/client";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { CloudUpload } from "lucide-react";
-import { BankName, BankType } from "@api-client";
+import { BankName, BankType } from "@app/api-client";
 import {
   Form,
   FormControl,

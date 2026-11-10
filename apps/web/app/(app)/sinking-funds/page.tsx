@@ -1,7 +1,7 @@
 import { getClient } from "@/lib/apollo/server-client";
 import { SinkingFundsDocument } from "@/lib/graphql/sinking-funds";
 import { SinkingFundsView } from "@/components/sinking-funds/sinking-funds-view";
-import type { SinkingFundsQuery } from "@api-client";
+import type { SinkingFundsQuery } from "@app/api-client";
 
 export const dynamic = "force-dynamic";
 

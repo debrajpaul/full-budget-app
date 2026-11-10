@@ -1,4 +1,4 @@
-import { ILogger, LogLevel } from "@common";
+import { ILogger, LogLevel } from "@app/common";
 import winston, { format, transports } from "winston";
 
 export class WinstonLogger implements ILogger {

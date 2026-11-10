@@ -10,7 +10,7 @@ import {
   EBankType,
   EBaseCategories,
   ESubExpenseCategories,
-} from "@common";
+} from "@app/common";
 
 describe("TransactionStore", () => {
   let storeMock: { send: jest.Mock };
@@ -223,6 +223,128 @@ describe("TransactionStore", () => {
     expect(result).toEqual({
       [EBaseCategories.expenses]: -150,
       [EBaseCategories.income]: 200,
+    });
+  });
+
+  describe("month boundaries", () => {
+    it("queries from the first to the last day of the month inclusive", async () => {
+      const spy = jest
+        .spyOn(transactionStore, "getTransactionsByDateRange")
+        .mockResolvedValue([]);
+
+      await transactionStore.aggregateSpendByCategory(
+        tenantId,
+        "user1",
+        5,
+        2026
+      );
+
+      expect(spy).toHaveBeenCalledWith(
+        tenantId,
+        "user1",
+        "2026-05-01",
+        "2026-05-31T23:59:59.999Z"
+      );
+    });
+
+    it("keeps date-only and timestamped items on the edge days in range", () => {
+      const spy = jest
+        .spyOn(transactionStore, "getTransactionsByDateRange")
+        .mockResolvedValue([]);
+      return transactionStore
+        .aggregateSpendByCategory(tenantId, "user1", 2, 2028)
+        .then(() => {
+          const [, , start, end] = spy.mock.calls[0];
+          const inRange = (d: string) => d >= start && d <= end;
+          expect(end.startsWith("2028-02-29")).toBe(true);
+          expect(inRange("2028-02-01")).toBe(true);
+          expect(inRange("2028-02-29")).toBe(true);
+          expect(inRange("2028-02-29T00:00:00.000Z")).toBe(true);
+          expect(inRange("2028-03-01")).toBe(false);
+          expect(inRange("2028-01-31")).toBe(false);
+        });
+    });
+  });
+
+  describe("aggregateSpendByCategoryAndSubCategory", () => {
+    it("nets credit minus debit per category and sub-category pair", async () => {
+      jest
+        .spyOn(transactionStore, "getTransactionsByDateRange")
+        .mockResolvedValue([
+          {
+            ...txn,
+            transactionId: "a",
+            credit: 0,
+            debit: 300,
+            category: EBaseCategories.expenses,
+            subCategory: ESubExpenseCategories.dining,
+          },
+          {
+            ...txn,
+            transactionId: "b",
+            credit: 50,
+            debit: 0,
+            category: EBaseCategories.expenses,
+            subCategory: ESubExpenseCategories.dining,
+          },
+          {
+            ...txn,
+            transactionId: "c",
+            credit: 0,
+            debit: 100,
+            category: EBaseCategories.expenses,
+            subCategory: ESubExpenseCategories.food,
+          },
+          {
+            ...txn,
+            transactionId: "d",
+            credit: 900,
+            debit: 0,
+            category: EBaseCategories.income,
+            subCategory: undefined,
+          },
+          {
+            ...txn,
+            transactionId: "e",
+            credit: 0,
+            debit: 20,
+            category: undefined,
+          },
+        ]);
+
+      const result =
+        await transactionStore.aggregateSpendByCategoryAndSubCategory(
+          tenantId,
+          "user1",
+          8,
+          2025
+        );
+
+      expect(result).toEqual(
+        expect.arrayContaining([
+          {
+            category: EBaseCategories.expenses,
+            subCategory: ESubExpenseCategories.dining,
+            net: -250,
+          },
+          {
+            category: EBaseCategories.expenses,
+            subCategory: ESubExpenseCategories.food,
+            net: -100,
+          },
+          {
+            category: EBaseCategories.income,
+            subCategory: undefined,
+            net: 900,
+          },
+          {
+            category: EBaseCategories.unclassified,
+            subCategory: undefined,
+            net: -20,
+          },
+        ])
+      );
+      expect(result).toHaveLength(4);
     });
   });
 });

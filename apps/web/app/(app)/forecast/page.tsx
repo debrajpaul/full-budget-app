@@ -15,8 +15,8 @@ import {
   ResponsiveContainer,
 } from "recharts";
 import type { TooltipProps } from "recharts";
-import { AlertSeverity, AlertType } from "@api-client";
-import type { ForecastMonthQuery } from "@api-client";
+import { AlertSeverity, AlertType } from "@app/api-client";
+import type { ForecastMonthQuery } from "@app/api-client";
 import { formatCurrency, parseMonthYearParams } from "@/lib/utils";
 import { MonthPicker } from "@/components/dashboard/month-picker";
 import { Button } from "@/components/ui/button";

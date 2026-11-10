@@ -1,5 +1,5 @@
 import { AxisCreditCardParser } from "./axis-credit-card-parser";
-import { EBankName } from "@common";
+import { EBankName } from "@app/common";
 
 describe("AxisCreditCardParser", () => {
   const parser = new AxisCreditCardParser();

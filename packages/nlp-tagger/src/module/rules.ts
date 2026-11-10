@@ -7,7 +7,7 @@ import {
   ESubSavingCategories,
   ESubExpenseCategories,
   // ESubLoanCategories,
-} from "@common";
+} from "@app/common";
 
 export const keywordBaseCategoryMap: Omit<
   ICategoryRules,
@@ -145,12 +145,49 @@ export const keywordBaseCategoryMap: Omit<
     taggedBy: "RULE_ENGINE",
   },
   {
-    match: /swiggy|zomato|blinkit|bigbasket|grofers/,
+    match: /blinkit|bigbasket|grofers|zepto|instamart/,
     when: ERawTxnType.debit,
     category: EBaseCategories.expenses,
     subCategory: ESubExpenseCategories.food,
-    reason: "Food/grocery delivery",
+    reason: "Grocery delivery",
     confidence: 0.9,
+    taggedBy: "RULE_ENGINE",
+  },
+  {
+    match: /swiggy|zomato|dominos|mcdonald|starbucks|restaurant|cafe/,
+    when: ERawTxnType.debit,
+    category: EBaseCategories.expenses,
+    subCategory: ESubExpenseCategories.dining,
+    reason: "Dining and food delivery",
+    confidence: 0.9,
+    taggedBy: "RULE_ENGINE",
+  },
+  {
+    match:
+      /netflix|spotify|hotstar|prime\s*video|youtube\s*premium|apple\.com\/bill/,
+    when: ERawTxnType.debit,
+    category: EBaseCategories.expenses,
+    subCategory: ESubExpenseCategories.subscriptions,
+    reason: "Streaming or app subscription",
+    confidence: 0.9,
+    taggedBy: "RULE_ENGINE",
+  },
+  {
+    match: /bookmyshow|pvr|inox|steam\s*games/,
+    when: ERawTxnType.debit,
+    category: EBaseCategories.expenses,
+    subCategory: ESubExpenseCategories.entertainment,
+    reason: "Entertainment",
+    confidence: 0.85,
+    taggedBy: "RULE_ENGINE",
+  },
+  {
+    match: /amazon|flipkart|myntra|ajio|nykaa|meesho/,
+    when: ERawTxnType.debit,
+    category: EBaseCategories.expenses,
+    subCategory: ESubExpenseCategories.shopping,
+    reason: "Online shopping",
+    confidence: 0.75,
     taggedBy: "RULE_ENGINE",
   },
   {

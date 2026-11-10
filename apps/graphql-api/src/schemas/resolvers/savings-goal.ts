@@ -1,5 +1,5 @@
-import { IGraphQLContext } from "@common";
-import { CustomError } from "@services";
+import { IGraphQLContext } from "@app/common";
+import { CustomError } from "@app/services";
 
 function assertAuth(ctx: IGraphQLContext): {
   tenantId: NonNullable<IGraphQLContext["tenantId"]>;

@@ -8,7 +8,7 @@ import { z } from "zod";
 import { toast } from "sonner";
 import { Plus, Pencil, Trash2, CalendarClock } from "lucide-react";
 import { LineChart, Line, ResponsiveContainer } from "recharts";
-import type { SinkingFundsQuery } from "@api-client";
+import type { SinkingFundsQuery } from "@app/api-client";
 import { cn, formatCurrency, formatDate } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";

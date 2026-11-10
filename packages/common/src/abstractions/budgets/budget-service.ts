@@ -1,6 +1,7 @@
 import { ETenantType } from "../users";
 import { IBudget, ISetBudgetInput } from "./budget";
 import { EBaseCategories } from "../categories";
+import { IBudgetRule, IBudgetSegmentation } from "./budget-segmentation";
 
 export interface ICategoryDeviation {
   category: EBaseCategories;
@@ -31,6 +32,14 @@ export interface IBudgetService {
     userId: string,
     year: number
   ): Promise<ICategoryDeviation[]>;
+
+  getSegmentation(
+    tenantId: ETenantType,
+    userId: string,
+    month: number,
+    year: number,
+    rule?: IBudgetRule
+  ): Promise<IBudgetSegmentation>;
 
   getBudgets(
     tenantId: ETenantType,

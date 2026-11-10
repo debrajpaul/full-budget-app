@@ -9,7 +9,7 @@ import {
   ESubIncomeCategories,
   ESubInvestmentCategories,
   ESubLoanCategories,
-} from "@common";
+} from "@app/common";
 import {
   BedrockRuntimeClient,
   InvokeModelCommand,

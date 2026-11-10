@@ -1,6 +1,6 @@
-import { verifyToken } from "@auth";
+import { verifyToken } from "@app/auth";
 import { config } from "./environment";
-import { IGraphQLContext, ETenantType } from "@common";
+import { IGraphQLContext, ETenantType } from "@app/common";
 import { Request, Response } from "express";
 import { ExpressContextFunctionArgument } from "@as-integrations/express5";
 import {

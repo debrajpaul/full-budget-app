@@ -1,4 +1,4 @@
-import { ILogger, IBedrockClient } from "@common";
+import { ILogger, IBedrockClient } from "@app/common";
 import { config } from "./environment";
 import { S3 } from "@aws-sdk/client-s3";
 import { SQS } from "@aws-sdk/client-sqs";
@@ -11,7 +11,7 @@ import {
   SavingsGoalStore,
   SinkingFundStore,
   RefreshTokenStore,
-} from "@db";
+} from "@app/db";
 import {
   TransactionService,
   AuthorizationService,
@@ -24,9 +24,9 @@ import {
   ForecastService,
   RecurringTransactionService,
   BudgetService,
-} from "@services";
-import { RuleEngine } from "@nlp-tagger";
-import { S3Service, SQSService } from "@client";
+} from "@app/services";
+import { RuleEngine } from "@app/nlp-tagger";
+import { S3Service, SQSService } from "@app/client";
 import { DynamoDBDocumentClient } from "@aws-sdk/lib-dynamodb";
 
 export function setupServices(
