@@ -305,17 +305,17 @@ interface RecurringDef {
   description:  string;
   amount:       number;
   category:     string;
-  type:         "CREDIT" | "DEBIT";
+  type:         "INCOME" | "EXPENSE";
   frequency:    string;
   dayOfMonth:   number;
 }
 
 const SEED_RECURRING: RecurringDef[] = [
-  { description: "Salary Credit",          amount: 75000, category: "Salary",       type: "CREDIT", frequency: "monthly", dayOfMonth:  1 },
-  { description: "Monthly Rent",           amount: 18000, category: "Housing",       type: "DEBIT",  frequency: "monthly", dayOfMonth:  2 },
-  { description: "Mutual Fund SIP",        amount: 10000, category: "Investments",   type: "DEBIT",  frequency: "monthly", dayOfMonth: 15 },
-  { description: "Mobile Recharge Airtel", amount:   299, category: "Utilities",     type: "DEBIT",  frequency: "monthly", dayOfMonth:  5 },
-  { description: "Netflix Subscription",   amount:   649, category: "Entertainment", type: "DEBIT",  frequency: "monthly", dayOfMonth: 10 },
+  { description: "Salary Credit",          amount: 75000, category: "Salary",       type: "INCOME", frequency: "monthly", dayOfMonth:  1 },
+  { description: "Monthly Rent",           amount: 18000, category: "Housing",       type: "EXPENSE", frequency: "monthly", dayOfMonth:  2 },
+  { description: "Mutual Fund SIP",        amount: 10000, category: "Investments",   type: "EXPENSE", frequency: "monthly", dayOfMonth: 15 },
+  { description: "Mobile Recharge Airtel", amount:   299, category: "Utilities",     type: "EXPENSE", frequency: "monthly", dayOfMonth:  5 },
+  { description: "Netflix Subscription",   amount:   649, category: "Entertainment", type: "EXPENSE", frequency: "monthly", dayOfMonth: 10 },
 ];
 
 async function createRecurring(token: string): Promise<void> {
@@ -420,7 +420,7 @@ async function createGoals(token: string): Promise<void> {
     // Contribute to show progress in the UI
     await gql(
       `mutation Contribute($input: ContributeSavingsGoalInput!) {
-         contributeSavingsGoal(input: $input) { id currentAmount }
+         contributeSavingsGoal(input: $input) { id current }
        }`,
       { input: { id: goalId, amount: goal.contribution } },
       token,
@@ -477,7 +477,7 @@ async function createSinkingFunds(token: string): Promise<void> {
 
     await gql(
       `mutation ContributeFund($input: ContributeSinkingFundInput!) {
-         contributeSinkingFund(input: $input) { id currentAmount }
+         contributeSinkingFund(input: $input) { id current }
        }`,
       { input: { id: fundId, amount: sf.contribution } },
       token,
