@@ -32,60 +32,60 @@ An interactive, self-contained map of the codebase: upload-to-tagging **flow**, 
 
 ## System Topology
 
-| Area | Responsibility | Highlights |
-|------|----------------|------------|
-| `apps/graphql-api` | Public GraphQL + `/metrics` endpoint | Apollo Server 5 + Express, multi-tenant JWT auth, refresh-token rotation, resolver-thin design delegating to `@app/services`, exports schema from `docs/finance-budget.sdl.graphql` |
-| `apps/txn-loaders` | SQS-driven statement ingestion | Pulls bank statement jobs from SQS, fetches uploads from S3, normalises transactions with `@app/parser`, persists via `TransactionStore` |
-| `apps/tag-loaders` | Transaction categorisation worker | Triggered by DynamoDB streams on transactions; runs rule engine from `@app/nlp-tagger`, falls back to Bedrock, persists categories/confidence |
-| `packages/services` | Domain orchestrators | AuthorizationService (register/login/refresh), UploadUrlService, UploadStatementService, TransactionService, BudgetService, ForecastService, RecurringTransactionService, SavingsGoalService, SinkingFundService, BedrockClassifierService |
-| `packages/client` | AWS client helpers | Typed wrappers around S3 (incl. signed upload URLs), SQS, and BedrockRuntime |
-| `packages/parser` | Bank statement parsers | HDFC, SBI, Axis credit card, HDFC credit card — plus abstractions for adding more banks |
-| `packages/nlp-tagger` | Rule-based tagging | Keyword rules, training utilities, entry point for alternative models |
-| `packages/auth` | Auth primitives | JWT sign/verify, bcrypt hashing, refresh token generation (`randomUUID`), SHA-256 hashing |
-| `packages/common` | Shared contracts | DTOs, domain enums (`ETransactionType`, `EForecastAlertType`), store interfaces (`IRefreshTokenStore`, `IUploadUrlService`), `inferTransactionType()` |
-| `packages/db` | DynamoDB repositories | `TransactionStore`, `UserStore`, `RefreshTokenStore` (FamilyIndex GSI), `SavingsGoalStore`, `SinkingFundStore`, `BudgetStore`, `RecurringTransactionStore`, `CategoryRulesStore` |
-| `packages/logger` | Logging | Winston-based structured logger injected into all services |
-| `infra/lib` | AWS CDK stacks | Queues, S3, DynamoDB tables (incl. refresh-tokens, savings-goals, sinking-funds), Lambda functions, SSM, alarms, X-Ray |
-| `docs/` | Design docs & schema | `ARCHITECTURE.md` and `docs/finance-budget.sdl.graphql` (SDL source of truth) |
+| Area                  | Responsibility                       | Highlights                                                                                                                                                                                                                                 |
+| --------------------- | ------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `apps/graphql-api`    | Public GraphQL + `/metrics` endpoint | Apollo Server 5 + Express, multi-tenant JWT auth, refresh-token rotation, resolver-thin design delegating to `@app/services`, exports schema from `docs/finance-budget.sdl.graphql`                                                        |
+| `apps/txn-loaders`    | SQS-driven statement ingestion       | Pulls bank statement jobs from SQS, fetches uploads from S3, normalises transactions with `@app/parser`, persists via `TransactionStore`                                                                                                   |
+| `apps/tag-loaders`    | Transaction categorisation worker    | Triggered by DynamoDB streams on transactions; runs rule engine from `@app/nlp-tagger`, falls back to Bedrock, persists categories/confidence                                                                                              |
+| `packages/services`   | Domain orchestrators                 | AuthorizationService (register/login/refresh), UploadUrlService, UploadStatementService, TransactionService, BudgetService, ForecastService, RecurringTransactionService, SavingsGoalService, SinkingFundService, BedrockClassifierService |
+| `packages/client`     | AWS client helpers                   | Typed wrappers around S3 (incl. signed upload URLs), SQS, and BedrockRuntime                                                                                                                                                               |
+| `packages/parser`     | Bank statement parsers               | HDFC, SBI, Axis credit card, HDFC credit card — plus abstractions for adding more banks                                                                                                                                                    |
+| `packages/nlp-tagger` | Rule-based tagging                   | Keyword rules, training utilities, entry point for alternative models                                                                                                                                                                      |
+| `packages/auth`       | Auth primitives                      | JWT sign/verify, bcrypt hashing, refresh token generation (`randomUUID`), SHA-256 hashing                                                                                                                                                  |
+| `packages/common`     | Shared contracts                     | DTOs, domain enums (`ETransactionType`, `EForecastAlertType`), store interfaces (`IRefreshTokenStore`, `IUploadUrlService`), `inferTransactionType()`                                                                                      |
+| `packages/db`         | DynamoDB repositories                | `TransactionStore`, `UserStore`, `RefreshTokenStore` (FamilyIndex GSI), `SavingsGoalStore`, `SinkingFundStore`, `BudgetStore`, `RecurringTransactionStore`, `CategoryRulesStore`                                                           |
+| `packages/logger`     | Logging                              | Winston-based structured logger injected into all services                                                                                                                                                                                 |
+| `infra/lib`           | AWS CDK stacks                       | Queues, S3, DynamoDB tables (incl. refresh-tokens, savings-goals, sinking-funds), Lambda functions, SSM, alarms, X-Ray                                                                                                                     |
+| `docs/`               | Design docs & schema                 | `ARCHITECTURE.md` and `docs/finance-budget.sdl.graphql` (SDL source of truth)                                                                                                                                                              |
 
 ## GraphQL API Surface
 
 ### Queries
 
-| Operation | Description |
-|-----------|-------------|
-| `annualReview(year, cursor)` | Paginated annual summary with `TransactionsPage` (cursor-based) |
-| `monthlyReview(month, year)` | Monthly income/expense breakdown |
-| `aggregateSummary(year, month?)` | Aggregate totals across a period |
-| `categoryBreakdown(month, year)` | Per-category spending groups |
-| `transactions(filters, cursor)` | Filtered, paginated transaction list |
-| `forecastMonth(...)` | Cash-flow forecast with typed `ForecastAlert` entries |
-| `budgets(period)` | All budgets for a given month/year period |
+| Operation                        | Description                                                     |
+| -------------------------------- | --------------------------------------------------------------- |
+| `annualReview(year, cursor)`     | Paginated annual summary with `TransactionsPage` (cursor-based) |
+| `monthlyReview(month, year)`     | Monthly income/expense breakdown                                |
+| `aggregateSummary(year, month?)` | Aggregate totals across a period                                |
+| `categoryBreakdown(month, year)` | Per-category spending groups                                    |
+| `transactions(filters, cursor)`  | Filtered, paginated transaction list                            |
+| `forecastMonth(...)`             | Cash-flow forecast with typed `ForecastAlert` entries           |
+| `budgets(period)`                | All budgets for a given month/year period                       |
 
 ### Mutations
 
-| Operation | Description |
-|-----------|-------------|
-| `register(input)` | Create a new tenant user |
-| `login(input)` | Authenticate, returns `token + refreshToken` |
-| `refreshToken(refreshToken)` | Rotate refresh token, returns new `LoginResponse` |
-| `createUploadUrl(input)` | Issue a signed S3 upload URL (two-step upload) |
-| `notifyUploadComplete(jobId)` | Confirm upload, enqueue ingestion, return `StatementUploadResult` |
-| `uploadStatement(input)` | **Deprecated** — use `createUploadUrl` + `notifyUploadComplete` |
-| `addTransactionCategory(input)` | Add or update a category rule |
-| `reclassifyTransaction(...)` | Manually override a transaction category |
-| `setBudget(period, category, amount)` | Create or update a budget entry |
-| `deleteBudget(id)` | Remove a budget entry |
-| `createRecurringTransaction(...)` | Define a recurring transaction template |
-| `generateRecurringTransactions(month, year)` | Materialize recurring entries for a period |
-| `createSavingsGoal(input)` | Create a savings goal with history seeding |
-| `updateSavingsGoal(id, input)` | Update goal target or name |
-| `deleteSavingsGoal(id)` | Remove a savings goal |
-| `contributeSavingsGoal(input)` | Add a contribution to a savings goal |
-| `createSinkingFund(input)` | Create a sinking fund |
-| `updateSinkingFund(id, input)` | Update sinking fund details |
-| `deleteSinkingFund(id)` | Remove a sinking fund |
-| `contributeSinkingFund(input)` | Add a contribution to a sinking fund |
+| Operation                                    | Description                                                       |
+| -------------------------------------------- | ----------------------------------------------------------------- |
+| `register(input)`                            | Create a new tenant user                                          |
+| `login(input)`                               | Authenticate, returns `token + refreshToken`                      |
+| `refreshToken(refreshToken)`                 | Rotate refresh token, returns new `LoginResponse`                 |
+| `createUploadUrl(input)`                     | Issue a signed S3 upload URL (two-step upload)                    |
+| `notifyUploadComplete(jobId)`                | Confirm upload, enqueue ingestion, return `StatementUploadResult` |
+| `uploadStatement(input)`                     | **Deprecated** — use `createUploadUrl` + `notifyUploadComplete`   |
+| `addTransactionCategory(input)`              | Add or update a category rule                                     |
+| `reclassifyTransaction(...)`                 | Manually override a transaction category                          |
+| `setBudget(period, category, amount)`        | Create or update a budget entry                                   |
+| `deleteBudget(id)`                           | Remove a budget entry                                             |
+| `createRecurringTransaction(...)`            | Define a recurring transaction template                           |
+| `generateRecurringTransactions(month, year)` | Materialize recurring entries for a period                        |
+| `createSavingsGoal(input)`                   | Create a savings goal with history seeding                        |
+| `updateSavingsGoal(id, input)`               | Update goal target or name                                        |
+| `deleteSavingsGoal(id)`                      | Remove a savings goal                                             |
+| `contributeSavingsGoal(input)`               | Add a contribution to a savings goal                              |
+| `createSinkingFund(input)`                   | Create a sinking fund                                             |
+| `updateSinkingFund(id, input)`               | Update sinking fund details                                       |
+| `deleteSinkingFund(id)`                      | Remove a sinking fund                                             |
+| `contributeSinkingFund(input)`               | Add a contribution to a sinking fund                              |
 
 ## Flow at a Glance
 
@@ -145,18 +145,18 @@ AI_CONFIDENCE_THRESHOLD=0.65
 
 ### Environment variables reference
 
-| Variable | Purpose |
-|----------|---------|
-| `JWT_SECRET` | Secret used for signing/verifying access tokens |
-| `DYNAMO_REFRESH_TOKENS_TABLE` | DynamoDB table backing refresh-token rotation |
-| `DYNAMO_SAVINGS_GOAL_TABLE` | DynamoDB table for savings goals |
-| `DYNAMO_SINKING_FUND_TABLE` | DynamoDB table for sinking funds |
-| `BEDROCK_MODEL_ID` | Bedrock model ARN/ID passed to `BedrockClassifierService` |
-| `AI_TAGGING_ENABLED` | Enable/disable AI-assisted transaction categorisation |
-| `AI_CONFIDENCE_THRESHOLD` | Minimum Bedrock score for accepting AI suggestions |
-| `SQS_QUEUE_URL` | Source queue for statement ingestion jobs |
-| `AWS_S3_BUCKET` | Bucket that stores uploaded statements |
-| `LOG_LEVEL` | Controls Winston log level across services |
+| Variable                      | Purpose                                                   |
+| ----------------------------- | --------------------------------------------------------- |
+| `JWT_SECRET`                  | Secret used for signing/verifying access tokens           |
+| `DYNAMO_REFRESH_TOKENS_TABLE` | DynamoDB table backing refresh-token rotation             |
+| `DYNAMO_SAVINGS_GOAL_TABLE`   | DynamoDB table for savings goals                          |
+| `DYNAMO_SINKING_FUND_TABLE`   | DynamoDB table for sinking funds                          |
+| `BEDROCK_MODEL_ID`            | Bedrock model ARN/ID passed to `BedrockClassifierService` |
+| `AI_TAGGING_ENABLED`          | Enable/disable AI-assisted transaction categorisation     |
+| `AI_CONFIDENCE_THRESHOLD`     | Minimum Bedrock score for accepting AI suggestions        |
+| `SQS_QUEUE_URL`               | Source queue for statement ingestion jobs                 |
+| `AWS_S3_BUCKET`               | Bucket that stores uploaded statements                    |
+| `LOG_LEVEL`                   | Controls Winston log level across services                |
 
 ## Local Development
 
@@ -209,16 +209,17 @@ Husky + commitlint enforce Conventional Commits on every staged change.
    ```
 3. Deploy all stacks:
    ```bash
-   pnpm --filter ./infra cdk:deploy:all
+   pnpm deploy:qa   # QA; prod deploys from CI on main
    ```
 
 CDK helper aliases (from root):
 
-| Command | Action |
-|---------|--------|
-| `pnpm synth` | Synthesize CloudFormation templates |
-| `pnpm deploy:all` | Build + deploy all stacks |
-| `pnpm destroy:all` | Tear down all deployed stacks |
+| Command            | Action                                                        |
+| ------------------ | ------------------------------------------------------------- |
+| `pnpm synth`       | Synthesize CloudFormation templates                           |
+| `pnpm deploy:qa`   | Build + deploy all stacks to QA                               |
+| `pnpm deploy:prod` | Build + deploy all stacks to production (use CI, not by hand) |
+| `pnpm destroy:qa`  | Tear down the QA stacks (prod is termination-protected)       |
 
 ## Directory Reference
 

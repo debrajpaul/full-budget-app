@@ -6,6 +6,7 @@
   },
   "scripts": {
     "typecheck": "tsc --noEmit",
+    "test:infra": "jest",
     "cdk:deploy": "cdk deploy",
     "cdk:synth": "cdk synth",
     "cdk:bootstrap": "cdk bootstrap",

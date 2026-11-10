@@ -1,0 +1,8 @@
+pnpm-lock.yaml
+docs/architecture.html
+infra/cdk.out
+apps/*/dist
+packages/*/dist
+coverage
+.next
+node_modules

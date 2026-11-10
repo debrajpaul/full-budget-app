@@ -137,19 +137,19 @@ graph TD
 
 Domain orchestrators — the only place business logic lives:
 
-| Service | Responsibility |
-|---------|----------------|
-| `AuthorizationService` | Register, login, refresh-token rotation with family revocation |
-| `UploadUrlService` | Issue pre-signed S3 PUT URLs; `notifyUploadComplete` validates job ID, triggers SQS, returns `IStatementUploadResult` |
-| `UploadStatementService` | Legacy single-step upload; returns `IStatementUploadResult` with 8 MB size warning |
-| `TransactionService` | Ingestion pipeline, analytics (monthly/annual review, aggregates, forecasts) |
-| `TransactionCategoryService` | Apply and manage category rules |
-| `BudgetService` | Create, update, delete, and query budget entries |
-| `RecurringTransactionService` | Define recurring templates and materialize entries for a given period |
-| `SavingsGoalService` | CRUD + contribution tracking for savings goals |
-| `SinkingFundService` | CRUD + contribution tracking for sinking funds |
-| `BedrockClassifierService` | Invoke Amazon Bedrock with a structured prompt; parse category/confidence from the response |
-| `ForecastService` | Project daily cash flow and emit typed `ForecastAlert` entries |
+| Service                       | Responsibility                                                                                                        |
+| ----------------------------- | --------------------------------------------------------------------------------------------------------------------- |
+| `AuthorizationService`        | Register, login, refresh-token rotation with family revocation                                                        |
+| `UploadUrlService`            | Issue pre-signed S3 PUT URLs; `notifyUploadComplete` validates job ID, triggers SQS, returns `IStatementUploadResult` |
+| `UploadStatementService`      | Legacy single-step upload; returns `IStatementUploadResult` with 8 MB size warning                                    |
+| `TransactionService`          | Ingestion pipeline, analytics (monthly/annual review, aggregates, forecasts)                                          |
+| `TransactionCategoryService`  | Apply and manage category rules                                                                                       |
+| `BudgetService`               | Create, update, delete, and query budget entries                                                                      |
+| `RecurringTransactionService` | Define recurring templates and materialize entries for a given period                                                 |
+| `SavingsGoalService`          | CRUD + contribution tracking for savings goals                                                                        |
+| `SinkingFundService`          | CRUD + contribution tracking for sinking funds                                                                        |
+| `BedrockClassifierService`    | Invoke Amazon Bedrock with a structured prompt; parse category/confidence from the response                           |
+| `ForecastService`             | Project daily cash flow and emit typed `ForecastAlert` entries                                                        |
 
 Constructor injection pattern — every service receives `(logger, ...stores)` via `setup-services.ts` in `graphql-api`.
 
@@ -183,16 +183,16 @@ Shared contracts consumed by every other package:
 
 DynamoDB repositories. Access pattern: `PK = tenantId`, `SK = id` (or composite SK for time-series).
 
-| Store | Table | Notable features |
-|-------|-------|-----------------|
-| `UserStore` | `DYNAMO_USER_TABLE` | Email lookup by tenantId |
-| `TransactionStore` | `DYNAMO_TRANSACTION_TABLE` | Month-range GSI for analytics; stream enabled |
-| `CategoryRulesStore` | `DYNAMO_CATEGORY_RULES_TABLE` | Keyword → BaseCategory rules per tenant |
-| `BudgetStore` | `DYNAMO_BUDGET_TABLE` | Period (year/month) GSI |
-| `RecurringTransactionStore` | `DYNAMO_RECURRING_TABLE` | Active/inactive filter |
-| `RefreshTokenStore` | `DYNAMO_REFRESH_TOKENS_TABLE` | PK = SHA-256(token); FamilyIndex GSI for family revocation |
-| `SavingsGoalStore` | `DYNAMO_SAVINGS_GOAL_TABLE` | Ownership guard (`userId#` prefix check); history seeding on create |
-| `SinkingFundStore` | `DYNAMO_SINKING_FUND_TABLE` | Ownership guard; contribution history |
+| Store                       | Table                         | Notable features                                                    |
+| --------------------------- | ----------------------------- | ------------------------------------------------------------------- |
+| `UserStore`                 | `DYNAMO_USER_TABLE`           | Email lookup by tenantId                                            |
+| `TransactionStore`          | `DYNAMO_TRANSACTION_TABLE`    | Month-range GSI for analytics; stream enabled                       |
+| `CategoryRulesStore`        | `DYNAMO_CATEGORY_RULES_TABLE` | Keyword → BaseCategory rules per tenant                             |
+| `BudgetStore`               | `DYNAMO_BUDGET_TABLE`         | Period (year/month) GSI                                             |
+| `RecurringTransactionStore` | `DYNAMO_RECURRING_TABLE`      | Active/inactive filter                                              |
+| `RefreshTokenStore`         | `DYNAMO_REFRESH_TOKENS_TABLE` | PK = SHA-256(token); FamilyIndex GSI for family revocation          |
+| `SavingsGoalStore`          | `DYNAMO_SAVINGS_GOAL_TABLE`   | Ownership guard (`userId#` prefix check); history seeding on create |
+| `SinkingFundStore`          | `DYNAMO_SINKING_FUND_TABLE`   | Ownership guard; contribution history                               |
 
 ### `parser`
 
@@ -225,24 +225,24 @@ All CDK stacks use on-demand DynamoDB capacity and arm64 Lambda architecture whe
 
 ### Stacks
 
-| Stack | Resources |
-|-------|-----------|
-| `StorageStack` | S3 bucket for statement uploads |
-| `QueueStack` | SQS queue for ingestion jobs + DLQ |
-| `UsersTableStack` | `users` DynamoDB table |
-| `TransactionsTableStack` | `transactions` table with stream + month GSI |
-| `TransactionCategoryTableStack` | `categories` table |
-| `BudgetsTableStack` | `budgets` table |
-| `RecurringTransactionsTableStack` | `recurring-transactions` table |
-| `RefreshTokensTableStack` | `refresh-tokens` table with FamilyIndex GSI |
-| `SavingsGoalsTableStack` | `savings-goals` table |
-| `SinkingFundsTableStack` | `sinking-funds` table |
-| `TransactionLoaderStack` | `txn-loaders` Lambda wired to SQS event source |
-| `TransactionCategoryLoaderStack` | `tag-loaders` Lambda wired to transactions stream |
-| `GraphQLApiStack` | `graphql-api` Lambda + Function URL |
-| `SsmParamStack` | JWT secret and feature flags in Parameter Store |
-| `LambdaAlarmsConstruct` | CloudWatch alarms for errors/throttles |
-| `XrayStack` | X-Ray sampling rule and group |
+| Stack                             | Resources                                         |
+| --------------------------------- | ------------------------------------------------- |
+| `StorageStack`                    | S3 bucket for statement uploads                   |
+| `QueueStack`                      | SQS queue for ingestion jobs + DLQ                |
+| `UsersTableStack`                 | `users` DynamoDB table                            |
+| `TransactionsTableStack`          | `transactions` table with stream + month GSI      |
+| `TransactionCategoryTableStack`   | `categories` table                                |
+| `BudgetsTableStack`               | `budgets` table                                   |
+| `RecurringTransactionsTableStack` | `recurring-transactions` table                    |
+| `RefreshTokensTableStack`         | `refresh-tokens` table with FamilyIndex GSI       |
+| `SavingsGoalsTableStack`          | `savings-goals` table                             |
+| `SinkingFundsTableStack`          | `sinking-funds` table                             |
+| `TransactionLoaderStack`          | `txn-loaders` Lambda wired to SQS event source    |
+| `TransactionCategoryLoaderStack`  | `tag-loaders` Lambda wired to transactions stream |
+| `GraphQLApiStack`                 | `graphql-api` Lambda + Function URL               |
+| `SsmParamStack`                   | JWT secret and feature flags in Parameter Store   |
+| `LambdaAlarmsConstruct`           | CloudWatch alarms for errors/throttles            |
+| `XrayStack`                       | X-Ray sampling rule and group                     |
 
 ### CDK Stack Dependency Graph
 
@@ -450,15 +450,15 @@ flowchart LR
 
 ## Observability & Operations
 
-| Concern | Mechanism |
-|---------|-----------|
-| Structured logging | `@app/logger` (Winston) injected into every service; includes `tenantId`, `requestId`, and correlation metadata |
-| Metrics | `/metrics` endpoint on `graphql-api`; extend counters/histograms under `apps/graphql-api/src/utils` |
-| Distributed tracing | Active X-Ray on all Lambdas; sampling rate 5%; rule + group provisioned by `XrayStack` |
-| Alarms | CloudWatch alarms for Lambda errors and throttles in `LambdaAlarmsConstruct` |
-| DLQ | SQS dead-letter queue captures failed ingestion jobs for replay |
-| Log retention | 7 days (`ONE_WEEK`) on all Lambda log groups via `logRetention` CDK property |
-| Configuration | Runtime config from `.env`, SSM Parameter Store, and feature flags injected at deploy time |
+| Concern             | Mechanism                                                                                                       |
+| ------------------- | --------------------------------------------------------------------------------------------------------------- |
+| Structured logging  | `@app/logger` (Winston) injected into every service; includes `tenantId`, `requestId`, and correlation metadata |
+| Metrics             | `/metrics` endpoint on `graphql-api`; extend counters/histograms under `apps/graphql-api/src/utils`             |
+| Distributed tracing | Active X-Ray on all Lambdas; sampling rate 5%; rule + group provisioned by `XrayStack`                          |
+| Alarms              | CloudWatch alarms for Lambda errors and throttles in `LambdaAlarmsConstruct`                                    |
+| DLQ                 | SQS dead-letter queue captures failed ingestion jobs for replay                                                 |
+| Log retention       | 7 days (`ONE_WEEK`) on all Lambda log groups via `logRetention` CDK property                                    |
+| Configuration       | Runtime config from `.env`, SSM Parameter Store, and feature flags injected at deploy time                      |
 
 ---
 
@@ -512,7 +512,7 @@ full-budget-app/
 - Run `pnpm install` once to hydrate all workspace dependencies.
 - Use `pnpm dev` to build packages in watch mode; start individual apps with `pnpm --filter @app/<service> dev`.
 - Tests live alongside their packages (`*.spec.ts`). Run `pnpm test`, `pnpm lint`, and `pnpm typecheck` before shipping.
-- Deploy with `pnpm deploy:all` and ensure AWS credentials are set in the environment.
+- Deploy with `pnpm deploy:qa` and ensure AWS credentials are set in the environment.
 - Postman collections (`docs/postman/`) and sample data (`artifacts/training.csv`) support manual verification.
 
 ---
@@ -523,6 +523,6 @@ full-budget-app/
 - **Add a GraphQL operation** — update the SDL first, then `typeDefs`, then the resolver (thin — delegate to a service), then add or extend the service, then write a `*.spec.ts`.
 - **Add a DynamoDB table** — create a store in `packages/db`, add a CDK stack in `infra/lib`, wire it in `infra/lib/index.ts` and `apps/graphql-api/src/setup-services.ts`.
 - **Add a new service** — follow the DI constructor pattern `(logger: ILogger, ...stores)` and expose the interface in `packages/common`.
-- **Expand infrastructure** — author a new construct or stack under `infra/lib` and add it to the `cdk:deploy:all` target.
+- **Expand infrastructure** — author a new construct or stack under `infra/lib` and add it to the `deploy:qa` script.
 
 Refer to `README.md` for environment setup, deployment commands, and contribution guidelines.

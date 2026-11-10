@@ -1,0 +1,100 @@
+name: Deploy
+
+# Push to dev deploys QA. Push to main deploys production (gated by the
+# `production` environment's required reviewers). Both run CI first.
+on:
+  push:
+    branches: [dev, main]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: deploy-${{ github.ref_name }}
+  cancel-in-progress: false
+
+jobs:
+  ci:
+    uses: ./.github/workflows/ci.yml
+
+  deploy-qa:
+    if: github.ref_name == 'dev'
+    needs: ci
+    runs-on: ubuntu-latest
+    environment: qa
+    permissions:
+      contents: read
+      id-token: write
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+          cache: pnpm
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Build Lambda bundles
+        run: pnpm build
+
+      - name: Assume AWS deploy role (OIDC)
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ vars.AWS_ROLE_ARN }}
+          aws-region: ${{ vars.AWS_REGION }}
+
+      - name: Deploy QA stacks
+        run: >
+          pnpm --filter ./infra exec cdk deploy --all
+          -c stage=qa --require-approval never
+          --outputs-file "$GITHUB_WORKSPACE/cdk-outputs.json"
+
+      - name: Smoke test QA
+        run: >
+          pnpm exec ts-node scripts/smoke-test.ts
+          --stage qa --outputs cdk-outputs.json
+
+  deploy-prod:
+    if: github.ref_name == 'main'
+    needs: ci
+    runs-on: ubuntu-latest
+    environment: production
+    permissions:
+      contents: read
+      id-token: write
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+          cache: pnpm
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Build Lambda bundles
+        run: pnpm build
+
+      - name: Assume AWS deploy role (OIDC)
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ vars.AWS_ROLE_ARN }}
+          aws-region: ${{ vars.AWS_REGION }}
+
+      - name: Deploy production stacks
+        run: >
+          pnpm --filter ./infra exec cdk deploy --all
+          -c stage=prod --require-approval never
+          --outputs-file "$GITHUB_WORKSPACE/cdk-outputs.json"
+
+      - name: Smoke test production
+        run: >
+          pnpm exec ts-node scripts/smoke-test.ts
+          --stage prod --outputs cdk-outputs.json

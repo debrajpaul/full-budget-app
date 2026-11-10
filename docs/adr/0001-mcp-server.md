@@ -27,10 +27,10 @@ Add **`apps/mcp-server`**: TypeScript MCP server (official `@modelcontextprotoco
 
 ### MCP tools (lean — exactly three)
 
-| Tool | Wraps | Notes |
-|------|-------|-------|
-| `list_transactions` | `TransactionService` | filters: year, month, bankName, category; cursor pagination |
-| `reclassify_transaction` | `TransactionCategoryService` | the single write tool; mirrors `reclassifyTransaction` mutation |
+| Tool                     | Wraps                                | Notes                                                                    |
+| ------------------------ | ------------------------------------ | ------------------------------------------------------------------------ |
+| `list_transactions`      | `TransactionService`                 | filters: year, month, bankName, category; cursor pagination              |
+| `reclassify_transaction` | `TransactionCategoryService`         | the single write tool; mirrors `reclassifyTransaction` mutation          |
 | `get_category_breakdown` | `TransactionService`/`BudgetService` | transactions grouped by category with totals (mirrors existing SDL type) |
 
 No more tools in v1. Upload, budgets CRUD, forecasts, goals: out of scope.
@@ -46,12 +46,12 @@ No more tools in v1. Upload, budgets CRUD, forecasts, goals: out of scope.
 
 ### Option A: MCP server wraps `packages/services` directly (chosen)
 
-| Dimension | Assessment |
-|-----------|------------|
-| Complexity | Low — same DI pattern as `setup-services.ts` |
-| Cost | One extra Lambda (Function URL), pennies |
-| Scalability | Same as existing API |
-| Consistency | Matches repo layering rules exactly |
+| Dimension   | Assessment                                   |
+| ----------- | -------------------------------------------- |
+| Complexity  | Low — same DI pattern as `setup-services.ts` |
+| Cost        | One extra Lambda (Function URL), pennies     |
+| Scalability | Same as existing API                         |
+| Consistency | Matches repo layering rules exactly          |
 
 **Pros:** no double-hop, shares stores/services, easy unit testing with the SDK's in-memory transport, clean open-source story.
 **Cons:** two deployables sharing service code — version drift risk (mitigated: monorepo, one pipeline).
@@ -82,27 +82,33 @@ apps/mcp-server (Express + @modelcontextprotocol/sdk, Lambda Function URL)
 ## Implementation Plan (phased)
 
 ### Phase 1 — Architecture & contracts
+
 1. This ADR.
 2. No SDL change needed — v1 tools map to existing SDL operations (source-of-truth rule satisfied; tool schemas reference the SDL in doc comments).
 3. Define `IRateLimiter` and MCP tool input/output zod schemas in `@app/common`.
 
 ### Phase 2 — Setup
+
 4. Scaffold `apps/mcp-server` (esbuild, Jest, tsconfig refs, Dockerfile for local dev, stdio transport flag for local testing).
 5. `infra/lib/mcp-server.stack.ts` — Lambda + Function URL, SSM-sourced env, reuse alarms + X-Ray constructs.
 
 ### Phase 3 — Implementation
+
 6. `setup-services.ts`-style DI bootstrap (only the three needed services).
 7. Auth + rate-limit + metrics middleware.
 8. Three tools with zod-validated inputs; structured errors.
 
 ### Phase 4 — Testing
+
 9. Jest specs next to every new public API (repo DoD).
 10. Integration tests via SDK in-memory client transport: full auth-fail, rate-limit-hit, happy-path workflow.
 
 ### Phase 5 — Deployment
+
 11. `pnpm --filter ./infra cdk:deploy:all`; README quickstart with `claude mcp add` snippet; LICENSE/CONTRIBUTING already exist.
 
 ### Phase 6 — Monitoring
+
 12. CloudWatch dashboard: invocations, p95 latency, error rate per tool; alarm on error rate > 5% / 5 min.
 
 ## Edge Cases

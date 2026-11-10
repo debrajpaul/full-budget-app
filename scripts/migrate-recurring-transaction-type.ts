@@ -77,9 +77,8 @@ async function run(): Promise<void> {
       }
 
       const amount = Number(item["amount"]) || 0;
-      const category = typeof item["category"] === "string"
-        ? item["category"]
-        : undefined;
+      const category =
+        typeof item["category"] === "string" ? item["category"] : undefined;
       const inferred: ETransactionType = inferTransactionType(amount, category);
 
       const tag = DRY_RUN ? "DRY" : "UPD";

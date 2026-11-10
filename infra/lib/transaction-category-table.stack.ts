@@ -2,18 +2,20 @@ import * as cdk from "aws-cdk-lib";
 import { Stack, StackProps, RemovalPolicy } from "aws-cdk-lib";
 import { Table, AttributeType, BillingMode } from "aws-cdk-lib/aws-dynamodb";
 import { Construct } from "constructs";
+import { resolveStage } from "./stage-config";
 
 export class TransactionsCategoryTableStack extends Stack {
   public readonly transactionsCategoryTable: Table;
 
   constructor(scope: Construct, id: string, props?: StackProps) {
     super(scope, id, props);
+    const { stage } = resolveStage(this);
 
     this.transactionsCategoryTable = new Table(
       this,
       "TransactionsCategoryTable",
       {
-        tableName: "categories",
+        tableName: `categories-${stage}`,
         partitionKey: {
           name: "tenantId", // Multi-tenant partitioning
           type: AttributeType.STRING,
@@ -32,7 +34,7 @@ export class TransactionsCategoryTableStack extends Stack {
 
     new cdk.CfnOutput(this, "TransactionsCategoryTableName", {
       value: this.transactionsCategoryTable.tableName,
-      exportName: "TransactionsCategoryTableName",
+      exportName: `TransactionsCategoryTableName-${stage}`,
     });
   }
 }
