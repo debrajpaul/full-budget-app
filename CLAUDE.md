@@ -34,7 +34,7 @@
 ## Preferred commands
 - pnpm --filter @app/graphql-api dev
 - pnpm --filter @app/services test
-- pnpm --filter ./infra cdk:deploy:all
+- pnpm deploy:qa   # QA; prod deploys from CI on main
 
 ## Frontend
 - The frontend (Next.js 15, `apps/web` and `packages/api-client`) lives in the `full-budget-app-dashboard` repo. Its own conventions and Definition of Done are documented there.

@@ -512,7 +512,7 @@ full-budget-app/
 - Run `pnpm install` once to hydrate all workspace dependencies.
 - Use `pnpm dev` to build packages in watch mode; start individual apps with `pnpm --filter @app/<service> dev`.
 - Tests live alongside their packages (`*.spec.ts`). Run `pnpm test`, `pnpm lint`, and `pnpm typecheck` before shipping.
-- Deploy with `pnpm deploy:all` and ensure AWS credentials are set in the environment.
+- Deploy with `pnpm deploy:qa` and ensure AWS credentials are set in the environment.
 - Postman collections (`docs/postman/`) and sample data (`artifacts/training.csv`) support manual verification.
 
 ---
@@ -523,6 +523,6 @@ full-budget-app/
 - **Add a GraphQL operation** — update the SDL first, then `typeDefs`, then the resolver (thin — delegate to a service), then add or extend the service, then write a `*.spec.ts`.
 - **Add a DynamoDB table** — create a store in `packages/db`, add a CDK stack in `infra/lib`, wire it in `infra/lib/index.ts` and `apps/graphql-api/src/setup-services.ts`.
 - **Add a new service** — follow the DI constructor pattern `(logger: ILogger, ...stores)` and expose the interface in `packages/common`.
-- **Expand infrastructure** — author a new construct or stack under `infra/lib` and add it to the `cdk:deploy:all` target.
+- **Expand infrastructure** — author a new construct or stack under `infra/lib` and add it to the `deploy:qa` script.
 
 Refer to `README.md` for environment setup, deployment commands, and contribution guidelines.

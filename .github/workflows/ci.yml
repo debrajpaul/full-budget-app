@@ -1,35 +1,16 @@
 name: CI
 
+# Runs on pull requests, and is called by deploy.yml before any deployment.
 on:
-  push:
   pull_request:
-  # schedule:
-  #   # Nightly E2E at 02:00 UTC — re-enable when staging deploy is wired up
-  #   - cron: "0 2 * * *"
+  workflow_call:
+
+permissions:
+  contents: read
 
 jobs:
-  build:
+  checks:
     runs-on: ubuntu-latest
-
-    strategy:
-      matrix:
-        workspace:
-          - apps/graphql-api
-          - apps/txn-loaders
-          - apps/tag-loaders
-          - packages/auth
-          - packages/client
-          - packages/common
-          - packages/db
-          - packages/logger
-          - packages/parser
-          - packages/nlp-tagger
-          - packages/services
-
-    defaults:
-      run:
-        working-directory: ${{ matrix.workspace }}
-
     steps:
       - uses: actions/checkout@v4
 
@@ -41,37 +22,59 @@ jobs:
           cache: pnpm
 
       - name: Install dependencies
-        run: pnpm install
+        run: pnpm install --frozen-lockfile
 
-      - name: Type check
-        run: pnpm tsc --noEmit
+      - name: Typecheck
+        run: pnpm typecheck
 
-      - name: Run ESLint
-        run: pnpm exec eslint . --ext .ts
+      - name: Lint
+        run: pnpm lint
 
-      - name: Check Prettier formatting
+      - name: Fail if lint changed files
+        run: git diff --exit-code
+
+      - name: Prettier formatting
         run: pnpm exec prettier --check .
 
-      - name: Run tests
-        run: pnpm run --if-present test
+      - name: Build Lambda bundles
+        run: pnpm build
 
-  # ── Infra typecheck ──────────────────────────────────────────────────────────
-  # Kept separate from the main matrix because infra uses its own CDK deps
-  # and is excluded from the root ESLint config.
-  infra-typecheck:
+      - name: Unit tests
+        run: pnpm test
+
+  infra:
     runs-on: ubuntu-latest
-    defaults:
-      run:
-        working-directory: infra
     steps:
       - uses: actions/checkout@v4
+
       - uses: pnpm/action-setup@v4
+
       - uses: actions/setup-node@v4
         with:
           node-version-file: .nvmrc
           cache: pnpm
-      - name: Install dependencies
-        run: pnpm install
-      - name: Type check
-        run: pnpm tsc --noEmit
 
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Build Lambda bundles (CDK assets)
+        run: pnpm build
+
+      - name: Infra typecheck
+        run: pnpm --filter ./infra typecheck
+
+      - name: Infra tests (stage isolation and runtime)
+        run: pnpm --filter ./infra test:infra
+
+      - name: Synth qa
+        run: pnpm --filter ./infra exec cdk synth -c stage=qa --quiet
+
+      - name: Synth prod
+        run: pnpm --filter ./infra exec cdk synth -c stage=prod --quiet
+
+  actionlint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Lint workflow files
+        uses: raven-actions/actionlint@v2

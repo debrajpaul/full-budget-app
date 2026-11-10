@@ -2,15 +2,17 @@ import * as cdk from "aws-cdk-lib";
 import { Stack, StackProps } from "aws-cdk-lib";
 import { Table, AttributeType, BillingMode } from "aws-cdk-lib/aws-dynamodb";
 import { Construct } from "constructs";
+import { resolveStage } from "./stage-config";
 
 export class SavingsGoalsTableStack extends Stack {
   public readonly savingsGoalsTable: Table;
 
   constructor(scope: Construct, id: string, props?: StackProps) {
     super(scope, id, props);
+    const { stage } = resolveStage(this);
 
     this.savingsGoalsTable = new Table(this, "SavingsGoalsTable", {
-      tableName: "savings-goals",
+      tableName: `savings-goals-${stage}`,
       partitionKey: { name: "tenantId", type: AttributeType.STRING },
       sortKey: { name: "goalId", type: AttributeType.STRING },
       billingMode: BillingMode.PAY_PER_REQUEST,
@@ -19,7 +21,7 @@ export class SavingsGoalsTableStack extends Stack {
 
     new cdk.CfnOutput(this, "SavingsGoalsTableName", {
       value: this.savingsGoalsTable.tableName,
-      exportName: "SavingsGoalsTableName",
+      exportName: `SavingsGoalsTableName-${stage}`,
     });
   }
 }

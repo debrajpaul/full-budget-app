@@ -209,7 +209,7 @@ Husky + commitlint enforce Conventional Commits on every staged change.
    ```
 3. Deploy all stacks:
    ```bash
-   pnpm --filter ./infra cdk:deploy:all
+   pnpm deploy:qa   # QA; prod deploys from CI on main
    ```
 
 CDK helper aliases (from root):
@@ -217,8 +217,9 @@ CDK helper aliases (from root):
 | Command | Action |
 |---------|--------|
 | `pnpm synth` | Synthesize CloudFormation templates |
-| `pnpm deploy:all` | Build + deploy all stacks |
-| `pnpm destroy:all` | Tear down all deployed stacks |
+| `pnpm deploy:qa` | Build + deploy all stacks to QA |
+| `pnpm deploy:prod` | Build + deploy all stacks to production (use CI, not by hand) |
+| `pnpm destroy:qa` | Tear down the QA stacks (prod is termination-protected) |
 
 ## Directory Reference
 

@@ -1,0 +1,88 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Description: >
+  One-time setup. GitHub Actions OIDC provider and per-stage deploy roles.
+  Each role can only be assumed by a job running in the matching GitHub
+  Environment (qa or production) of this repository. The roles can only
+  assume the CDK bootstrap roles; CloudFormation does the actual deploy.
+  Deploy this template once with an admin role, outside the CDK app.
+
+Parameters:
+  GitHubRepository:
+    Type: String
+    Default: debrajpaul/full-budget-app
+    Description: GitHub repository allowed to deploy, as owner/name.
+  CdkQualifier:
+    Type: String
+    Default: hnb659fds
+    Description: CDK bootstrap qualifier (the cdk-<qualifier>-* roles).
+
+Resources:
+  GitHubOidcProvider:
+    Type: AWS::IAM::OIDCProvider
+    Properties:
+      Url: https://token.actions.githubusercontent.com
+      ClientIdList:
+        - sts.amazonaws.com
+      ThumbprintList:
+        - 6938fd4d98bab03faadb97b34396831e3780aea1
+
+  QaDeployRole:
+    Type: AWS::IAM::Role
+    Properties:
+      RoleName: fba-github-deploy-qa
+      AssumeRolePolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Effect: Allow
+            Principal:
+              Federated: !Ref GitHubOidcProvider
+            Action: sts:AssumeRoleWithWebIdentity
+            Condition:
+              StringEquals:
+                token.actions.githubusercontent.com:aud: sts.amazonaws.com
+              StringLike:
+                token.actions.githubusercontent.com:sub: !Sub repo:${GitHubRepository}:environment:qa
+      ManagedPolicyArns:
+        - !Ref CdkAssumeManagedPolicy
+
+  ProdDeployRole:
+    Type: AWS::IAM::Role
+    Properties:
+      RoleName: fba-github-deploy-prod
+      AssumeRolePolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Effect: Allow
+            Principal:
+              Federated: !Ref GitHubOidcProvider
+            Action: sts:AssumeRoleWithWebIdentity
+            Condition:
+              StringEquals:
+                token.actions.githubusercontent.com:aud: sts.amazonaws.com
+              StringLike:
+                token.actions.githubusercontent.com:sub: !Sub repo:${GitHubRepository}:environment:production
+      ManagedPolicyArns:
+        - !Ref CdkAssumeManagedPolicy
+
+  CdkAssumeManagedPolicy:
+    Type: AWS::IAM::ManagedPolicy
+    Properties:
+      Description: Lets a GitHub deploy role assume the CDK bootstrap roles only.
+      PolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Effect: Allow
+            Action: sts:AssumeRole
+            Resource:
+              - !Sub arn:aws:iam::${AWS::AccountId}:role/cdk-${CdkQualifier}-deploy-role-${AWS::AccountId}-${AWS::Region}
+              - !Sub arn:aws:iam::${AWS::AccountId}:role/cdk-${CdkQualifier}-file-publishing-role-${AWS::AccountId}-${AWS::Region}
+              - !Sub arn:aws:iam::${AWS::AccountId}:role/cdk-${CdkQualifier}-image-publishing-role-${AWS::AccountId}-${AWS::Region}
+              - !Sub arn:aws:iam::${AWS::AccountId}:role/cdk-${CdkQualifier}-lookup-role-${AWS::AccountId}-${AWS::Region}
+
+Outputs:
+  QaRoleArn:
+    Description: Set as the AWS_ROLE_ARN variable on the qa GitHub Environment.
+    Value: !GetAtt QaDeployRole.Arn
+  ProdRoleArn:
+    Description: Set as the AWS_ROLE_ARN variable on the production GitHub Environment.
+    Value: !GetAtt ProdDeployRole.Arn

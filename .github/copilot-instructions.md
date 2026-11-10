@@ -206,4 +206,4 @@ this.logger.debug("Analyzing spend vs. budget", {
 - `pnpm typecheck`
 - `pnpm lint`
 - `pnpm codegen`
-- `pnpm --filter ./infra cdk:deploy:all`
+- `pnpm deploy:qa   # QA; prod deploys from CI on main`
