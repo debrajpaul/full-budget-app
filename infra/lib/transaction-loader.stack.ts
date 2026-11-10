@@ -42,14 +42,8 @@ export class TransactionLoaderStack extends Stack {
       timeout: Duration.seconds(30),
       logRetention: logs.RetentionDays.ONE_WEEK,
       logRetentionRetryOptions: { base: Duration.hours(8), maxRetries: 10 },
-      tracing: lambda.Tracing.ACTIVE,
       environment: props.environment,
     });
-
-    // Allow the function to write trace segments to X‑Ray
-    transactionLambda.role?.addManagedPolicy(
-      iam.ManagedPolicy.fromAwsManagedPolicyName("AWSXRayWriteOnlyAccess")
-    );
 
     // Attach queue trigger
     transactionLambda.addEventSource(

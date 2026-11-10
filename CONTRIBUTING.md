@@ -139,7 +139,7 @@ For schema changes, also verify the SDL change is consistent with the updated `t
 1. Author the stack in `infra/lib/`.
 2. Export it from `infra/lib/index.ts`.
 3. Wire it in `infra/bin/infra.ts` with explicit stack dependencies.
-4. Note whether the change requires new IAM permissions (Bedrock, X-Ray, SSM, etc.) and document in the PR.
+4. Note whether the change requires new IAM permissions (Bedrock, SSM, etc.) and document in the PR.
 
 ---
 
