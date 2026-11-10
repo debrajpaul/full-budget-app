@@ -7,7 +7,7 @@ These instructions apply to every AI assistant working in this repo (GitHub Copi
 
 ## Overview
 
-Multi-tenant, serverless budgeting platform. It ingests bank and credit-card statements, auto-categorises transactions (rule engine first, Bedrock fallback), and exposes a GraphQL API for dashboards, budgets, forecasts, recurring transactions, savings goals and sinking funds. The Next.js web app in `apps/web` consumes that API through a BFF route.
+Multi-tenant, serverless budgeting platform. It ingests bank and credit-card statements, auto-categorises transactions (rule engine first, Bedrock fallback), and exposes a GraphQL API for dashboards, budgets, forecasts, recurring transactions, savings goals and sinking funds. The Next.js frontend lives in the separate `full-budget-app-dashboard` repo and consumes that API through a BFF route.
 
 Phase 1 scope: compare actual spend against an ideal budget rule (50/30/20, 60/20/20) by segmenting spend into Needs, Wants and Savings.
 
@@ -29,7 +29,6 @@ apps/
   graphql-api/            # Apollo GraphQL Lambda (resolvers, typeDefs, setup-services.ts)
   txn-loaders/            # SQS-triggered Lambda: statement -> normalised transactions
   tag-loaders/            # DynamoDB-stream Lambda: rules + Bedrock categorisation
-  web/                    # Next.js 15 frontend
 packages/
   common/                 # Shared interfaces, enums, config (I* and E* types)
   services/               # Business logic (one service per domain)
@@ -39,7 +38,6 @@ packages/
   parser/                 # Bank statement CSV parsers (HDFC, SBI, Axis)
   nlp-tagger/             # Keyword rule engine and category rules
   client/                 # S3 and SQS wrappers
-  api-client/             # Apollo client and GraphQL codegen output
 infra/                    # CDK stacks (excluded from root tsconfig and ESLint)
 docs/                     # SDL, ADRs, architecture, frontend plans, Postman
 ```
@@ -54,7 +52,6 @@ TypeScript path aliases (from root tsconfig.json):
 - `@app/parser/*` -> `packages/parser/src/*`
 - `@app/client/*` -> `packages/client/src/*`
 - `@app/nlp-tagger/*` -> `packages/nlp-tagger/src/*`
-- `@app/api-client/*` -> `packages/api-client/src/*`
 
 ## Architecture Rules
 
@@ -83,7 +80,7 @@ Resolver -> Service -> Store.
 4. services (and stores if persistence changes)
 5. frontend codegen (`pnpm codegen`)
 
-Never hand-write GraphQL response types in `apps/web`. Codegen owns them.
+Never hand-write GraphQL response types in the frontend (dashboard repo). Codegen owns them.
 
 ### Frontend
 

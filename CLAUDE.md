@@ -7,7 +7,7 @@
 ## Stack & conventions
 - pnpm 12 workspaces: apps/*, packages/*, infra/*; internal packages are named `@app/*`
 - Node 24 everywhere (`.nvmrc`, CI, Lambda `nodejs24.x` via `infra/lib/lambda-runtime.ts`, esbuild `node24`)
-- Backend tsconfig extends `tsconfig.json`; frontend (apps/web, packages/api-client) extends `tsconfig.frontend.json`
+- This repo is backend only. The frontend lives in the separate `full-budget-app-dashboard` repo. Backend tsconfig extends `tsconfig.json`.
 - TS strict, esbuild bundling, Jest for unit tests
 - Conventional Commits enforced by commitlint + Husky
 - GraphQL SDL is the source of truth: docs/finance-budget.sdl.graphql
@@ -17,7 +17,7 @@
 1. `pnpm typecheck` passes
 2. `pnpm lint` passes
 3. `pnpm --filter <affected-pkg> test` passes
-4. If SDL changed: regenerate FE codegen (once apps/web exists)
+4. If SDL changed: copy `docs/finance-budget.sdl.graphql` to the dashboard repo's `schema/` folder and regenerate its codegen
 5. New/changed public APIs have a Jest spec next to them
 
 ## Layering rules
@@ -36,17 +36,5 @@
 - pnpm --filter @app/services test
 - pnpm --filter ./infra cdk:deploy:all
 
-## Frontend (apps/web)
-- Next.js 15 App Router, RSC default; "use client" only for interactivity
-- Auth: httpOnly cookie set by Route Handlers; never localStorage
-- All GraphQL goes through /api/graphql BFF — never call backend directly from browser
-- Codegen owns types: NEVER hand-write GraphQL response types
-- shadcn/ui + Tailwind v4; no other UI libraries
-- forms: react-hook-form + Zod; share schemas with @app/common where possible
-
-## Frontend DoD
-1. pnpm --filter @app/web typecheck passes
-2. pnpm --filter @app/web lint passes
-3. pnpm --filter @app/api-client codegen produces no diff
-4. New components have a Storybook story (after week 3) OR a Vitest test
-5. Any new GraphQL doc has been added to lib/graphql/ before being used in a component
+## Frontend
+- The frontend (Next.js 15, `apps/web` and `packages/api-client`) lives in the `full-budget-app-dashboard` repo. Its own conventions and Definition of Done are documented there.
