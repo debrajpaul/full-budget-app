@@ -14,4 +14,3 @@ export * from "./budgets-table.stack";
 export * from "./savings-goals-table.stack";
 export * from "./sinking-funds-table.stack";
 export * from "./refresh-tokens-table.stack";
-export * from "./xray.stack";

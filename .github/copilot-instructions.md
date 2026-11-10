@@ -15,7 +15,7 @@ Phase 1 scope: compare actual spend against an ideal budget rule (50/30/20, 60/2
 
 - _Runtime_: Node.js 24+ (`.nvmrc`), TypeScript 5.8 (strict mode), ES2022 target, CommonJS modules
 - _API_: Apollo Server (GraphQL, SDL-first) on AWS Lambda
-- _AWS Services_: Lambda, DynamoDB, S3, SQS, Bedrock, SSM, X-Ray, CloudWatch
+- _AWS Services_: Lambda, DynamoDB, S3, SQS, Bedrock, SSM, CloudWatch
 - _Frontend_: Next.js 15 App Router, React 19, Tailwind v4, shadcn/ui, Apollo Client, react-hook-form + Zod, Recharts
 - _Infrastructure_: AWS CDK (`infra/`), esbuild bundling
 - _Package Manager_: pnpm 12 workspaces

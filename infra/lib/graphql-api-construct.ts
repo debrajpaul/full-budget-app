@@ -43,7 +43,6 @@ export class GraphQLApiConstruct extends Construct {
       logRetention: logs.RetentionDays.ONE_WEEK,
       logRetentionRetryOptions: { base: Duration.hours(8), maxRetries: 10 },
       environment: props.environment,
-      tracing: lambda.Tracing.ACTIVE,
     });
     graphqlFunction.addEnvironment(
       "JWT_SECRET",
@@ -52,11 +51,6 @@ export class GraphQLApiConstruct extends Construct {
 
     // Grant Lambda permission to read the secret
     props.jwtParameter.grantRead(graphqlFunction);
-
-    // Allow the function to write trace segments to X‑Ray
-    graphqlFunction.role?.addManagedPolicy(
-      iam.ManagedPolicy.fromAwsManagedPolicyName("AWSXRayWriteOnlyAccess")
-    );
 
     // Permissions
     graphqlFunction.addToRolePolicy(

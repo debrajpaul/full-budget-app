@@ -14,7 +14,6 @@ import {
   SavingsGoalsTableStack,
   SinkingFundsTableStack,
   RefreshTokensTableStack,
-  XRayStack,
 } from "./index";
 import { resolveStage } from "./stage-config";
 
@@ -43,7 +42,6 @@ export function createApp(app: App): void {
     "QueueStack",
     stackProps("QueueStack")
   );
-  const xRayStack = new XRayStack(app, "XRayStack", stackProps("XRayStack"));
   const transactionsTableStack = new TransactionsTableStack(
     app,
     "TransactionsTableStack",

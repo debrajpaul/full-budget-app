@@ -4,7 +4,7 @@ A modular, multi-tenant budgeting platform that ingests bank statements, enriche
 
 - Built for AWS Lambda, DynamoDB, S3, SQS, and Parameter Store using AWS CDK
 - Emphasises reusable domain services (`packages/services`) and infrastructure-safe defaults
-- Observability-ready with structured logging, Prometheus metrics, X-Ray traces, and feature flags for AI-assisted tagging
+- Observability-ready with structured logging, Prometheus metrics, and feature flags for AI-assisted tagging
 
 ## What's New
 
@@ -45,7 +45,7 @@ An interactive, self-contained map of the codebase: upload-to-tagging **flow**, 
 | `packages/common`     | Shared contracts                     | DTOs, domain enums (`ETransactionType`, `EForecastAlertType`), store interfaces (`IRefreshTokenStore`, `IUploadUrlService`), `inferTransactionType()`                                                                                      |
 | `packages/db`         | DynamoDB repositories                | `TransactionStore`, `UserStore`, `RefreshTokenStore` (FamilyIndex GSI), `SavingsGoalStore`, `SinkingFundStore`, `BudgetStore`, `RecurringTransactionStore`, `CategoryRulesStore`                                                           |
 | `packages/logger`     | Logging                              | Winston-based structured logger injected into all services                                                                                                                                                                                 |
-| `infra/lib`           | AWS CDK stacks                       | Queues, S3, DynamoDB tables (incl. refresh-tokens, savings-goals, sinking-funds), Lambda functions, SSM, alarms, X-Ray                                                                                                                     |
+| `infra/lib`           | AWS CDK stacks                       | Queues, S3, DynamoDB tables (incl. refresh-tokens, savings-goals, sinking-funds), Lambda functions, SSM, alarms                                                                                                                            |
 | `docs/`               | Design docs & schema                 | `ARCHITECTURE.md` and `docs/finance-budget.sdl.graphql` (SDL source of truth)                                                                                                                                                              |
 
 ## GraphQL API Surface
@@ -95,7 +95,7 @@ An interactive, self-contained map of the codebase: upload-to-tagging **flow**, 
 4. **Auto-categorise** – The transactions table DynamoDB stream triggers `tag-loaders`, which runs keyword rules first, then optionally calls Bedrock, and writes category/confidence back.
 5. **Store insights** – Budgets, recurring transactions, savings goals, and sinking funds live in their respective DynamoDB tables.
 6. **Serve** – `graphql-api` surfaces queries/mutations for dashboards, paginated reviews, forecasts, and budget analytics.
-7. **Observe** – Winston logs capture context-rich events; `/metrics` exposes Prometheus data; X-Ray traces sample Lambda invocations.
+7. **Observe** – Winston logs capture context-rich events; `/metrics` exposes Prometheus data.
 
 ## Prerequisites
 
@@ -195,7 +195,6 @@ Husky + commitlint enforce Conventional Commits on every staged change.
 - Structured logging via `@app/logger` (Winston), injected into every service via DI.
 - `apps/graphql-api` exposes `/metrics` for Prometheus-compatible scraping.
 - CloudWatch alarms defined in `infra/lib/lambda-alarms-construct.ts`.
-- X-Ray tracing enabled on all Lambdas; `infra/lib/xray.stack.ts` provisions sampling rule/group.
 
 ## Deployment
 
