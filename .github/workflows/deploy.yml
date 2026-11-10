@@ -1,10 +1,10 @@
 name: Deploy
 
-# Push to dev deploys QA. Push to main deploys production (gated by the
+# Push to develop deploys QA. Push to main deploys production (gated by the
 # `production` environment's required reviewers). Both run CI first.
 on:
   push:
-    branches: [dev, main]
+    branches: [develop, main]
 
 permissions:
   contents: read
@@ -18,7 +18,7 @@ jobs:
     uses: ./.github/workflows/ci.yml
 
   deploy-qa:
-    if: github.ref_name == 'dev'
+    if: github.ref_name == 'develop'
     needs: ci
     runs-on: ubuntu-latest
     environment: qa

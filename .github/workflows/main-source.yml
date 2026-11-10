@@ -1,0 +1,23 @@
+name: Main source branch
+
+# Pull requests into main must come from develop (develop -> main only).
+# Make the "only-from-develop" check required in the protect-main ruleset.
+on:
+  pull_request:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  only-from-develop:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Require develop as the source branch
+        env:
+          HEAD_REF: ${{ github.head_ref }}
+        run: |
+          if [ "$HEAD_REF" != "develop" ]; then
+            echo "PRs into main must come from develop (got: $HEAD_REF)."
+            exit 1
+          fi
