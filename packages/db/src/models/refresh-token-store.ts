@@ -1,4 +1,4 @@
-import { ILogger, IRefreshToken, IRefreshTokenStore } from "@common";
+import { ILogger, IRefreshToken, IRefreshTokenStore } from "@app/common";
 import {
   PutCommand,
   GetCommand,

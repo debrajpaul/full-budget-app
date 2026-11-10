@@ -1,12 +1,12 @@
 import { config } from "./environment";
-import { IBedrockClientConfig } from "@common";
-import { WinstonLogger } from "@logger";
+import { IBedrockClientConfig } from "@app/common";
+import { WinstonLogger } from "@app/logger";
 import { S3 } from "@aws-sdk/client-s3";
 import { SQS } from "@aws-sdk/client-sqs";
 import { DynamoDBClient } from "@aws-sdk/client-dynamodb";
 import { DynamoDBDocumentClient } from "@aws-sdk/lib-dynamodb";
 import { BedrockRuntimeClient } from "@aws-sdk/client-bedrock-runtime";
-import { BedrockClient } from "@client";
+import { BedrockClient } from "@app/client";
 
 export function setupDependency() {
   const dbClient = new DynamoDBClient({ region: config.awsRegion });

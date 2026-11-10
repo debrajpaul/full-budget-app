@@ -10,8 +10,8 @@ import {
   ESubInvestmentCategories,
   IRuleEngine,
   IBedrockClassifierService,
-} from "@common";
-import { keywordBaseCategoryMap } from "@nlp-tagger";
+} from "@app/common";
+import { keywordBaseCategoryMap } from "@app/nlp-tagger";
 import { TransactionCategoryService } from "./transaction-category-service";
 
 describe("TransactionCategoryService", () => {

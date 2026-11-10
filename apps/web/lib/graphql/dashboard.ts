@@ -5,7 +5,7 @@
  * `apps/web/lib/graphql/**\/*.{ts,tsx}` glob in packages/api-client/codegen.ts,
  * making `graphql(...)` calls fully typed after `pnpm codegen`.
  */
-import { graphql } from "@api-client";
+import { graphql } from "@app/api-client";
 
 export const DashboardMonthlyReviewDocument = graphql(`
   query DashboardMonthlyReview($month: Int!, $year: Int!) {
@@ -42,6 +42,27 @@ export const DashboardRecentTransactionsDocument = graphql(`
         taggedBy
       }
       cursor
+    }
+  }
+`);
+
+export const DashboardSegmentationDocument = graphql(`
+  query DashboardSegmentation($period: PeriodInput!) {
+    budgetSegmentation(period: $period) {
+      month
+      year
+      totalIncome
+      unsegmentedExpenses
+      unclassified
+      segments {
+        segment
+        actual
+        percentOfIncome
+        targetPercent
+        targetAmount
+        variance
+        status
+      }
     }
   }
 `);

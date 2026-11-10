@@ -6,7 +6,7 @@ import {
   ISQSService,
   EBankName,
   EBankType,
-} from "@common";
+} from "@app/common";
 import { UploadUrlService } from "./upload-url-service";
 
 const TENANT = ETenantType.personal;

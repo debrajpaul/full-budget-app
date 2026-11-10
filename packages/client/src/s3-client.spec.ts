@@ -1,6 +1,6 @@
 import { mock } from "jest-mock-extended";
 import { S3Service } from "./s3-client";
-import { ILogger } from "@common";
+import { ILogger } from "@app/common";
 import { S3 } from "@aws-sdk/client-s3";
 
 describe("S3Service", () => {

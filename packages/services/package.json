@@ -1,5 +1,5 @@
 {
-  "name": "@services",
+  "name": "@app/services",
   "description": "Service layer for handling business logic",
   "version": "1.0.0",
   "main": "src/index.ts",
@@ -9,13 +9,13 @@
     "test": "jest --config jest.config.js"
   },
   "dependencies": {
-    "@auth": "workspace:*",
-    "@common": "workspace:*",
-    "@db": "workspace:*",
-    "@parser": "workspace:*",
-    "@logger": "workspace:*",
-    "@client": "workspace:*",
-    "@nlp-tagger": "workspace:*",
+    "@app/auth": "workspace:*",
+    "@app/common": "workspace:*",
+    "@app/db": "workspace:*",
+    "@app/parser": "workspace:*",
+    "@app/logger": "workspace:*",
+    "@app/client": "workspace:*",
+    "@app/nlp-tagger": "workspace:*",
     "bcryptjs": "^3.0.2",
     "@aws-sdk/client-bedrock-runtime": "^3.873.0"
   }

@@ -8,7 +8,7 @@ import {
   EBankName,
   EBankType,
   ETenantType,
-} from "@common";
+} from "@app/common";
 
 describe("UploadStatementService", () => {
   let logger: ReturnType<typeof mock<ILogger>>;

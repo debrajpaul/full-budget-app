@@ -6,7 +6,7 @@ import {
   EBankType,
   EBankName,
   ETenantType,
-} from "@common";
+} from "@app/common";
 import { SQS } from "@aws-sdk/client-sqs";
 
 describe("SQSService", () => {

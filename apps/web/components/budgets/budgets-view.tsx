@@ -7,7 +7,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { toast } from "sonner";
 import { Plus } from "lucide-react";
-import type { BudgetsQuery } from "@api-client";
+import type { BudgetsQuery } from "@app/api-client";
 import { formatCurrency } from "@/lib/utils";
 import { cn } from "@/lib/utils";
 import type { MonthYear } from "@/lib/utils";

@@ -7,7 +7,7 @@ import cors from "cors";
 import http from "http";
 import { schema } from "./schemas/schema";
 import { createContext } from "./context";
-import { IGraphQLContext } from "@common";
+import { IGraphQLContext } from "@app/common";
 
 async function startServer() {
   const app = express();

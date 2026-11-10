@@ -1,7 +1,7 @@
 import { SavingsGoalStore } from "./savings-goal-store";
 import { mock } from "jest-mock-extended";
 import { DynamoDBDocumentClient } from "@aws-sdk/lib-dynamodb";
-import { ILogger, ETenantType, ISavingsGoal } from "@common";
+import { ILogger, ETenantType, ISavingsGoal } from "@app/common";
 
 const TABLE = "savings-goals";
 const TENANT = ETenantType.default;

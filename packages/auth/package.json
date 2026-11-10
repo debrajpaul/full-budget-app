@@ -1,5 +1,5 @@
 {
-  "name": "@auth",
+  "name": "@app/auth",
   "description": "Authentication service for managing user sessions and security",
   "version": "1.0.0",
   "main": "src/index.ts",
@@ -9,8 +9,8 @@
     "test": "jest --config jest.config.js"
   },
   "dependencies": {
-    "@common": "workspace:*",
-    "@logger": "workspace:*",
+    "@app/common": "workspace:*",
+    "@app/logger": "workspace:*",
     "bcryptjs": "^3.0.2",
     "jsonwebtoken": "^9.0.2"
   }

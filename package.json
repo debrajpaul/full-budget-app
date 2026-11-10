@@ -6,24 +6,11 @@
   "keywords": [],
   "author": "",
   "license": "ISC",
-  "packageManager": "pnpm@10.11.0",
+  "packageManager": "pnpm@12.18.0",
   "engines": {
     "node": ">=24.0.0",
-    "pnpm": ">=10"
+    "pnpm": ">=12"
   },
-  "pnpm": {
-    "overrides": {
-      "@smithy/types": "^4.5.0",
-      "@smithy/util-stream": "^4.1.2",
-      "@smithy/protocol-http": "^5.0.1",
-      "@smithy/signature-v4": "^5.0.1"
-    }
-  },
-  "workspaces": [
-    "apps/*",
-    "infra/*",
-    "packages/*"
-  ],
   "repository": {
     "type": "git",
     "url": "git@github.com:debrajpaul/full-budget-app.git"
@@ -81,7 +68,7 @@
     "format": "pnpm -r format",
     "test": "pnpm -r test",
     "typecheck": "tsc --noEmit",
-    "codegen": "pnpm --filter @api-client codegen",
+    "codegen": "pnpm --filter @app/api-client codegen",
     "clean": "rimraf apps/*/dist && rimraf packages/*/dist",
     "build": "pnpm clean && node esbuild.config.js",
     "dev": "pnpm clean && node esbuild.config.js --watch",

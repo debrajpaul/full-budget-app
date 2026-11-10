@@ -1,4 +1,4 @@
-import { ETenantType } from "@common";
+import { ETenantType } from "@app/common";
 
 export const tenantResolvers = {
   Query: {

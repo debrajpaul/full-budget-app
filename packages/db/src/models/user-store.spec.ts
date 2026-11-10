@@ -1,6 +1,6 @@
 import { UserStore } from "./user-store";
 import { mock } from "jest-mock-extended";
-import { ILogger, ETenantType } from "@common";
+import { ILogger, ETenantType } from "@app/common";
 
 describe("UserStore", () => {
   let storeMock: any;

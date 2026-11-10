@@ -1,10 +1,10 @@
-import { ILogger } from "@common";
+import { ILogger } from "@app/common";
 import { config } from "./environment";
 import { S3 } from "@aws-sdk/client-s3";
 import { SQS } from "@aws-sdk/client-sqs";
-import { TransactionStore } from "@db";
-import { TransactionService } from "@services";
-import { S3Service, SQSService } from "@client";
+import { TransactionStore } from "@app/db";
+import { TransactionService } from "@app/services";
+import { S3Service, SQSService } from "@app/client";
 import { DynamoDBDocumentClient } from "@aws-sdk/lib-dynamodb";
 
 export function setupServices(

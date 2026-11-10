@@ -4,7 +4,7 @@ import {
   IBudgetStore,
   ETenantType,
   EBaseCategories,
-} from "@common";
+} from "@app/common";
 import {
   PutCommand,
   QueryCommand,

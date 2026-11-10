@@ -1,6 +1,6 @@
 import { mock } from "jest-mock-extended";
 import { BedrockClassifierService } from "./bedrock-classifier-service";
-import { ILogger, IBedrockClient } from "@common";
+import { ILogger, IBedrockClient } from "@app/common";
 
 describe("BedrockClassifierService", () => {
   let logger: ReturnType<typeof mock<ILogger>>;

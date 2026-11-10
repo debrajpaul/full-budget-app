@@ -1,6 +1,6 @@
 import { DynamoDBStreamEvent } from "aws-lambda";
-import { WinstonLogger } from "@logger";
-import { LogLevel, IBedrockClient } from "@common";
+import { WinstonLogger } from "@app/logger";
+import { LogLevel, IBedrockClient } from "@app/common";
 import {
   DynamoDBDocumentClient,
   QueryCommand,

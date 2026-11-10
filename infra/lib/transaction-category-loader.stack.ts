@@ -11,6 +11,7 @@ import * as path from "path";
 import { Table } from "aws-cdk-lib/aws-dynamodb";
 import * as eventSources from "aws-cdk-lib/aws-lambda-event-sources";
 import { LambdaAlarmsConstruct } from "./lambda-alarms-construct";
+import { LAMBDA_NODE_RUNTIME } from "./lambda-runtime";
 
 interface TransactionCategoryStackProps extends StackProps {
   transactionTable: Table;
@@ -34,7 +35,7 @@ export class TransactionCategoryStack extends Stack {
       "TransactionCategoryLambda",
       {
         functionName,
-        runtime: lambda.Runtime.NODEJS_22_X,
+        runtime: LAMBDA_NODE_RUNTIME,
         handler: "index.handler",
         code: lambda.Code.fromAsset(
           path.resolve(__dirname, "../../apps/tag-loaders/dist")

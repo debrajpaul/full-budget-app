@@ -6,7 +6,7 @@ import {
   ICreateSinkingFundInput,
   IUpdateSinkingFundInput,
   ETenantType,
-} from "@common";
+} from "@app/common";
 import {
   PutCommand,
   GetCommand,

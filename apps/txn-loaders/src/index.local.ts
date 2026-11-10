@@ -1,6 +1,6 @@
 import { handler } from "./index";
 import { SQSEvent } from "aws-lambda";
-import { ETenantType, EBankName } from "@common";
+import { ETenantType, EBankName } from "@app/common";
 
 const mockEvent: SQSEvent = {
   Records: [

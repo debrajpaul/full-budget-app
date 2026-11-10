@@ -1,6 +1,6 @@
 import { mock } from "jest-mock-extended";
 import { BedrockClient } from "./bedrock-client";
-import { ILogger, IBedrockClientConfig } from "@common";
+import { ILogger, IBedrockClientConfig } from "@app/common";
 import {
   BedrockRuntimeClient,
   InvokeModelCommand,

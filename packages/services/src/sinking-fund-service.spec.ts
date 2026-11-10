@@ -1,6 +1,11 @@
 import { SinkingFundService } from "./sinking-fund-service";
 import { mock } from "jest-mock-extended";
-import { ILogger, ETenantType, ISinkingFundStore, ISinkingFund } from "@common";
+import {
+  ILogger,
+  ETenantType,
+  ISinkingFundStore,
+  ISinkingFund,
+} from "@app/common";
 
 const makeFund = (overrides: Partial<ISinkingFund> = {}): ISinkingFund => ({
   id: "sf-1",

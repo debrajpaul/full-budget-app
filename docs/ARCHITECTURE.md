@@ -77,15 +77,15 @@ SQS-triggered Lambda that processes statement ingestion jobs:
 
 1. Reads the SQS message to locate the tenant, user, bank, and S3 key.
 2. Fetches the raw file from S3.
-3. Parses rows into canonical `ITransaction` objects via the bank-specific parser from `@parser`.
-4. Persists transactions through `TransactionStore` in `@db`.
+3. Parses rows into canonical `ITransaction` objects via the bank-specific parser from `@app/parser`.
+4. Persists transactions through `TransactionStore` in `@app/db`.
 
 ### `tag-loaders`
 
 DynamoDB stream-driven Lambda subscribed to the transactions table:
 
 1. Receives INSERT/MODIFY events from the DynamoDB stream.
-2. Runs the deterministic keyword rule engine from `@nlp-tagger`.
+2. Runs the deterministic keyword rule engine from `@app/nlp-tagger`.
 3. When a record remains `UNCLASSIFIED` and `AI_TAGGING_ENABLED=true`, calls `BedrockClassifierService`.
 4. Writes the enriched `category`, `taggedBy`, and `confidence` back to DynamoDB.
 
@@ -362,7 +362,7 @@ flowchart TD
 
     subgraph TXN_L["txn-loaders Lambda"]
         FETCH["1. fetch S3 file"]
-        PARSE["2. parse rows (@parser)"]
+        PARSE["2. parse rows (@app/parser)"]
         PERSIST["3. persist transactions"]
         FETCH --> PARSE --> PERSIST
     end
@@ -421,7 +421,7 @@ sequenceDiagram
 ```mermaid
 flowchart LR
     TX["New Transaction\n(INSERT/MODIFY)"]
-    RULES["NLP keyword\nrule engine\n(@nlp-tagger)"]
+    RULES["NLP keyword\nrule engine\n(@app/nlp-tagger)"]
     CHECK{"classified?"}
     FLAG{"AI_TAGGING\n_ENABLED?"}
     BEDROCK["Amazon Bedrock\n(Claude / Mistral)"]
@@ -442,7 +442,7 @@ flowchart LR
 ```
 
 - **Rule engine first** — `TransactionCategoryService` executes deterministic keyword rules stored per-tenant in `CategoryRulesStore`. This keeps behavior explainable and avoids unnecessary AI calls.
-- **Bedrock fallback** — When a transaction remains `UNCLASSIFIED`, `BedrockClassifierService` invokes the configured model (default: `anthropic.claude-3-haiku-20240307-v1:0`) via `@client`.
+- **Bedrock fallback** — When a transaction remains `UNCLASSIFIED`, `BedrockClassifierService` invokes the configured model (default: `anthropic.claude-3-haiku-20240307-v1:0`) via `@app/client`.
 - **Confidence hints** — Responses include a suggested category, reasoning, and confidence score. Consumers can enforce thresholds via `AI_CONFIDENCE_THRESHOLD`.
 - **Feature flag** — `AI_TAGGING_ENABLED` controls whether the Bedrock step runs per environment.
 
@@ -452,7 +452,7 @@ flowchart LR
 
 | Concern | Mechanism |
 |---------|-----------|
-| Structured logging | `@logger` (Winston) injected into every service; includes `tenantId`, `requestId`, and correlation metadata |
+| Structured logging | `@app/logger` (Winston) injected into every service; includes `tenantId`, `requestId`, and correlation metadata |
 | Metrics | `/metrics` endpoint on `graphql-api`; extend counters/histograms under `apps/graphql-api/src/utils` |
 | Distributed tracing | Active X-Ray on all Lambdas; sampling rate 5%; rule + group provisioned by `XrayStack` |
 | Alarms | CloudWatch alarms for Lambda errors and throttles in `LambdaAlarmsConstruct` |

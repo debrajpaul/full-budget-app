@@ -1,5 +1,5 @@
 {
-  "name": "@logger",
+  "name": "@app/logger",
   "description": "Logger for application events",
   "version": "1.0.0",
   "main": "src/index.ts",
@@ -10,7 +10,7 @@
     "test": "jest --config jest.config.js"
   },
   "dependencies": {
-    "@common": "workspace:*",
+    "@app/common": "workspace:*",
     "winston": "^3.17.0"
   }
 }

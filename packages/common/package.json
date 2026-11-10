@@ -1,5 +1,5 @@
 {
-  "name": "@common",
+  "name": "@app/common",
   "description": "Common service providing foundational functionality for the application",
   "version": "1.0.0",
   "main": "src/index.ts",
@@ -9,7 +9,6 @@
     "format": "prettier --write ."
   },
   "dependencies": {
-    "@logger": "workspace:*",
     "aws-lambda": "^1.0.7",
     "express": "^5.1.0"
   }

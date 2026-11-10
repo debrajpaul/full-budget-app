@@ -1,5 +1,5 @@
 {
-  "name": "@nlp-tagger",
+  "name": "@app/nlp-tagger",
   "description": "NLP Tagger service for processing and tagging text data",
   "version": "1.0.0",
   "main": "src/index.ts",
@@ -9,7 +9,7 @@
     "test": "jest --config jest.config.js"
   },
   "dependencies": {
-    "@common": "workspace:*",
-    "@logger": "workspace:*"
+    "@app/common": "workspace:*",
+    "@app/logger": "workspace:*"
   }
 }

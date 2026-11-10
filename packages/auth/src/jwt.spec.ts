@@ -1,4 +1,4 @@
-import { ETenantType } from "@common";
+import { ETenantType } from "@app/common";
 import { signToken, verifyToken } from "./jwt";
 
 describe("JWT Auth", () => {

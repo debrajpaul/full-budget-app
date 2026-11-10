@@ -7,10 +7,10 @@ import {
   IRefreshToken,
   IRegisterInput,
   ETenantType,
-} from "@common";
-import { signToken, verifyToken, hashPassword } from "@auth";
+} from "@app/common";
+import { signToken, verifyToken, hashPassword } from "@app/auth";
 
-jest.mock("@auth", () => ({
+jest.mock("@app/auth", () => ({
   signToken: jest.fn(() => "mocked.jwt.token"),
   verifyToken: jest.fn(() => ({ userId: "user@example.com" })),
   hashPassword: jest.fn(async (pw: string) => `hashed-${pw}`),

@@ -1,4 +1,4 @@
-import { graphql } from "@api-client";
+import { graphql } from "@app/api-client";
 
 export const CreateUploadUrlDocument = graphql(`
   mutation CreateUploadUrl($input: CreateUploadUrlInput!) {

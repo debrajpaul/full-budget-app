@@ -3,7 +3,7 @@ import {
   IRecurringTransaction,
   IRecurringTransactionStore,
   ETenantType,
-} from "@common";
+} from "@app/common";
 import {
   PutCommand,
   QueryCommand,

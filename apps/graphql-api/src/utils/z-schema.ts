@@ -1,4 +1,4 @@
-import { EBankName, ETenantType, EBankType } from "@common";
+import { EBankName, ETenantType, EBankType } from "@app/common";
 import { z } from "zod";
 
 export const MonthlyReviewArgs = z.object({

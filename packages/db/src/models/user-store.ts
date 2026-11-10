@@ -1,4 +1,10 @@
-import { IUser, IUserUpdate, ILogger, IUserStore, ETenantType } from "@common";
+import {
+  IUser,
+  IUserUpdate,
+  ILogger,
+  IUserStore,
+  ETenantType,
+} from "@app/common";
 import {
   PutCommand,
   GetCommand,

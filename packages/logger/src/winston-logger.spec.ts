@@ -1,5 +1,5 @@
 import { WinstonLogger } from "./winston-logger";
-import { LogLevel } from "@common";
+import { LogLevel } from "@app/common";
 
 describe("WinstonLogger", () => {
   let winstonLogger: WinstonLogger;

@@ -6,13 +6,28 @@ import {
   ETenantType,
   EBaseCategories,
   EAllSubCategories,
-} from "@common";
+  ICategorySpend,
+} from "@app/common";
 import {
   PutCommand,
   QueryCommand,
   UpdateCommand,
   DynamoDBDocumentClient,
 } from "@aws-sdk/lib-dynamodb";
+
+const pad2 = (n: number): string => String(n).padStart(2, "0");
+
+/**
+ * txnDate is stored as YYYY-MM-DD, but generated items may carry a time part.
+ * The end bound runs to the end of the last day so both formats match.
+ */
+const monthBounds = (year: number, month: number) => {
+  const lastDay = new Date(Date.UTC(year, month, 0)).getUTCDate();
+  return {
+    startDate: `${year}-${pad2(month)}-01`,
+    endDate: `${year}-${pad2(month)}-${pad2(lastDay)}T23:59:59.999Z`,
+  };
+};
 
 export class TransactionStore implements ITransactionStore {
   private readonly logger: ILogger;
@@ -155,8 +170,7 @@ export class TransactionStore implements ITransactionStore {
     month: number,
     year: number
   ): Promise<Record<string, number>> {
-    const startDate = new Date(year, month - 1, 1).toISOString();
-    const endDate = new Date(year, month, 0).toISOString();
+    const { startDate, endDate } = monthBounds(year, month);
     const items = await this.getTransactionsByDateRange(
       tenantId,
       userId,
@@ -171,6 +185,34 @@ export class TransactionStore implements ITransactionStore {
       },
       {} as Record<string, number>
     );
+  }
+
+  public async aggregateSpendByCategoryAndSubCategory(
+    tenantId: ETenantType,
+    userId: string,
+    month: number,
+    year: number
+  ): Promise<ICategorySpend[]> {
+    const { startDate, endDate } = monthBounds(year, month);
+    const items = await this.getTransactionsByDateRange(
+      tenantId,
+      userId,
+      startDate,
+      endDate
+    );
+    const totals = items.reduce((acc, txn) => {
+      const category = txn.category || EBaseCategories.unclassified;
+      const key = `${category}|${txn.subCategory ?? ""}`;
+      const net = Number(txn.credit) - Number(txn.debit);
+      const existing = acc.get(key);
+      acc.set(key, {
+        category,
+        subCategory: txn.subCategory,
+        net: (existing?.net ?? 0) + net,
+      });
+      return acc;
+    }, new Map<string, ICategorySpend>());
+    return [...totals.values()];
   }
 
   public async updateTransactionCategory(

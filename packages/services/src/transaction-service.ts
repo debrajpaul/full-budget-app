@@ -15,7 +15,7 @@ import {
   IAggregatedSummary,
   EBaseCategories,
   EAllSubCategories,
-} from "@common";
+} from "@app/common";
 import {
   HdfcBankParser,
   SbiBankParser,
@@ -23,7 +23,7 @@ import {
   AxisSavingsParser,
   AxisCreditCardParser,
   HdfcCreditCardParser,
-} from "@parser";
+} from "@app/parser";
 
 export class TransactionService implements ITransactionService {
   private readonly logger: ILogger;

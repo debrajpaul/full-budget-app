@@ -11,7 +11,7 @@ import {
   ESubInvestmentCategories,
   ESubLoanCategories,
   EAllSubCategories,
-} from "@common";
+} from "@app/common";
 import {
   PutCommand,
   QueryCommand,

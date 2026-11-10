@@ -1,11 +1,11 @@
-import { ILogger, IBedrockClient } from "@common";
+import { ILogger, IBedrockClient } from "@app/common";
 import { config } from "./environment";
-import { RuleEngine } from "@nlp-tagger";
+import { RuleEngine } from "@app/nlp-tagger";
 import {
   TransactionCategoryService,
   BedrockClassifierService,
-} from "@services";
-import { TransactionStore, CategoryRulesStore } from "@db";
+} from "@app/services";
+import { TransactionStore, CategoryRulesStore } from "@app/db";
 import { DynamoDBDocumentClient } from "@aws-sdk/lib-dynamodb";
 
 export function setupServices(

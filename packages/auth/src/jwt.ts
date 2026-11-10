@@ -1,5 +1,5 @@
 import jwt from "jsonwebtoken";
-import { ETenantType } from "@common";
+import { ETenantType } from "@app/common";
 
 export function signToken(
   user: {

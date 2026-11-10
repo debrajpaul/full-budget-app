@@ -9,6 +9,7 @@ import {
 import * as logs from "aws-cdk-lib/aws-logs";
 import { StringParameter } from "aws-cdk-lib/aws-ssm";
 import { LambdaAlarmsConstruct } from "./lambda-alarms-construct";
+import { LAMBDA_NODE_RUNTIME } from "./lambda-runtime";
 
 export interface GraphQLApiConstructProps {
   uploadBucketArn: string;
@@ -32,7 +33,7 @@ export class GraphQLApiConstruct extends Construct {
     super(scope, id);
 
     const graphqlFunction = new lambda.Function(this, "GraphQLLambda", {
-      runtime: lambda.Runtime.NODEJS_22_X,
+      runtime: LAMBDA_NODE_RUNTIME,
       handler: "index.handler",
       code: lambda.Code.fromAsset(
         path.resolve(__dirname, "../../apps/graphql-api/dist")

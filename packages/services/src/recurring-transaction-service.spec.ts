@@ -10,7 +10,7 @@ import {
   IRecurringTransaction,
   EBankName,
   EBankType,
-} from "@common";
+} from "@app/common";
 import { RecurringTransactionService } from "./recurring-transaction-service";
 
 describe("RecurringTransactionService", () => {

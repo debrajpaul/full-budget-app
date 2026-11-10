@@ -21,7 +21,7 @@ import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import { formatCurrency, formatDate } from "@/lib/utils";
 import { ReclassifyDocument } from "@/lib/graphql/transactions";
-import type { TransactionsQuery } from "@api-client";
+import type { TransactionsQuery } from "@app/api-client";
 
 type TxnItem = TransactionsQuery["transactions"]["items"][number];
 

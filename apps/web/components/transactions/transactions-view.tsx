@@ -8,7 +8,7 @@ import { TransactionsDocument } from "@/lib/graphql/transactions";
 import { TransactionFilters } from "./transaction-filters";
 import { TransactionsTable } from "./transactions-table";
 import { ReclassifyDrawer } from "./reclassify-drawer";
-import type { TransactionsQuery } from "@api-client";
+import type { TransactionsQuery } from "@app/api-client";
 
 type TxnItem = TransactionsQuery["transactions"]["items"][number];
 

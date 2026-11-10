@@ -1,5 +1,5 @@
 import { transactionResolvers } from "./transaction";
-import { ETenantType, IGraphQLContext, ILogger } from "@common";
+import { ETenantType, IGraphQLContext, ILogger } from "@app/common";
 import { mock, mockDeep } from "jest-mock-extended";
 
 const monthlyReview = transactionResolvers.Query.monthlyReview;
@@ -148,7 +148,7 @@ describe("transactionResolvers.annualReview", () => {
     expect(result.totalIncome).toBe(expectedIncome);
     expect(result.totalExpense).toBe(expectedExpense);
     expect(result.netSavings).toBe(expectedIncome - expectedExpense);
-    expect(result.transactions).toEqual(txns);
+    expect(result.transactions.items).toEqual(txns);
   });
 });
 
@@ -231,7 +231,7 @@ describe("transactionResolvers.categoryBreakdown", () => {
 });
 
 describe("transactionResolvers.aggregateSummary", () => {
-  const year = 2027;
+  const year = new Date().getFullYear();
   const month = 9;
 
   it("returns annual totals when month is omitted", async () => {

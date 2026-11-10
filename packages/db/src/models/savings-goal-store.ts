@@ -6,7 +6,7 @@ import {
   ICreateSavingsGoalInput,
   IUpdateSavingsGoalInput,
   ETenantType,
-} from "@common";
+} from "@app/common";
 import {
   PutCommand,
   GetCommand,

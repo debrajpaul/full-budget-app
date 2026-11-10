@@ -1,6 +1,6 @@
-import { IGraphQLContext, IRegisterInput, ILoginInput } from "@common";
+import { IGraphQLContext, IRegisterInput, ILoginInput } from "@app/common";
 import { RegisterArgs, LoginArgs } from "../../utils";
-import { CustomError } from "@services";
+import { CustomError } from "@app/services";
 
 export const authResolvers = {
   Query: {

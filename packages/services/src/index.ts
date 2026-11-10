@@ -9,4 +9,5 @@ export * from "./sinking-fund-service";
 export * from "./recurring-transaction-service";
 export * from "./forecast-service";
 export * from "./budget-service";
+export * from "./spend-segment";
 export * from "./bedrock-classifier-service";

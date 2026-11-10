@@ -4,7 +4,7 @@ import userEvent from "@testing-library/user-event";
 import { MockedProvider } from "@apollo/client/testing";
 import type { MockedResponse } from "@apollo/client/testing";
 import { TooltipProvider } from "@/components/ui/tooltip";
-import { RecurringFrequency, TransactionType } from "@api-client";
+import { RecurringFrequency, TransactionType } from "@app/api-client";
 import {
   GenerateRecurringDocument,
   RecurringTransactionsDocument,

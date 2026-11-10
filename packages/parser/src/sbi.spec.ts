@@ -1,5 +1,5 @@
 import { SbiBankParser } from "./sbi";
-import { EBankName, EBankType } from "@common";
+import { EBankName, EBankType } from "@app/common";
 
 describe("SbiBankParser", () => {
   const parser = new SbiBankParser();

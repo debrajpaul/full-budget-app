@@ -26,7 +26,7 @@ async function buildPackages() {
       outdir: join(pkg, "dist"),
       bundle: false, // Keep as-is for publishing / tree-shaking
       platform: "node",
-      target: "node20",
+      target: "node24",
       sourcemap: true,
       format: "cjs",
       logLevel: "info",
@@ -64,7 +64,7 @@ async function buildApps() {
       outfile: join(app, "dist/index.js"),
       bundle: true,
       platform: "node",
-      target: "node20",
+      target: "node24",
       sourcemap: true,
       minify: false,
       format: "cjs",

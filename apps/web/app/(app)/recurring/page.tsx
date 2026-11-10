@@ -1,6 +1,6 @@
 import { getClient } from "@/lib/apollo/server-client";
 import { RecurringTransactionsDocument } from "@/lib/graphql/recurring";
-import type { RecurringTransactionsQuery } from "@api-client";
+import type { RecurringTransactionsQuery } from "@app/api-client";
 import { RecurringView } from "@/components/recurring/recurring-view";
 
 export const dynamic = "force-dynamic";

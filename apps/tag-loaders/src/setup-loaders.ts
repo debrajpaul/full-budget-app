@@ -1,4 +1,4 @@
-import { ILogger, ITransactionCategoryService } from "@common";
+import { ILogger, ITransactionCategoryService } from "@app/common";
 import { TransactionCategoryLoader } from "./loaders/category-loader";
 
 export function setupLoaders(

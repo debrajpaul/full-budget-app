@@ -7,7 +7,7 @@ import {
   ERecurringFrequency,
   EForecastAlertType,
   ETenantType,
-} from "@common";
+} from "@app/common";
 
 describe("ForecastService", () => {
   const tenantId = ETenantType.default;

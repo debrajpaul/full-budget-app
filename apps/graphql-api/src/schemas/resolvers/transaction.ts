@@ -6,8 +6,8 @@ import {
   TransactionsQueryArgs,
   ReclassifyTransactionArgs,
 } from "../../utils";
-import { IGraphQLContext, EBankName } from "@common";
-import { CustomError } from "@services";
+import { IGraphQLContext, EBankName } from "@app/common";
+import { CustomError } from "@app/services";
 
 export const transactionResolvers = {
   Query: {
