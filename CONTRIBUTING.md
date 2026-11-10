@@ -29,7 +29,7 @@ Thanks for helping improve `full-budget-app`. This guide covers setup, conventio
    DYNAMO_SINKING_FUND_TABLE=sinking-funds
    ```
 6. Make your changes, write matching tests, and run all quality gates before committing (see below).
-8. Commit using Conventional Commits and open a pull request describing what changed, why, and any setup steps.
+7. Commit using Conventional Commits and open a pull request describing what changed, why, and any setup steps.
 
 Minor edits (docs, comments) can be made via the GitHub web editor — open the file, click the pencil icon, and submit a PR.
 
@@ -49,12 +49,12 @@ Never hand-write TypeScript types that duplicate what the SDL already defines. N
 
 ### Layering rules
 
-| Layer | Location | Rule |
-|-------|----------|------|
-| GraphQL resolver | `apps/graphql-api/src/schemas/resolvers/` | Thin: validate input, call a service method, return the result |
-| Domain service | `packages/services/src/` | All business logic lives here; receives `(logger, ...stores)` via constructor injection |
-| DynamoDB store | `packages/db/src/models/` | Data access only; every method takes `(tenantId, userId)` |
-| Shared contracts | `packages/common/src/` | Interfaces and enums consumed by all other packages |
+| Layer            | Location                                  | Rule                                                                                    |
+| ---------------- | ----------------------------------------- | --------------------------------------------------------------------------------------- |
+| GraphQL resolver | `apps/graphql-api/src/schemas/resolvers/` | Thin: validate input, call a service method, return the result                          |
+| Domain service   | `packages/services/src/`                  | All business logic lives here; receives `(logger, ...stores)` via constructor injection |
+| DynamoDB store   | `packages/db/src/models/`                 | Data access only; every method takes `(tenantId, userId)`                               |
+| Shared contracts | `packages/common/src/`                    | Interfaces and enums consumed by all other packages                                     |
 
 ### File naming
 

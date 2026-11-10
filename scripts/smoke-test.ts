@@ -28,7 +28,9 @@ function readApiUrl(outputsPath: string, stage: Stage): string {
   const stackOutputs = outputs[`fba-${stage}-GraphQLApiStack`];
   const url = stackOutputs?.GraphQLApiUrl;
   if (!url) {
-    throw new Error(`GraphQLApiUrl not found for stage ${stage} in ${outputsPath}`);
+    throw new Error(
+      `GraphQLApiUrl not found for stage ${stage} in ${outputsPath}`
+    );
   }
   return url;
 }
@@ -47,7 +49,9 @@ async function healthCheck(url: string): Promise<string> {
     errors?: { message: string }[];
   };
   if (body.errors?.length) {
-    throw new Error(`GraphQL errors: ${body.errors.map((e) => e.message).join("; ")}`);
+    throw new Error(
+      `GraphQL errors: ${body.errors.map((e) => e.message).join("; ")}`
+    );
   }
   return body.data?.healthCheck ?? "";
 }

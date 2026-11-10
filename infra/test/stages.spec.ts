@@ -47,7 +47,9 @@ describe("createApp", () => {
     });
 
     it("runs the GraphQL Lambda on nodejs24.x", () => {
-      const api = synthStacks(stage).find((s) => s.stackName === `fba-${stage}-GraphQLApiStack`);
+      const api = synthStacks(stage).find(
+        (s) => s.stackName === `fba-${stage}-GraphQLApiStack`
+      );
       expect(api).toBeDefined();
       Template.fromStack(api!).hasResourceProperties("AWS::Lambda::Function", {
         Runtime: "nodejs24.x",
@@ -55,7 +57,9 @@ describe("createApp", () => {
     });
 
     it("sets the API Gateway stage to the stage name", () => {
-      const api = synthStacks(stage).find((s) => s.stackName === `fba-${stage}-GraphQLApiStack`);
+      const api = synthStacks(stage).find(
+        (s) => s.stackName === `fba-${stage}-GraphQLApiStack`
+      );
       Template.fromStack(api!).hasResourceProperties("AWS::ApiGateway::Stage", {
         StageName: stage,
       });
@@ -63,7 +67,9 @@ describe("createApp", () => {
   });
 
   it("enables termination protection on prod only", () => {
-    expect(synthStacks("prod").every((s) => s.terminationProtection)).toBe(true);
+    expect(synthStacks("prod").every((s) => s.terminationProtection)).toBe(
+      true
+    );
     expect(synthStacks("qa").some((s) => s.terminationProtection)).toBe(false);
   });
 

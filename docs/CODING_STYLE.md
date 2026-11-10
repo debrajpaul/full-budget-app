@@ -1,7 +1,7 @@
 # Coding Style Guide
 
 This document captures the conventions used throughout this project so they can
-be reproduced consistently in other codebases. It reflects what's *actually*
+be reproduced consistently in other codebases. It reflects what's _actually_
 enforced (via ESLint/Prettier/CI) and what's followed by convention in the code.
 
 ---
@@ -173,7 +173,7 @@ Resolver  →  Service  →  Store
   - Structure: `describe(ServiceName)` → `describe(methodName)` →
     `it("delegates to store.x and returns the result", ...)`.
   - Build test fixtures with a small `makeX(overrides = {}) => ({...defaults,
-    ...overrides})` factory at the top of the spec file instead of repeating
+...overrides})` factory at the top of the spec file instead of repeating
     literals.
   - Assert both the delegation (`expect(store.method).toHaveBeenCalledWith(...)`)
     and any logging (`expect(logger.debug).toHaveBeenCalledWith(...)`).

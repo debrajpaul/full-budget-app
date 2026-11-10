@@ -38,7 +38,11 @@ export function createApp(app: App): void {
     "StorageStack",
     stackProps("StorageStack")
   );
-  const queueStack = new QueueStack(app, "QueueStack", stackProps("QueueStack"));
+  const queueStack = new QueueStack(
+    app,
+    "QueueStack",
+    stackProps("QueueStack")
+  );
   const xRayStack = new XRayStack(app, "XRayStack", stackProps("XRayStack"));
   const transactionsTableStack = new TransactionsTableStack(
     app,
@@ -106,9 +110,12 @@ export function createApp(app: App): void {
       DYNAMO_RECURRING_TABLE:
         recurringTransactionsTableStack.recurringTransactionsTable.tableName,
       DYNAMO_BUDGET_TABLE: budgetsTableStack.budgetsTable.tableName,
-      DYNAMO_SAVINGS_GOAL_TABLE: savingsGoalsTableStack.savingsGoalsTable.tableName,
-      DYNAMO_SINKING_FUND_TABLE: sinkingFundsTableStack.sinkingFundsTable.tableName,
-      DYNAMO_REFRESH_TOKEN_TABLE: refreshTokensTableStack.refreshTokensTable.tableName,
+      DYNAMO_SAVINGS_GOAL_TABLE:
+        savingsGoalsTableStack.savingsGoalsTable.tableName,
+      DYNAMO_SINKING_FUND_TABLE:
+        sinkingFundsTableStack.sinkingFundsTable.tableName,
+      DYNAMO_REFRESH_TOKEN_TABLE:
+        refreshTokensTableStack.refreshTokensTable.tableName,
       DYNAMO_USER_TABLE: usersTableStack.usersTable.tableName,
       SQS_QUEUE_URL: queueStack.statementProcessingQueue.queueUrl,
       AWS_S3_BUCKET: storageStack.uploadBucket.bucketName,

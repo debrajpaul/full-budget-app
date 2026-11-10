@@ -14,8 +14,8 @@ export default [
       "**/dist/**",
       "**/node_modules/**",
       "infra/**",
-      "**/src/generated/**",  // graphql-codegen output
-      "**/codegen.ts",        // graphql-codegen config files
+      "**/src/generated/**", // graphql-codegen output
+      "**/codegen.ts", // graphql-codegen config files
     ],
   },
   js.configs.recommended,

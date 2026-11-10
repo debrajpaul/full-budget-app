@@ -24,5 +24,11 @@
     }
   },
   "include": ["apps", "packages"],
-  "exclude": ["node_modules", "data", ".github", "apps/web", "packages/api-client/src/generated"]
+  "exclude": [
+    "node_modules",
+    "data",
+    ".github",
+    "apps/web",
+    "packages/api-client/src/generated"
+  ]
 }

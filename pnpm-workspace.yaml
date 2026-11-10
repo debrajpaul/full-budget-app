@@ -4,8 +4,8 @@ packages:
   - "packages/*"
 
 allowBuilds:
-  '@apollo/protobufjs': false
-  '@prisma/client': false
+  "@apollo/protobufjs": false
+  "@prisma/client": false
   aws-sdk: false
   esbuild: true
 
