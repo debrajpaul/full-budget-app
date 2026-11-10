@@ -17,6 +17,27 @@ import {
 } from "./index";
 import { resolveStage } from "./stage-config";
 
+// Shown as the CloudFormation stack description in the AWS console.
+const STACK_DESCRIPTIONS: Record<string, string> = {
+  SsmParamStack:
+    "References the JWT signing secret held in SSM Parameter Store.",
+  StorageStack: "S3 bucket for uploaded bank statements.",
+  QueueStack: "SQS queue feeding statement processing.",
+  XRayStack: "X-Ray sampling rule and trace group.",
+  TransactionsTableStack: "DynamoDB table for transactions (with stream).",
+  TransactionsCategoryTableStack: "DynamoDB table for category rules.",
+  RecurringTransactionsTableStack: "DynamoDB table for recurring transactions.",
+  BudgetsTableStack: "DynamoDB table for budgets.",
+  SavingsGoalsTableStack: "DynamoDB table for savings goals.",
+  SinkingFundsTableStack: "DynamoDB table for sinking funds.",
+  RefreshTokensTableStack: "DynamoDB table for refresh tokens.",
+  UsersTableStack: "DynamoDB table for users.",
+  GraphQLApiStack: "GraphQL API: API Gateway + Lambda.",
+  TransactionLoaderStack: "Lambda that ingests statements from SQS.",
+  TransactionCategoryStack:
+    "Lambda that categorises transactions from the stream.",
+};
+
 // Builds every stack for the stage given in CDK context (-c stage=qa|prod).
 // Stack IDs stay the same; the CloudFormation stack name carries the stage.
 export function createApp(app: App): void {
@@ -24,6 +45,7 @@ export function createApp(app: App): void {
   const stackProps = (id: string): StackProps => ({
     env: { region: stage.region, account: process.env.CDK_DEFAULT_ACCOUNT },
     stackName: `fba-${stage.stage}-${id}`,
+    description: `Full Budget App (${stage.stage}): ${STACK_DESCRIPTIONS[id] ?? id}`,
     terminationProtection: stage.terminationProtection,
   });
 
