@@ -23,7 +23,6 @@ const STACK_DESCRIPTIONS: Record<string, string> = {
     "References the JWT signing secret held in SSM Parameter Store.",
   StorageStack: "S3 bucket for uploaded bank statements.",
   QueueStack: "SQS queue feeding statement processing.",
-  XRayStack: "X-Ray sampling rule and trace group.",
   TransactionsTableStack: "DynamoDB table for transactions (with stream).",
   TransactionsCategoryTableStack: "DynamoDB table for category rules.",
   RecurringTransactionsTableStack: "DynamoDB table for recurring transactions.",

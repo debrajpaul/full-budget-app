@@ -13,7 +13,8 @@ export default [
       "**/data/**",
       "**/dist/**",
       "**/node_modules/**",
-      "infra/**",
+      "**/cdk.out/**",
+      "infra/**/*.js", // compiled output and jest config
       "**/src/generated/**", // graphql-codegen output
       "**/codegen.ts", // graphql-codegen config files
     ],
