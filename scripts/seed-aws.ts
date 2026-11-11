@@ -28,8 +28,19 @@
  *   # Override endpoint:
  *   pnpm seed:aws --api https://abc123.execute-api.ap-south-1.amazonaws.com/dev/graphql
  *
- *   # Re-run safely (skip non-idempotent steps):
- *   pnpm seed:aws --skip-upload --skip-recurring --skip-goals --skip-sinking
+ *   # Re-running is safe: every step is idempotent (see below). Skip flags
+ *   # are only needed to save time.
+ *
+ * Idempotency
+ * ───────────
+ *   register   skips if the user exists
+ *   upload     transaction IDs are deterministic (user + date + row), and the
+ *              store ignores duplicates, so re-uploading adds nothing
+ *   budgets    upsert per category + month
+ *   recurring  skipped by description; generation ignores existing entries
+ *   goals      matched by name; only a missing balance is topped up
+ *   sinking    matched by name; only a missing balance is topped up
+ *   rules      keyed by keyword pattern, so re-adding overwrites
  *
  * Flags
  * ─────
@@ -38,7 +49,7 @@
  *   --email <addr>       Seed user email      (default dev@local.test)
  *   --password <pwd>     Seed user password   (default password123)
  *   --tenant <id>        TenantType PERSONAL|CLIENT|DEFAULT (default PERSONAL)
- *   --skip-upload        Skip CSV uploads (avoids duplicate transactions)
+ *   --skip-upload        Skip CSV uploads
  *   --skip-budget        Skip budget seeding
  *   --skip-recurring     Skip recurring transaction creation + generation
  *   --skip-goals         Skip savings goal creation
@@ -335,7 +346,7 @@ interface RecurringDef {
   description: string;
   amount: number;
   category: string;
-  type: "CREDIT" | "DEBIT";
+  type: "INCOME" | "EXPENSE"; // TransactionType enum in the schema
   frequency: string;
   dayOfMonth: number;
 }
@@ -345,7 +356,7 @@ const SEED_RECURRING: RecurringDef[] = [
     description: "Salary Credit",
     amount: 75000,
     category: "Salary",
-    type: "CREDIT",
+    type: "INCOME",
     frequency: "monthly",
     dayOfMonth: 1,
   },
@@ -353,7 +364,7 @@ const SEED_RECURRING: RecurringDef[] = [
     description: "Monthly Rent",
     amount: 18000,
     category: "Housing",
-    type: "DEBIT",
+    type: "EXPENSE",
     frequency: "monthly",
     dayOfMonth: 2,
   },
@@ -361,7 +372,7 @@ const SEED_RECURRING: RecurringDef[] = [
     description: "Mutual Fund SIP",
     amount: 10000,
     category: "Investments",
-    type: "DEBIT",
+    type: "EXPENSE",
     frequency: "monthly",
     dayOfMonth: 15,
   },
@@ -369,7 +380,7 @@ const SEED_RECURRING: RecurringDef[] = [
     description: "Mobile Recharge Airtel",
     amount: 299,
     category: "Utilities",
-    type: "DEBIT",
+    type: "EXPENSE",
     frequency: "monthly",
     dayOfMonth: 5,
   },
@@ -377,7 +388,7 @@ const SEED_RECURRING: RecurringDef[] = [
     description: "Netflix Subscription",
     amount: 649,
     category: "Entertainment",
-    type: "DEBIT",
+    type: "EXPENSE",
     frequency: "monthly",
     dayOfMonth: 10,
   },
@@ -472,12 +483,29 @@ function futureDate(monthsFromNow: number): string {
   return d.toISOString().slice(0, 10);
 }
 
+// The goal store starts a goal at 100 when no initialAmount is given.
+const DEFAULT_GOAL_INITIAL = 100;
+
 async function createGoals(token: string): Promise<void> {
   step(7, "Create savings goals");
 
+  const existing = await gql<{
+    savingsGoals: { id: string; name: string; current: number }[];
+  }>(`query { savingsGoals { id name current } }`, {}, token);
+  const byName = new Map(existing.savingsGoals.map((g) => [g.name, g]));
+
   for (const goal of SEED_GOALS) {
+    const expected =
+      (goal.initialAmount ?? DEFAULT_GOAL_INITIAL) + goal.contribution;
     let goalId: string;
-    try {
+    let topUp: number;
+
+    const found = byName.get(goal.name);
+    if (found) {
+      goalId = found.id;
+      topUp = Math.max(0, expected - found.current);
+      log(`  ↻ "${goal.name}" already exists`);
+    } else {
       const data = await gql<{
         createSavingsGoal: { id: string; name: string };
       }>(
@@ -497,25 +525,21 @@ async function createGoals(token: string): Promise<void> {
         token
       );
       goalId = data.createSavingsGoal.id;
+      topUp = goal.contribution;
       log(`  ✓ Goal created: "${goal.name}" → ₹${goal.target}`);
-    } catch (err) {
-      const msg = (err as Error).message.toLowerCase();
-      if (msg.includes("exist") || msg.includes("duplicate")) {
-        log(`  ↻ "${goal.name}" already exists, skipping contribution`);
-        continue;
-      }
-      throw err;
     }
 
-    // Contribute to show progress in the UI
-    await gql(
-      `mutation Contribute($input: ContributeSavingsGoalInput!) {
-         contributeSavingsGoal(input: $input) { id currentAmount }
-       }`,
-      { input: { id: goalId, amount: goal.contribution } },
-      token
-    );
-    log(`     └─ contributed ₹${goal.contribution}`);
+    // Only contribute what is missing, so re-runs never add extra money.
+    if (topUp > 0) {
+      await gql(
+        `mutation Contribute($input: ContributeSavingsGoalInput!) {
+           contributeSavingsGoal(input: $input) { id current }
+         }`,
+        { input: { id: goalId, amount: topUp } },
+        token
+      );
+      log(`     └─ contributed ₹${topUp}`);
+    }
   }
 }
 
@@ -549,9 +573,21 @@ const SEED_SINKING: SinkingDef[] = [
 async function createSinkingFunds(token: string): Promise<void> {
   step(8, "Create sinking funds");
 
+  const existing = await gql<{
+    sinkingFunds: { id: string; name: string; current: number }[];
+  }>(`query { sinkingFunds { id name current } }`, {}, token);
+  const byName = new Map(existing.sinkingFunds.map((f) => [f.name, f]));
+
   for (const sf of SEED_SINKING) {
     let fundId: string;
-    try {
+    let topUp: number;
+
+    const found = byName.get(sf.name);
+    if (found) {
+      fundId = found.id;
+      topUp = Math.max(0, sf.contribution - found.current);
+      log(`  ↻ "${sf.name}" already exists`);
+    } else {
       const data = await gql<{
         createSinkingFund: { id: string; name: string };
       }>(
@@ -571,24 +607,20 @@ async function createSinkingFunds(token: string): Promise<void> {
         token
       );
       fundId = data.createSinkingFund.id;
+      topUp = sf.contribution;
       log(`  ✓ Fund created: "${sf.name}" → ₹${sf.target}`);
-    } catch (err) {
-      const msg = (err as Error).message.toLowerCase();
-      if (msg.includes("exist") || msg.includes("duplicate")) {
-        log(`  ↻ "${sf.name}" already exists, skipping contribution`);
-        continue;
-      }
-      throw err;
     }
 
-    await gql(
-      `mutation ContributeFund($input: ContributeSinkingFundInput!) {
-         contributeSinkingFund(input: $input) { id currentAmount }
-       }`,
-      { input: { id: fundId, amount: sf.contribution } },
-      token
-    );
-    log(`     └─ contributed ₹${sf.contribution}`);
+    if (topUp > 0) {
+      await gql(
+        `mutation ContributeFund($input: ContributeSinkingFundInput!) {
+           contributeSinkingFund(input: $input) { id current }
+         }`,
+        { input: { id: fundId, amount: topUp } },
+        token
+      );
+      log(`     └─ contributed ₹${topUp}`);
+    }
   }
 }
 
