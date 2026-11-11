@@ -64,7 +64,7 @@ jobs:
         run: pnpm --filter ./infra typecheck
 
       - name: Infra tests (stage isolation and runtime)
-        run: pnpm --filter ./infra test:infra
+        run: pnpm --filter ./infra test
 
       - name: Synth qa
         run: pnpm --filter ./infra exec cdk synth -c stage=qa --quiet
